@@ -21,11 +21,16 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
+if (require.main === module) {//this is for testing,if the servers runs on development then just listen otherwise just export it
+  server.listen(port);
+} else {
+  module.exports = server;
+}
+
 /**
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
