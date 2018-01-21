@@ -77,16 +77,16 @@ const getAnnouncementSchema = Joi.object().keys({
 })
 
 module.exports = {
-  deleteAnnouncementsQuerySchema: deleteAnnouncementsQuerySchema,
-  newAnnouncementsQuerySchema: newAnnouncementsQuerySchema,
-  editAnnouncementsQuerySchema: editAnnouncementsQuerySchema,
-  deleteAnnouncementSchema: deleteAnnouncementSchema,
-  newCategorySchema: newCategorySchema,
-  editCategorySchemaParams: editCategorySchemaParams,
-  editCategorySchemaBody: editCategorySchemaBody,
-  deleteCategorySchema: deleteCategorySchema,
-  registerCategoriesSchema: registerCategoriesSchema,
-  getAnnouncementSchema: getAnnouncementSchema,
-  getAnnouncementFeedSchema: getAnnouncementFeedSchema,
-  deleteFileFromAnnouncementSchema: deleteFileFromAnnouncementSchema
+  deleteAnnouncementsQuerySchema,
+  newAnnouncementsQuerySchema,
+  editAnnouncementsQuerySchema,
+  deleteAnnouncementSchema,
+  newCategorySchema,
+  editCategorySchemaParams,
+  editCategorySchemaBody,
+  deleteCategorySchema,
+  registerCategoriesSchema,
+  getAnnouncementSchema,
+  getAnnouncementFeedSchema,
+  deleteFileFromAnnouncementSchema
 }

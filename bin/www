@@ -21,6 +21,8 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
+app.io.attach(server);
+
 if (require.main === module) {//this is for testing,if the servers runs on development then just listen otherwise just export it
   server.listen(port);
 } else {

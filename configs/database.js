@@ -183,13 +183,13 @@ const Profile = mongoose.model('Profile', profileSchema);
 const UserPassReset = mongoose.model('UserPassReset', userPwdResetSchema);
 
 module.exports = {
-    Announcements: Announcements,
-    AnnouncementsCategories: AnnouncementsCategories,
-    File: File,
-    AccountType: AccountType,
-    LDAPConfigs: LDAPConfigs,
-    UserReg: UserReg,
-    Profile: Profile,
-    Notification: Notification,
-    UserPassReset: UserPassReset
+    Announcements,
+    AnnouncementsCategories,
+    File,
+    AccountType,
+    LDAPConfigs,
+    UserReg,
+    Profile,
+    Notification,
+    UserPassReset
 }
