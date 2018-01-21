@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Titlse</title>
+</head>
+<body>
+
+<form role="form" id="newAnnouncmentForm">
+    <div class="modal-body">
+        <!-- text input -->
+        <div class="form-group">
+            <label>Τίτλος ανακοίνωσης</label>
+            <input type="text" class="form-control" maxlength="80" id="newAnnouncementTitle"
+                   required="true"
+                   placeholder="Τίτλος">
+        </div>
+
+        <div class="form-group" id="titleEn" style="display: none">
+            <label>Τίτλος ανακοίνωσης στα αγγλικά</label>
+            <input type="text" class="form-control" maxlength="80" id="newAnnouncementTitleEn"
+                   placeholder="Τίτλος στα αγγλικά">
+        </div>
+        <br/>
+
+        <!-- textarea -->
+        <div class="form-group">
+            <label>Κείμενο</label>
+            <textarea class="form-control" maxlength="12000" rows="9" id="newAnnouncementText"
+                      placeholder="Γράψτε την ανακοίνωση σας εδώ.."></textarea>
+        </div>
+
+        <div class="form-group" id="textEn" style="display: none;">
+            <label>Κείμενο στα αγγλικά</label>
+            <textarea class="form-control" maxlength="12000" rows="9" id="newAnnouncementTextEn"
+                      placeholder="Γράψτε την ανακοίνωση σας στα αγγλικά εδώ.."></textarea>
+        </div>
+
+        <div class="form-group">
+            <div class="animated-checkbox">
+                <label>
+                    <input type="checkbox" id="checkAnnouncementEn"><span
+                            class="label-text">Προσθήκη στα αγγλικά</span>
+                </label>
+            </div>
+        </div>
+        <br/>
+
+        <div class="form-group">
+            <label>Υποβολή ως</label>
+            <select class="form-control select2" id="newAnnouncementPublisher" style="width:100%;">
+                <option value='' selected='selected'>Επιλέξτε καθηγητή</option>
+            </select>
+        </div>
+
+        <!-- To select2 dn douleuei mesa se modal an to modal exei to property tabindex=-1 -->
+        <div class="form-group">
+            <label>Κατηγορία</label>
+            <select class="form-control select2" id="newAnnouncementAbout" style="width:100%;">
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">Συνημμένα</label>
+            <input id="upload-input" class="form-control" accept="application/msword,.doc, .docx,.ppt, .pptx,application/vnd.ms-excel, application/vnd.ms-powerpoint,
+text/plain, application/pdf, image/*" type="file" name="uploads[]" multiple="multiple"><br/>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default pull-left" onclick="clearModalFields()"
+                data-dismiss="modal">Ακυρωση
+        </button>
+        <button type="submit" form="newAnnouncmentForm" value="Submit" class="btn btn-primary"
+                id="btnCreateAnnouncment">Προσθηκη
+        </button>
+    </div>
+</form>
+
+</body>
+<script
+        src="https://code.jquery.com/jquery-3.3.1.js"
+        integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+        crossorigin="anonymous"></script>
+<script>
+
+  $('#newAnnouncmentForm').submit(function (e) {
+    e.preventDefault()
+    let title = $('#newAnnouncementTitle').val()
+    if (!title || title === undefined || title === null) {
+      $('#newAnnouncementTitle').closest('.form-group').addClass('has-error')
+    } else {
+      $('#newAnnouncementTitle').closest('.form-group').removeClass('has-error')
+      var formData = new FormData()
+      console.log(formData)
+      let files = $('#upload-input').get(0).files
+      if (files.length > 0) {
+        // create a FormData object which will be sent as the data payload in the
+        // AJAX request
+
+        // loop through all the selected files and add them to the formData object
+        for (let i = 0; i < files.length; i++) {
+          let file = files[i]
+
+          // add the files to formData object for the data payload
+          formData.append('uploads[]', file, file.name)
+        }
+      }
+      title = decodeURIComponent(title)
+      let text = $('#newAnnouncementText').val()
+      let about = $('#newAnnouncementAbout').val()
+      let publisher = $('#newAnnouncementPublisher').val()
+      if (publisher) {
+        let publisherName = $('#newAnnouncementPublisher').select2('data')[0].text
+        formData.append('publisher', JSON.stringify({publisherId: publisher, publisherName: publisherName}))
+      }
+      formData.append('title', title)
+      formData.append('text', text)
+      formData.append('about', '59ab445c3eb44c2c608cb186')
+
+      if ($('#checkAnnouncementEn').is(':checked')) {
+        let titleEn = $('#newAnnouncementTitleEn').val()
+        let textEn = $('#newAnnouncementTextEn').val()
+
+        formData.append('titleEn', titleEn)
+        formData.append('textEn', textEn)
+      }
+      console.log(formData)
+      $.ajax({
+        url: '/announcements',
+        type: 'post',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
+          console.log('yes')
+
+        },
+        error: function (data) {
+          console.log('no')
+        }
+      })
+    }
+  })
+
+</script>
+
+</html>

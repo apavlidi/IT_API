@@ -6,16 +6,35 @@ const config = require('./configs/config')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')(session)
 const compression = require('compression')
-
+const path = require('path')
 const announcements = require('./routes/announcements/index').router
+const index = require('./routes/index')
+const fileUpload = require('express-fileupload')
 
 const app = express()
+// view engine setup
+app.set('views', path.join(__dirname, 'views'))
+app.set('view engine', 'ejs')
 
 app.use(logger('dev'))
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: false}))
 app.use(compression())   // Κανει compress ολα τα responses.Διαβασα οτι παντα πρεπει να γινεται compress στο response
+app.use(bodyParser.urlencoded({extended: false}))
+app.use(express.static(path.join(__dirname, 'public')))
+app.use(fileUpload())
+
+app.use('/', index)
 app.use('/announcements', announcements)
+
+app.io = require('socket.io')()
+
+app.io.on('connection', function (socket) {
+  console.log('a user connected')
+
+  socket.on('disconnect', function () {
+    console.log('user disconnected')
+  })
+})
 
 mongoose.Promise = global.Promise
 mongoose.connect(config.MONGO[process.env.NODE_ENV], {
@@ -48,6 +67,7 @@ app.use(function (err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500)
+  console.log(err)
   res.render('error')
 })
 
