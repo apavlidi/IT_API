@@ -60,7 +60,7 @@ const editCategorySchemaBody = Joi.object().keys({
 })
 
 const editCategorySchemaParams = Joi.object().keys({
-  value: Joi.string().required()
+  id: Joi.string().required()
 })
 
 const registerCategoriesSchema = Joi.object().keys({
