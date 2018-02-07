@@ -24,6 +24,8 @@
     "joi": "^13.1.1",
     "ldap-filters": "^2.2.2",
     "ldapjs": "^1.0.2",
+    "log4js": "^1.1.1",
+    "log4js-node-mongodb": "^2.2.1",
     "mongoose": "^5.0.0",
     "morgan": "^1.9.0",
     "nodemailer": "^4.4.2",

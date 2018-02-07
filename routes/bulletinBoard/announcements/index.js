@@ -1,39 +1,24 @@
 const express = require('express')
 const router = express.Router()
-const database = require('./../../configs/database')
-const apiFunctions = require('../apiFunctions')
-const announcementsFunctions = require('./functions')
+const database = require('../../../configs/database')
+const apiFunctions = require('../../apiFunctions')
+const announcementsFunc = require('./functions')
 const mongoose = require('mongoose')
 
-const Joi = require('joi')
-const validSchemas = require('./joi')
+const validSchemas = require('../joi')
 
 router.get('/', getAnnouncements)
 router.get('/:id', getAnnouncement)
-router.get('/feed/:type/:categoryIds?', validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
+router.get('/feed/:type/:categoryIds?', apiFunctions.validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
 router.get('/public', getAnnouncementsPublic)
-router.post('/', validateInput('body', validSchemas.newAnnouncementsQuerySchema), insertNewAnnouncement)
+router.post('/', apiFunctions.validateInput('body', validSchemas.newAnnouncementsQuerySchema), insertNewAnnouncement)
+
 
 const login = true
 let user = {
   displayNameEn: 'apavlidi',
   displayNameEl: 'apavlidiEl',
   id: '12345'
-}
-
-function validateInput (objectToBeValidateStr, schema) {
-  return function (req, res, next) {
-    let objectToBeValidate = objectToBeValidateStr === 'params' ? req.params : req.body
-    apiFunctions.sanitizeObject(objectToBeValidate)
-    Joi.validate(objectToBeValidate, schema, function (err) {
-      if (!err) {
-        next()
-      } else {
-        console.log(err)
-        res.status(500).json({message: 'Σφάλμα κατα την εισαγωγή δεδομένων'})
-      }
-    })
-  }
 }
 
 function getAnnouncements (req, res) {
@@ -90,7 +75,7 @@ function getAnnouncementsFeed (req, res) {
         if (err) {
           res.status(500).json({message: 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων'})
         } else {
-          announcementsFunctions.getAnnouncementsRSSPromise(announcements, rssCategories, req.params.categoryIds,
+          announcementsFunc.getAnnouncementsRSSPromise(announcements, rssCategories, req.params.categoryIds,
             feedType, res, login).then(function (response) {
             res.send(response)
           }).catch(function () {
@@ -133,15 +118,15 @@ function insertNewAnnouncement (req, res) {
 
   let validatePublisherPromise = Promise.resolve(false) // initialize a promise as false
   if (req.body.publisher) { // TODO && req.session.user.scope >= PERMISSIONS.futureUseSix
-    validatePublisherPromise = announcementsFunctions.validatePublisher(req.body.publisher.publisherId) // if he sent a publisher we have to check it with a request to the ldap api
+    validatePublisherPromise = announcementsFunc.validatePublisher(req.body.publisher.publisherId) // if he sent a publisher we have to check it with a request to the ldap api
   }
 
-  announcementsFunctions.gatherFilesInput(req.files).then(filesReturned => {
+  announcementsFunc.gatherFilesInput(req.files).then(filesReturned => {
     files = filesReturned
-    return announcementsFunctions.checkIfCategoryExists(req.body.about)
+    return announcementsFunc.checkIfCategoryExists(req.body.about)
   }).then(() => {
     announcementEntry._about = mongoose.Types.ObjectId(req.body.about)
-    return announcementsFunctions.createFileEntries(files, announcementId)
+    return announcementsFunc.createFileEntries(files, announcementId)
   }).then(fileIds => {
     announcementEntry.attachments = fileIds
     return validatePublisherPromise
@@ -156,11 +141,11 @@ function insertNewAnnouncement (req, res) {
       announcementEntry.publisher.id = publisher.id
     }
     announcementEntry.save(function (err, newAnnouncement) {
-      // announcementsFunctions.postToTeithe(announcementEntry)
-      // announcementsFunctions.sendEmails(announcementEntry)
+      // announcementsFunc.postToTeithe(announcementEntry)
+      // announcementsFunc.sendEmails(announcementEntry)
 
-      announcementsFunctions.createNotification(newAnnouncement._id, publisher).then(newNotification => {
-        announcementsFunctions.sendNotifications(announcementEntry, newNotification.id, publisher.id).then(function () {
+      announcementsFunc.createNotification(newAnnouncement._id, publisher).then(newNotification => {
+        announcementsFunc.sendNotifications(announcementEntry, newNotification.id, publisher.id).then(function () {
           req.app.io.emit('new announcement', newNotification)
         })
       })
@@ -186,17 +171,6 @@ function insertNewAnnouncement (req, res) {
       res.status(500).json({message: 'Σφάλμα κατα την αποθήκευση αρχείων στην βάση'})
     })
 }
-
-// function logging (user, action, status, ref, info, ip) {
-//   return {
-//     user: user,
-//     action: action,
-//     status: status,
-//     ref: ref,
-//     info: info,
-//     ip: ip
-//   }
-// }
 
 module.exports = {
   router: router

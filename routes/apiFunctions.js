@@ -1,5 +1,8 @@
 const Promise = require('promise')
 const xss = require('xss')
+const Joi = require('joi')
+
+const log = require('./../configs/logs').general
 
 function formatQuery (query) {
   return new Promise(
@@ -42,7 +45,46 @@ function sanitizeObject (obj) {
   })
 }
 
+function validateInput (objectToBeValidateStr, schema) {
+  return function (req, res, next) {
+    let objectToBeValidate = objectToBeValidateStr === 'params' ? req.params : req.body
+    sanitizeObject(objectToBeValidate)
+    Joi.validate(objectToBeValidate, schema, function (err) {
+      if (!err) {
+        next()
+      } else {
+        console.log(err)
+        res.status(500).json({message: 'Σφάλμα κατα την εισαγωγή δεδομένων'})
+      }
+    })
+  }
+}
+
+function logging (type, user, action, status, ref, info, ip) {
+  let logEntry = {
+    user: user,
+    action: action,
+    status: status,
+    ref: ref,
+    info: info,
+    ip: ip
+  }
+  log.error(logEntry)
+  switch (type) {
+    case 'error':
+      log.error(logEntry)
+      break
+    case 'info':
+      log.info(logEntry)
+      break
+    default:
+      log.info(logEntry)
+  }
+}
+
 module.exports = {
   sanitizeObject,
-  formatQuery
+  formatQuery,
+  validateInput,
+  logging
 }

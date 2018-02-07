@@ -7,7 +7,9 @@ const session = require('express-session')
 const MongoStore = require('connect-mongo')(session)
 const compression = require('compression')
 const path = require('path')
-const announcements = require('./routes/announcements/index').router
+const announcements = require('./routes/bulletinBoard/announcements/index').router
+const categories = require('./routes/bulletinBoard/categories/index').router
+
 const index = require('./routes/index')
 const fileUpload = require('express-fileupload')
 
@@ -25,6 +27,8 @@ app.use(fileUpload())
 
 app.use('/', index)
 app.use('/announcements', announcements)
+app.use('/categories', categories)
+
 
 app.io = require('socket.io')()
 
