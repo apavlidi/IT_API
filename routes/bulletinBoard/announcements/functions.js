@@ -146,14 +146,14 @@ function createFileEntries (files, announcementId) {
     })
 }
 
-function checkIfCategoryExists (categoryId) {
+function checkIfEntryExists (categoryId, collection) {
   return new Promise(
     function (resolve, reject) {
-      database.AnnouncementsCategories.findOne({_id: categoryId}, function (err, category) {
-        if (err || !category) {
+      collection.findOne({_id: categoryId}, function (err, doc) {
+        if (err || !doc) {
           reject(err)
         } else {
-          resolve()
+          resolve(doc)
         }
       })
     })
@@ -164,7 +164,7 @@ function gatherFilesInput (filesInput) {
     function (resolve, reject) {
       let files = []
       if (filesInput) {
-        let upload = filesInput['uploads[]']
+        let upload = filesInput;
         if (Array.isArray(upload)) { // if multiple files are uploaded
           upload.forEach(file => {
             if (checkFileInput(file)) {
@@ -186,26 +186,43 @@ function checkFileInput (file) {
   )
 }
 
-function postToTeithe (newAnnouncement) {
-  database.AnnouncementsCategories.findOne({_id: newAnnouncement._about}).exec(function (err, category) {
+function postToTeithe (announcement, action) {
+  database.AnnouncementsCategories.findOne({_id: announcement._about}).exec(function (err, category) {
     if (category && category.public) {
-      generateWordpressContent(newAnnouncement.id, newAnnouncement.text, newAnnouncement.textEn, newAnnouncement.attachments, newAnnouncement.date, newAnnouncement.publisher.name).then(function (wordpressContent) {
-        clientWordpress.newPost({
-          title: '<!--:el-->' + newAnnouncement.title + '<!--:--><!--:en-->' + newAnnouncement.titleEn + '<!--:-->',
-          content: wordpressContent,
-          status: 'publish',
-          terms: {
-            'category': [category.wid]
-          }
-        }, function (error, id) {
-          database.Announcements.findOneAndUpdate({_id: newAnnouncement._id}, {
-            $set: {
-              wordpressId: id
+      generateWordpressContent(announcement.id, announcement.text, announcement.textEn, announcement.attachments, announcement.date, announcement.publisher.name).then(function (wordpressContent) {
+        if (action === 'create') {
+          clientWordpress.newPost({
+            title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' + announcement.titleEn + '<!--:-->',
+            content: wordpressContent,
+            status: 'publish',
+            terms: {
+              'category': [category.wid]
             }
-          }, function (err, categoryUpdated) {
+          }, function (error, id) {
+            let update = {wordpressId: id}
+            console.log(announcement._id)
+            database.Announcements.update({_id: announcement._id},
+              update
+            ).exec(function (err, announcementUpdated) {
+              console.log('hi')
+              console.log(id)
+              console.log(announcementUpdated)
+            })
 
           })
-        })
+        } else if (action === 'edit') {
+          console.log('hi')
+          console.log(announcement)
+          clientWordpress.editPost(announcement.wordpressId, {
+            title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' + announcement.titleEn + '<!--:-->',
+            content: wordpressContent,
+            terms: {
+              'category': [category.wid]
+            }
+          }, function (error, data) {
+
+          })
+        }
       })
     }
   })
@@ -408,7 +425,7 @@ module.exports = {
   getAnnouncementsRSSPromise,
   validatePublisher,
   createFileEntries,
-  checkIfCategoryExists,
+  checkIfEntryExists,
   gatherFilesInput,
   postToTeithe,
   sendEmails,

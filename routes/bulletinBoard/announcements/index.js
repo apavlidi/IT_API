@@ -4,15 +4,19 @@ const database = require('../../../configs/database')
 const apiFunctions = require('../../apiFunctions')
 const announcementsFunc = require('./functions')
 const mongoose = require('mongoose')
+const wordpress = require('wordpress')
 
 const validSchemas = require('../joi')
+const WORDPRESS_CREDENTIALS = require('./../../../configs/config').WORDPRESS_CREDENTIALS
+const clientWordpress = wordpress.createClient(WORDPRESS_CREDENTIALS)
 
 router.get('/', getAnnouncements)
 router.get('/:id', getAnnouncement)
 router.get('/feed/:type/:categoryIds?', apiFunctions.validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
 router.get('/public', getAnnouncementsPublic)
 router.post('/', apiFunctions.validateInput('body', validSchemas.newAnnouncementsQuerySchema), insertNewAnnouncement)
-
+router.put('/:id', apiFunctions.validateInput('body', validSchemas.editAnnouncementsQuerySchema), editAnnouncement)
+router.delete('/:id', apiFunctions.validateInput('params', validSchemas.deleteAnnouncementSchema), deleteAnnouncement)
 
 const login = true
 let user = {
@@ -121,14 +125,15 @@ function insertNewAnnouncement (req, res) {
     validatePublisherPromise = announcementsFunc.validatePublisher(req.body.publisher.publisherId) // if he sent a publisher we have to check it with a request to the ldap api
   }
 
-  announcementsFunc.gatherFilesInput(req.files).then(filesReturned => {
+  announcementsFunc.gatherFilesInput(req.files['uploads[]']).then(filesReturned => {
     files = filesReturned
-    return announcementsFunc.checkIfCategoryExists(req.body.about)
+    return announcementsFunc.checkIfEntryExists(req.body.about, database.AnnouncementsCategories)
   }).then(() => {
     announcementEntry._about = mongoose.Types.ObjectId(req.body.about)
     return announcementsFunc.createFileEntries(files, announcementId)
   }).then(fileIds => {
     announcementEntry.attachments = fileIds
+    console.log(fileIds)
     return validatePublisherPromise
   }).then(validationResult => {
     if (validationResult) {
@@ -170,6 +175,120 @@ function insertNewAnnouncement (req, res) {
       // log.error(logEntry)
       res.status(500).json({message: 'Σφάλμα κατα την αποθήκευση αρχείων στην βάση'})
     })
+}
+
+function deleteAnnouncement (req, res) {
+  apiFunctions.sanitizeObject(req.params)
+  let announcementId = req.params.id
+  database.Announcements.findOne({_id: announcementId}).exec(function (err, announcement) {
+    if (err) {
+      // let logEntry = logging(req.session.user.id, 'DELETE', 'fail', 'announcements', {
+      //   error: err,
+      //   track: 'deleteAnnouncement',
+      //   text: 'Σφάλμα κατα την ευρεση ανακοίνωσης με id: ' + announcementId
+      // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
+      // log.error(logEntry)
+
+      res.status(500).json({message: 'Σφάλμα κατα την διαγραφή ανακοίνωσης'})
+    } else {
+      if (announcement != null) {
+        //TODO check (announcement.publisher.id === req.session.user.id || req.session.user.scope === PERMISSIONS.admin)
+        if (true) {
+          announcement.remove(function (err, announcementDeleted) {
+            if (err) {
+              // let logEntry = logging(req.session.user.id, 'DELETE', 'fail', 'announcements', {
+              //   error: err,
+              //   track: 'deleteAnnouncement',
+              //   text: 'Σφάλμα κατα την διαγραφή ανακοίνωσης με id: ' + announcementId
+              // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
+              // log.error(logEntry)
+              res.status(500).json({message: 'Σφάλμα κατα την διαγραφή ανακοίνωσης'})
+            } else {
+              // let logEntry = logging(req.session.user.id, 'DELETE', 'success', 'announcements', {
+              //   track: 'deleteAnnouncement',
+              //   text: 'H ανακοίνωση διαγράφηκε επιτυχώς με id: ' + announcementId
+              // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
+              // log.info(logEntry)
+              clientWordpress.deletePost(announcement.wordpressId, function (error, data) {})
+              res.status(200).json({
+                message: 'H ανακοίνωση διαγράφηκε επιτυχώς',
+                announcementDeleted
+              })
+            }
+          })
+        } else {
+          // let logEntry = logging(req.session.user.id, 'DELETE', 'fail', 'announcements', {
+          //   track: 'deleteAnnouncement',
+          //   text: 'Μη εξουσιοδοτημένος χρήστης'
+          // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
+          // log.error(logEntry)
+          res.status(401).json({message: 'Δεν έχεις δικάιωμα για αυτήν την ενέργεια!'})
+        }
+      } else {
+
+        // let logEntry = logging(req.session.user.id, 'DELETE', 'fail', 'announcements', {
+        //   error: err,
+        //   track: 'deleteAnnouncement',
+        //   text: 'Μη εξοσουδιοτημένος χρήστης'
+        // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
+        // log.error(logEntry)
+        res.status(500).json({message: 'Σφάλμα κατα την διαγραφή ανακοίνωσης'})
+
+      }
+    }
+  })
+}
+
+function editAnnouncement (req, res) {
+  apiFunctions.sanitizeObject(req.body)
+  apiFunctions.sanitizeObject(req.params)
+  let files
+  let about
+  let announcementToBeEdited
+  let updatedAnnouncement = {}
+  //TODO Check id of req.files from from-end
+  announcementsFunc.gatherFilesInput(req.files['uploads[]2']).then(filesReturned => {
+    files = filesReturned
+    return announcementsFunc.checkIfEntryExists(req.params.id, database.Announcements)
+  }).then(announcement => {
+    announcementToBeEdited = announcement
+    return announcementsFunc.createFileEntries(files, announcementToBeEdited._id)
+  }).then(fileIds => {
+    if (files.length > 0) {
+      fileIds.forEach(fileId => {
+        announcementToBeEdited.attachments.push(fileId)
+      })
+    }
+    updatedAnnouncement._id = announcementToBeEdited._id
+    updatedAnnouncement.date = announcementToBeEdited.date
+    updatedAnnouncement.publisher = announcementToBeEdited.publisher
+    updatedAnnouncement.attachments = announcementToBeEdited.attachments
+    updatedAnnouncement.text = req.body.text
+    updatedAnnouncement.title = req.body.title
+    req.body.titleEn ? updatedAnnouncement.titleEn = req.body.titleEn : updatedAnnouncement.titleEn = announcementToBeEdited.titleEn
+    req.body.textEn ? updatedAnnouncement.textEn = req.body.textEn : updatedAnnouncement.textEn = announcementToBeEdited.textEn
+    mongoose.Types.ObjectId.isValid(req.body.about) ? about = req.body.about : about = announcementToBeEdited._about
+    return announcementsFunc.checkIfEntryExists(about, database.AnnouncementsCategories)
+  }).then(category => {
+    (category) ? updatedAnnouncement._about = mongoose.Types.ObjectId(category._id) : updatedAnnouncement._about = announcementToBeEdited._about
+    database.Announcements.update({_id: req.params.id},
+      updatedAnnouncement
+    ).exec(function (err) {
+      database.AnnouncementsCategories.findOne({_id: announcementToBeEdited._about}, function (err, categoryOld) {
+        if (category.public && categoryOld.public) {
+          announcementsFunc.postToTeithe(updatedAnnouncement, 'edit')
+        } else if (category.public) {
+          announcementsFunc.postToTeithe(updatedAnnouncement, 'create')
+        } else if (!category.public && categoryOld.public) {
+          clientWordpress.deletePost(announcementToBeEdited.wordpressId, function (error, data) {
+          })
+        }
+      })
+      res.status(201).json({
+        message: 'Η ανακοίνωση αποθηκεύτηκε επιτυχώς'
+      })
+    })
+  })
 }
 
 module.exports = {
