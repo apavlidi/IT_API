@@ -246,8 +246,10 @@ function editAnnouncement (req, res) {
   let about
   let announcementToBeEdited
   let updatedAnnouncement = {}
+  let requestedFiles
   //TODO Check id of req.files from from-end
-  announcementsFunc.gatherFilesInput(req.files['uploads[]2']).then(filesReturned => {
+  (req.files && req.files['uploads[]2']) ? requestedFiles = req.files['uploads[]2'] : requestedFiles = null
+  announcementsFunc.gatherFilesInput(requestedFiles).then(filesReturned => {
     files = filesReturned
     return announcementsFunc.checkIfEntryExists(req.params.id, database.Announcements)
   }).then(announcement => {

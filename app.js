@@ -8,6 +8,7 @@ const MongoStore = require('connect-mongo')(session)
 const compression = require('compression')
 const path = require('path')
 const announcements = require('./routes/bulletinBoard/announcements/index').router
+const announcementFiles = require('./routes/bulletinBoard/announcementFiles/index').router
 const categories = require('./routes/bulletinBoard/categories/index').router
 
 const index = require('./routes/index')
@@ -28,7 +29,7 @@ app.use(fileUpload())
 app.use('/', index)
 app.use('/announcements', announcements)
 app.use('/categories', categories)
-
+app.use('/files', announcementFiles)
 
 app.io = require('socket.io')()
 
