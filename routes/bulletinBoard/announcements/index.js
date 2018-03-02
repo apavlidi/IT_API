@@ -9,6 +9,7 @@ const wordpress = require('wordpress')
 const validSchemas = require('../joi')
 const WORDPRESS_CREDENTIALS = require('./../../../configs/config').WORDPRESS_CREDENTIALS
 const clientWordpress = wordpress.createClient(WORDPRESS_CREDENTIALS)
+let logError = require('./../../logError')
 
 router.get('/', getAnnouncements)
 router.get('/:id', getAnnouncement)
@@ -25,28 +26,28 @@ let user = {
   id: '12345'
 }
 
-function getAnnouncements (req, res) {
+function getAnnouncements (req, res, next) {
   apiFunctions.formatQuery(req.query).then(function (formatedQuery) {
     database.Announcements.find(formatedQuery.filters).select(formatedQuery.fields).populate('_about',
       'name public').populate('attachments', 'name').sort(formatedQuery.sort).exec(function (err, announcements) {
       if (err) {
-        res.status(500).json({message: 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων: \n' + err})
+        next(new Error('Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων.'))
       } else {
         res.status(200).json(announcements)
       }
     })
   }).catch(function () {
-    res.status(500).json({message: 'Σφάλμα'})
+    next(new Error('Σφάλμα'))
   })
 }
 
 // TODO Replace login check
-function getAnnouncement (req, res) {
+function getAnnouncement (req, res, next) {
   let announcementsId = req.params.id
   database.Announcements.findOne({_id: announcementsId}).populate('_about', 'name public').populate('attachments',
     'name').exec(function (err, announcement) {
     if (err) {
-      res.status(500).json({message: 'Συνεβη καποιο λάθος κατα την λήψη ανακοίνωσης.'})
+      next(new Error('Συνεβη καποιο λάθος κατα την λήψη ανακοίνωσης.'))
     } else {
       if (login || announcement._about.public) {
         res.status(200).json(announcement)
@@ -59,7 +60,7 @@ function getAnnouncement (req, res) {
 
 // by default it returns all public announcements,if id is passed it returns the announcements of the category
 // TODO Replace login check
-function getAnnouncementsFeed (req, res) {
+function getAnnouncementsFeed (req, res, next) {
   let filter
   let feedType = req.params.type
 
@@ -72,18 +73,18 @@ function getAnnouncementsFeed (req, res) {
 
   database.AnnouncementsCategories.find(filter).select('_id name').sort([['date', 'descending']]).exec(function (err, rssCategories) {
     if (err || !rssCategories.length) {
-      res.status(500).json({message: 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων'})
+      next(new Error('Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων.'))
     } else {
       database.Announcements.find({_about: {$in: rssCategories}}).populate('_about', 'name').populate('attachments',
         'name').exec(function (err, announcements) {
         if (err) {
-          res.status(500).json({message: 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων'})
+          next(new Error('Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων.'))
         } else {
           announcementsFunc.getAnnouncementsRSSPromise(announcements, rssCategories, req.params.categoryIds,
             feedType, res, login).then(function (response) {
             res.send(response)
           }).catch(function () {
-            res.status(500).json({message: 'Σφάλμα κατα την δημιουργεία RSS'})
+            next(new Error('Σφάλμα κατα την δημιουργεία RSS'))
           })
         }
       })
@@ -94,11 +95,11 @@ function getAnnouncementsFeed (req, res) {
 function getAnnouncementsPublic (req, res, next) {
   database.AnnouncementsCategories.find({public: true}).select('_id').exec(function (err, publicCategories) {
     if (err) {
-      res.status(500).json({message: 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων: \n' + err})
+      next(new Error('Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων'))
     } else {
       database.Announcements.find({_about: {$in: publicCategories}}).populate('_about', 'name').populate('attachments', 'name').exec(function (err, announcements) {
         if (err) {
-          res.status(500).json({message: 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων: \n' + err})
+          next(new Error('Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων'))
         } else {
           res.status(200).json(announcements)
         }
@@ -107,7 +108,7 @@ function getAnnouncementsPublic (req, res, next) {
   })
 }
 
-function insertNewAnnouncement (req, res) {
+function insertNewAnnouncement (req, res, next) {
   let files
   let announcementEntry = new database.Announcements()
   let announcementId = mongoose.Types.ObjectId()
@@ -133,7 +134,6 @@ function insertNewAnnouncement (req, res) {
     return announcementsFunc.createFileEntries(files, announcementId)
   }).then(fileIds => {
     announcementEntry.attachments = fileIds
-    console.log(fileIds)
     return validatePublisherPromise
   }).then(validationResult => {
     if (validationResult) {
@@ -154,11 +154,11 @@ function insertNewAnnouncement (req, res) {
           req.app.io.emit('new announcement', newNotification)
         })
       })
-      //             // let logEntry = logging(req.session.user.id, 'NEW', 'success', 'announcements', {
-      //             //   track: 'insertNewAnnouncement',
-      //             //   text: 'Η ανακοίνωση προστέθηκε επιτυχώς με id: ' + newAnnouncement._id
-      //             // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-      //             // log.info(logEntry)
+      // let logEntry = logging(req.session.user.id, 'NEW', 'success', 'announcements', {
+      //   track: 'insertNewAnnouncement',
+      //   text: 'Η ανακοίνωση προστέθηκε επιτυχώς με id: ' + newAnnouncement._id
+      // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
+      // log.info(logEntry)
 
       res.status(201).json({
         message: 'Η ανακοίνωση προστέθηκε επιτυχώς',
@@ -167,73 +167,45 @@ function insertNewAnnouncement (req, res) {
     })
   })
     .catch(function (err) {
-      // let logEntry = logging(req.session.user.id, 'NEW', 'fail', 'announcements', {
-      //   error: err,
-      //   track: 'insertNewAnnouncement',
-      //   text: 'Σφάλμα κατα την αποθήκευση αρχείων στην βάση'
-      // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-      // log.error(logEntry)
-      res.status(500).json({message: 'Σφάλμα κατα την αποθήκευση αρχείων στην βάση'})
+      next(new logError('unknown', 'New', 'fail', 'announcements', err, 'insertNewAnnouncement',
+        'Σφάλμα κατα την δημιουργία ανακοίνωσης.'))
     })
 }
 
-function deleteAnnouncement (req, res) {
+function deleteAnnouncement (req, res, next) {
   apiFunctions.sanitizeObject(req.params)
   let announcementId = req.params.id
   database.Announcements.findOne({_id: announcementId}).exec(function (err, announcement) {
-    if (err) {
-      // let logEntry = logging(req.session.user.id, 'DELETE', 'fail', 'announcements', {
-      //   error: err,
-      //   track: 'deleteAnnouncement',
-      //   text: 'Σφάλμα κατα την ευρεση ανακοίνωσης με id: ' + announcementId
-      // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-      // log.error(logEntry)
-
-      res.status(500).json({message: 'Σφάλμα κατα την διαγραφή ανακοίνωσης'})
+    if (err || !announcement) {
+      next(new logError('unknown', 'DELETE', 'fail', 'announcements', err, 'deleteAnnouncement',
+        'Σφάλμα κατα την ευρεση ανακοίνωσης με id: ' + announcementId, 'Σφάλμα κατα την διαγραφή ανακοίνωσης'))
     } else {
-      if (announcement != null) {
-        //TODO check (announcement.publisher.id === req.session.user.id || req.session.user.scope === PERMISSIONS.admin)
-        if (true) {
-          announcement.remove(function (err, announcementDeleted) {
-            if (err) {
-              // let logEntry = logging(req.session.user.id, 'DELETE', 'fail', 'announcements', {
-              //   error: err,
-              //   track: 'deleteAnnouncement',
-              //   text: 'Σφάλμα κατα την διαγραφή ανακοίνωσης με id: ' + announcementId
-              // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-              // log.error(logEntry)
-              res.status(500).json({message: 'Σφάλμα κατα την διαγραφή ανακοίνωσης'})
-            } else {
-              // let logEntry = logging(req.session.user.id, 'DELETE', 'success', 'announcements', {
-              //   track: 'deleteAnnouncement',
-              //   text: 'H ανακοίνωση διαγράφηκε επιτυχώς με id: ' + announcementId
-              // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-              // log.info(logEntry)
-              clientWordpress.deletePost(announcement.wordpressId, function (error, data) {})
-              res.status(200).json({
-                message: 'H ανακοίνωση διαγράφηκε επιτυχώς',
-                announcementDeleted
-              })
-            }
-          })
-        } else {
-          // let logEntry = logging(req.session.user.id, 'DELETE', 'fail', 'announcements', {
-          //   track: 'deleteAnnouncement',
-          //   text: 'Μη εξουσιοδοτημένος χρήστης'
-          // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-          // log.error(logEntry)
-          res.status(401).json({message: 'Δεν έχεις δικάιωμα για αυτήν την ενέργεια!'})
-        }
+      //TODO check (announcement.publisher.id === req.session.user.id || req.session.user.scope === PERMISSIONS.admin)
+      if (true) {
+        announcement.remove(function (err, announcementDeleted) {
+          if (err) {
+            next(new logError('unknown', 'DELETE', 'fail', 'announcements', err, 'deleteAnnouncement',
+              'Σφάλμα κατα την διαγραφή ανακοίνωσης με id: ' + announcementId))
+          } else {
+            // let logEntry = logging(req.session.user.id, 'DELETE', 'success', 'announcements', {
+            //   track: 'deleteAnnouncement',
+            //   text: 'H ανακοίνωση διαγράφηκε επιτυχώς με id: ' + announcementId
+            // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
+            // log.info(logEntry)
+            clientWordpress.deletePost(announcement.wordpressId, function (error, data) {})
+            res.status(200).json({
+              message: 'H ανακοίνωση διαγράφηκε επιτυχώς',
+              announcementDeleted
+            })
+          }
+        })
       } else {
-
         // let logEntry = logging(req.session.user.id, 'DELETE', 'fail', 'announcements', {
-        //   error: err,
         //   track: 'deleteAnnouncement',
-        //   text: 'Μη εξοσουδιοτημένος χρήστης'
+        //   text: 'Μη εξουσιοδοτημένος χρήστης'
         // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
         // log.error(logEntry)
-        res.status(500).json({message: 'Σφάλμα κατα την διαγραφή ανακοίνωσης'})
-
+        res.status(401).json({message: 'Δεν έχεις δικάιωμα για αυτήν την ενέργεια!'})
       }
     }
   })
