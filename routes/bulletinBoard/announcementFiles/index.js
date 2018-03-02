@@ -7,10 +7,13 @@ const mongoose = require('mongoose')
 const fs = require('fs')
 const filesFunc = require('./functions')
 const fileType = require('file-type')
+const announcementsFunc = require('../announcements/functions')
+let logError = require('./../../logError')
 
 router.get('/:id', downloadFile)
 router.get('/:announcementId/downloadAll', downloadFiles)
 router.get('/:id/view', viewFile)
+router.delete('/:id', apiFunctions.validateInput('params', validSchemas.deleteFileFromAnnouncementSchema), deleteFile)
 
 function downloadFile (req, res) {
   apiFunctions.sanitizeObject(req.params)
@@ -89,7 +92,6 @@ function downloadFiles (req, res) {
 }
 
 function viewFile (req, res) {
-  console.log('h')
   apiFunctions.sanitizeObject(req.params)
   if (mongoose.Types.ObjectId.isValid(req.params.id)) {
     let fileId = req.params.id
@@ -134,6 +136,57 @@ function viewFile (req, res) {
   } else {
     res.status(500).json({message: 'Συνέβη κάποιο σφάλμα'})
   }
+}
+
+function deleteFile (req, res, next) {
+  apiFunctions.sanitizeObject(req.params)
+  let fileId = req.params.id
+
+  database.Announcements.findOne({'attachments': fileId}, function (err, announcement) {
+    if (err || !announcement) {
+
+      next(new logError('unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
+        'Σφάλμα κατα την εύρεση αρχείου με id: ' + fileId))
+      res.status(500).json({message: 'Σφάλμα κατα την λήψη ανακοινώσεων'})
+    } else {
+      //TODO Check if publisher is the same as the user or if its admin
+      //   if (announcement.publisher.id == req.session.user.id || req.session.user.scope == PERMISSIONS.admin) {
+      announcement.attachments.pull(fileId)
+      announcement.save(function (err) {
+        if (err) {
+          next(new logError('unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
+            'Σφάλμα κατα την διαγραφή αρχείου με id: ' + fileId + ' απο την ανακοίνωση'))
+        } else {
+          database.File.findOneAndRemove({_id: fileId}, function (err) {
+            if (err) {
+              next(new logError('unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
+                'Σφάλμα κατα την διαγραφή αρχείου με id: ' + fileId + ' απο την την βάση'))
+              // res.status(500).json({message: 'Σφάλμα διαγραφής του αρχείου στην βάση'})
+            } else {
+              // let logEntry = logging(req.session.user.id, 'DELETE', 'success', 'announcements', {
+              //   track: 'deleteFileFromAnnouncement',
+              //   text: 'Το αρχείο διαγράφηκε επιτυχώς με id: ' + fileId + ' απο την ανακοίνωση με id: ' + announcementId
+              // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
+              // log.info(logEntry)
+              announcementsFunc.postToTeithe(announcement, 'edit')
+              res.status(200).json({
+                message: 'Το αρχείο διαγράφηκε επιτυχώς',
+              })
+            }
+          })
+
+        }
+      })
+      // } else {
+      //   let logEntry = logging(req.session.user.id, 'EDIT', 'fail', 'announcements', {
+      //     track: 'deleteFileFromAnnouncement',
+      //     text: 'Μη εξουσιοδοτημένος χρήστης'
+      //   }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
+      //   log.error(logEntry)
+      //   res.status(401).json({message: 'Δεν έχεις δικάιωμα για αυτήν την ενέργεια!'})
+      // }
+    }
+  })
 }
 
 module.exports = {

@@ -22,8 +22,7 @@ const deleteAnnouncementSchema = Joi.object().keys({
 })
 
 const deleteFileFromAnnouncementSchema = Joi.object().keys({
-  id: Joi.required(),
-  fileId: Joi.required()
+  id: Joi.required()
 })
 
 const newAnnouncementsQuerySchema = Joi.object().keys({
