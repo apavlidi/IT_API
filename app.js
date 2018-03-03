@@ -11,6 +11,7 @@ const announcements = require('./routes/bulletinBoard/announcements/index').rout
 const announcementFiles = require('./routes/bulletinBoard/announcementFiles/index').router
 const categories = require('./routes/bulletinBoard/categories/index').router
 const apiFunctions = require('./routes/apiFunctions')
+const log = require('./configs/logs').general
 
 const index = require('./routes/index')
 const fileUpload = require('express-fileupload')
@@ -68,11 +69,13 @@ app.use(function (req, res, next) {
 // error handler
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development
-  res.locals.message = err.message
-  res.locals.error = req.app.get('env') === 'development' ? err : {}
-
+  //res.locals.message = err.message
+  //res.locals.error = req.app.get('env') === 'development' ? err : {}
+  console.log(err)
   if (err.constructor.name === 'LogError') {
     err.headers = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress
+    delete err.type
+    log.error(err)
   }
 
   // render the error page

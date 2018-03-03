@@ -9,7 +9,8 @@ const wordpress = require('wordpress')
 const validSchemas = require('../joi')
 const WORDPRESS_CREDENTIALS = require('./../../../configs/config').WORDPRESS_CREDENTIALS
 const clientWordpress = wordpress.createClient(WORDPRESS_CREDENTIALS)
-let logError = require('./../../logError')
+let LogEntry = require('../../logClass')
+const log = require('./../../../configs/logs').general
 
 router.get('/', getAnnouncements)
 router.get('/:id', getAnnouncement)
@@ -110,6 +111,7 @@ function getAnnouncementsPublic (req, res, next) {
 
 function insertNewAnnouncement (req, res, next) {
   let files
+  let filesInput
   let announcementEntry = new database.Announcements()
   let announcementId = mongoose.Types.ObjectId()
   let publisher = {nameEn: user.displayName, id: user.id, nameEl: user.displayNameEl}
@@ -126,7 +128,8 @@ function insertNewAnnouncement (req, res, next) {
     validatePublisherPromise = announcementsFunc.validatePublisher(req.body.publisher.publisherId) // if he sent a publisher we have to check it with a request to the ldap api
   }
 
-  announcementsFunc.gatherFilesInput(req.files['uploads[]']).then(filesReturned => {
+  req.files != null ? filesInput = req.files['uploads[]'] : null
+  announcementsFunc.gatherFilesInput(filesInput).then(filesReturned => {
     files = filesReturned
     return announcementsFunc.checkIfEntryExists(req.body.about, database.AnnouncementsCategories)
   }).then(() => {
@@ -154,11 +157,10 @@ function insertNewAnnouncement (req, res, next) {
           req.app.io.emit('new announcement', newNotification)
         })
       })
-      // let logEntry = logging(req.session.user.id, 'NEW', 'success', 'announcements', {
-      //   track: 'insertNewAnnouncement',
-      //   text: 'Η ανακοίνωση προστέθηκε επιτυχώς με id: ' + newAnnouncement._id
-      // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-      // log.info(logEntry)
+
+      apiFunctions.logging(new LogEntry('info', 'unknown', 'NEW', 'success', 'announcements', 'insertNewAnnouncement',
+        'Η ανακοίνωση προστέθηκε επιτυχώς με id: ' + newAnnouncement._id,
+        req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
 
       res.status(201).json({
         message: 'Η ανακοίνωση προστέθηκε επιτυχώς',
@@ -167,8 +169,8 @@ function insertNewAnnouncement (req, res, next) {
     })
   })
     .catch(function (err) {
-      next(new logError('unknown', 'New', 'fail', 'announcements', err, 'insertNewAnnouncement',
-        'Σφάλμα κατα την δημιουργία ανακοίνωσης.'))
+      next(new LogEntry('error', 'unknown', 'New', 'fail', 'announcements', err, 'insertNewAnnouncement',
+        'Σφάλμα κατα την δημιουργία ανακοίνωσης.', req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
     })
 }
 
@@ -177,21 +179,18 @@ function deleteAnnouncement (req, res, next) {
   let announcementId = req.params.id
   database.Announcements.findOne({_id: announcementId}).exec(function (err, announcement) {
     if (err || !announcement) {
-      next(new logError('unknown', 'DELETE', 'fail', 'announcements', err, 'deleteAnnouncement',
+      next(new LogEntry('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteAnnouncement',
         'Σφάλμα κατα την ευρεση ανακοίνωσης με id: ' + announcementId, 'Σφάλμα κατα την διαγραφή ανακοίνωσης'))
     } else {
       //TODO check (announcement.publisher.id === req.session.user.id || req.session.user.scope === PERMISSIONS.admin)
       if (true) {
         announcement.remove(function (err, announcementDeleted) {
           if (err) {
-            next(new logError('unknown', 'DELETE', 'fail', 'announcements', err, 'deleteAnnouncement',
+            next(new LogEntry('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteAnnouncement',
               'Σφάλμα κατα την διαγραφή ανακοίνωσης με id: ' + announcementId))
           } else {
-            // let logEntry = logging(req.session.user.id, 'DELETE', 'success', 'announcements', {
-            //   track: 'deleteAnnouncement',
-            //   text: 'H ανακοίνωση διαγράφηκε επιτυχώς με id: ' + announcementId
-            // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-            // log.info(logEntry)
+            next(new LogEntry('info', 'unknown', 'DELETE', 'success', 'announcements', err, 'deleteAnnouncement',
+              'H ανακοίνωση διαγράφηκε επιτυχώς με id: ' + announcementId, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
             clientWordpress.deletePost(announcement.wordpressId, function (error, data) {})
             res.status(200).json({
               message: 'H ανακοίνωση διαγράφηκε επιτυχώς',

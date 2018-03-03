@@ -5,7 +5,7 @@ const apiFunctions = require('../../apiFunctions')
 const validSchemas = require('../joi')
 const categoriesFunc = require('./functions')
 const translate = require('./../../translate').elotTranslate
-const log = require('./../../apiFunctions').logging()
+let LogEntry = require('../../logClass')
 
 router.get('/', getAnnouncementsCategories)
 router.get('/public', getAnnouncementsCategoriesPublic)
@@ -17,7 +17,7 @@ router.put('/:id', apiFunctions.validateInput('body', validSchemas.editCategoryS
 router.delete('/:id', apiFunctions.validateInput('params', validSchemas.deleteCategorySchema), deleteCategory)
 
 //TODO Check if field 'registered' has to be returned
-function getAnnouncementsCategories (req, res) {
+function getAnnouncementsCategories (req, res, next) {
   apiFunctions.formatQuery(req.query).then(function (formatedQuery) {
     if (!formatedQuery.fields) {
       formatedQuery.fields = '-registered'
@@ -34,22 +34,22 @@ function getAnnouncementsCategories (req, res) {
   })
 }
 
-function getAnnouncementsCategoriesPublic (req, res) {
+function getAnnouncementsCategoriesPublic (req, res, next) {
   apiFunctions.sanitizeObject(req.query)
   apiFunctions.formatQuery(req.query).then(function (formatedQuery) {
     database.AnnouncementsCategories.find({public: true}).select(formatedQuery.fields).sort('_id').select('-registered').exec(function (err, categories) {
       if (err) {
-        res.status(500).json({message: 'Συνέβη σφάλμα κατα την λήψη κατηγοριών'})
+        next(new Error('Συνέβη σφάλμα κατα την λήψη κατηγοριών'))
       } else {
         res.status(200).json(categories)
       }
     })
   }).catch(function (err) {
-    res.status(500).json({message: 'error'})
+    next(new Error('Συνέβη σφάλμα κατα την λήψη κατηγοριών'))
   })
 }
 
-function registerCategories (req, res) {
+function registerCategories (req, res, next) {
   apiFunctions.sanitizeObject(req.body)
   let arrayRegistered = JSON.parse(req.body.categoriesRegistered)
   let arrayNotRegistered = JSON.parse(req.body.categoriesNotRegistered)
@@ -58,20 +58,20 @@ function registerCategories (req, res) {
       res.status(200).json({
         message: 'Η εγγραφή πραγματοποιήθηκε επιτυχώς',
       }).catch(function (err) {
-        res.status(500).json({message: 'Σφάλμα κατα την ακύρωση εγγραφής'})
+        next(new Error('Σφάλμα κατα την ακύρωση εγγραφής'))
       })
     })
   }).catch(function (err) {
-    res.status(500).json({message: 'Σφάλμα κατα την εγγραφή'})
+    next(new Error('Σφάλμα κατα την εγγραφή'))
   })
 }
 
 //TODO Change req.session.user.id
-function getIsRegisteredCategories (req, res) {
+function getIsRegisteredCategories (req, res, next) {
   apiFunctions.sanitizeObject(req.query)
   database.AnnouncementsCategories.find({}).select('name id registered').sort('_id').exec(function (err, categories) {
     if (err) {
-      res.status(500).json({message: 'Συνέβη σφάλμα κατα την λήψη κατηγοριών'})
+      next(new Error('Συνέβη σφάλμα κατα την λήψη κατηγοριών'))
     } else {
       categories.forEach(category => {
         category.registered.includes(req.session.user.id) ? category.registered = true : category.registered = false
@@ -81,7 +81,7 @@ function getIsRegisteredCategories (req, res) {
   })
 }
 
-function newCategory (req, res) {
+function newCategory (req, res, next) {
   apiFunctions.sanitizeObject(req.body)
   database.AnnouncementsCategories.findOne({name: req.body.categoryTitle}, function (err, categoryExists) {
     if (!categoryExists) {
@@ -105,31 +105,23 @@ function newCategory (req, res) {
       category.value = translatedValue.toLowerCase().replace(/\s/g, '')
       category.save((err) => {
         if (err) {
-          logging('error', req.session.user.id, 'NEW', 'fail', 'announcements', {
-            error: err,
-            track: 'newCategory',
-            text: 'Συνέβη σφάλμα κατα την προσθήκη της κατηγορίας'
-          }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-          res.status(500).json({message: 'Συνέβη σφάλμα κατα την προσθήκη της κατηγορίας'})
+          next(new LogEntry('error', 'unknown', 'New', 'fail', 'announcements', err, 'newCategory',
+            'Συνέβη σφάλμα κατα την προσθήκη της κατηγορίας', req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
         } else {
-          logging(req.session.user.id, 'NEW', 'success', 'announcements', {
-            track: 'newCategory',
-            text: 'Η κατηγοριά προστέθηκε επιτυχώς με όνομα ' + category.name
-          }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
+          next(new LogEntry('info', 'unknown', 'New', 'success', 'announcements', err, 'newCategory',
+            'Η κατηγοριά προστέθηκε επιτυχώς με όνομα ' + category.name, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
+
           res.status(201).json({message: 'Η κατηγορία προστέθηκε επιτυχώς'})
         }
       })
     } else {
-      logging(req.session.user.id, 'NEW', 'fail', 'announcements', {
-        track: 'newCategory',
-        text: 'Ο τίτλος υπάρχει ήδη :' + req.body.categoryTitle
-      }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-      res.status(500).json({message: 'Ο τίτλος υπάρχει ήδη'})
+      next(new LogEntry('error', 'unknown', 'New', 'fail', 'announcements', err, 'newCategory',
+        'Ο τίτλος υπάρχει ήδη :' + req.body.categoryTitle, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
     }
   })
 }
 
-function editCategory (req, res) {
+function editCategory (req, res, next) {
   apiFunctions.sanitizeObject(req.params)
   apiFunctions.sanitizeObject(req.body)
   let editedCategory = req.body
@@ -151,19 +143,11 @@ function editCategory (req, res) {
     }
   }, function (err, categoryUpdated) {
     if (err) {
-      // let logEntry = logging(req.session.user.id, 'EDIT', 'fail', 'announcements', {
-      //   error: err,
-      //   track: 'editCategory',
-      //   text: 'Σφάλαμα κατα την ενημέρωση της κατηγορίας με id: ' + category
-      // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-      // log.error(logEntry)
-      res.status(500).json({message: 'Σφάλμα κατα την ενημέρωση της κατηγορίας'})
+      next(new LogEntry('error', 'unknown', 'EDIT', 'fail', 'announcements', err, 'editCategory',
+        'Σφάλμα κατα την ενημέρωση της κατηγορίας με id: ' + categoryId, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
     } else {
-      // let logEntry = logging(req.session.user.id, 'EDIT', 'success', 'announcements', {
-      //   track: 'editCategory',
-      //   text: 'Η κατηγορία ενημερώθηκε επιτυχώς με id: ' + category
-      // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-      // log.info(logEntry)
+      next(new LogEntry('info', 'unknown', 'EDIT', 'fail', 'announcements', err, 'editCategory',
+        'Η κατηγορία ενημερώθηκε επιτυχώς με id: ' + categoryId, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
       res.status(201).json({
         message: 'Η κατηγορία ενημερώθηκε επιτυχώς',
         categoryUpdated
@@ -172,34 +156,21 @@ function editCategory (req, res) {
   })
 }
 
-function deleteCategory (req, res) {
+function deleteCategory (req, res, next) {
   apiFunctions.sanitizeObject(req.params)
   let category = req.params.id
   database.AnnouncementsCategories.findOne({_id: category}, function (err, category) {
     if (!category || err) {
-      // let logEntry = logging(req.session.user.id, 'DELETE', 'fail', 'announcements', {
-      //   error: err,
-      //   track: 'deleteCategory',
-      //   text: 'Δεν βρέθηκε η κατηγορία ανακοινώσεων για να διαγραφεί με id: ' + category
-      // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-      // log.error(logEntry)
-      res.status(500).json({message: 'Δεν βρέθηκε η κατηγορία ανακοινώσεων για να διαγραφεί'})
+      next(new LogEntry('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteCategory',
+        'Δεν βρέθηκε η κατηγορία ανακοινώσεων για να διαγραφεί με id: ' + category, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
     } else {
       category.remove(function (err, categoryDeleted) {
         if (err) {
-          // let logEntry = logging(req.session.user.id, 'DELETE', 'fail', 'announcements', {
-          //   error: err,
-          //   track: 'deleteCategory',
-          //   text: 'Συνέβει κάποιο σφάλμα κατα την διαγραφή της κατηγορίας με id: ' + category._id
-          // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-          // log.error(logEntry)
-          res.status(500).json({message: 'Συνέβει κάποιο σφάλμα κατα την διαγραφή της κατηγορίας'})
+          next(new LogEntry('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteCategory',
+            'Συνέβει κάποιο σφάλμα κατα την διαγραφή της κατηγορίας με id: ' + category._id, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
         } else {
-          // let logEntry = logging(req.session.user.id, 'DELETE', 'success', 'announcements', {
-          //   track: 'deleteCategory',
-          //   text: 'Η κατηγορία διαγράφτηκε επιτυχώς με id: ' + category._id
-          // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-          // log.info(logEntry)
+          next(new LogEntry('info', 'unknown', 'DELETE', 'success', 'announcements', err, 'deleteCategory',
+            'Η κατηγορία διαγράφτηκε επιτυχώς με id: ' + category._id, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
           res.status(200).json({
             message: 'Η κατηγορία διαγράφτηκε επιτυχώς',
             categoryDeleted
