@@ -8,14 +8,14 @@ const fs = require('fs')
 const filesFunc = require('./functions')
 const fileType = require('file-type')
 const announcementsFunc = require('../announcements/functions')
-let logError = require('./../../logError')
+let logEntry = require('../../logClass')
 
 router.get('/:id', downloadFile)
 router.get('/:announcementId/downloadAll', downloadFiles)
 router.get('/:id/view', viewFile)
 router.delete('/:id', apiFunctions.validateInput('params', validSchemas.deleteFileFromAnnouncementSchema), deleteFile)
 
-function downloadFile (req, res) {
+function downloadFile (req, res, next) {
   apiFunctions.sanitizeObject(req.params)
   if (mongoose.Types.ObjectId.isValid(req.params.id)) {
     let fileId = req.params.id
@@ -47,11 +47,11 @@ function downloadFile (req, res) {
       }
     })
   } else {
-    res.status(500).json({message: 'Συνέβη κάποιο σφάλμα'})
+    next(new Error('Συνέβη κάποιο σφάλμα'))
   }
 }
 
-function downloadFiles (req, res) {
+function downloadFiles (req, res, next) {
   apiFunctions.sanitizeObject(req.params)
   if (mongoose.Types.ObjectId.isValid(req.params.announcementId)) {
     let announcementId = req.params.announcementId
@@ -64,7 +64,6 @@ function downloadFiles (req, res) {
             .generateNodeStream({type: 'nodebuffer', streamFiles: true})
             .pipe(fs.createWriteStream('files.zip'))
             .on('finish', function () {
-
               finalZip.generateAsync({type: 'uint8array'}) //auto xriazetai giati an dn iparxi to file vgainei damaged/corrupted
                 .then(function (content) {
                   saveAs(content, 'files.zip')
@@ -87,11 +86,11 @@ function downloadFiles (req, res) {
     })
 
   } else {
-    res.status(500).json({message: 'Συνέβη κάποιο σφάλμα'})
+    next(new Error('Συνέβη κάποιο σφάλμα'))
   }
 }
 
-function viewFile (req, res) {
+function viewFile (req, res, next) {
   apiFunctions.sanitizeObject(req.params)
   if (mongoose.Types.ObjectId.isValid(req.params.id)) {
     let fileId = req.params.id
@@ -134,7 +133,7 @@ function viewFile (req, res) {
       }
     })
   } else {
-    res.status(500).json({message: 'Συνέβη κάποιο σφάλμα'})
+    next(new Error('Συνέβη κάποιο σφάλμα'))
   }
 }
 
@@ -144,22 +143,20 @@ function deleteFile (req, res, next) {
 
   database.Announcements.findOne({'attachments': fileId}, function (err, announcement) {
     if (err || !announcement) {
-
-      next(new logError('unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
+      next(new logEntry('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
         'Σφάλμα κατα την εύρεση αρχείου με id: ' + fileId))
-      res.status(500).json({message: 'Σφάλμα κατα την λήψη ανακοινώσεων'})
     } else {
       //TODO Check if publisher is the same as the user or if its admin
       //   if (announcement.publisher.id == req.session.user.id || req.session.user.scope == PERMISSIONS.admin) {
       announcement.attachments.pull(fileId)
       announcement.save(function (err) {
         if (err) {
-          next(new logError('unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
+          next(new logEntry('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
             'Σφάλμα κατα την διαγραφή αρχείου με id: ' + fileId + ' απο την ανακοίνωση'))
         } else {
           database.File.findOneAndRemove({_id: fileId}, function (err) {
             if (err) {
-              next(new logError('unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
+              next(new logEntry('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
                 'Σφάλμα κατα την διαγραφή αρχείου με id: ' + fileId + ' απο την την βάση'))
               // res.status(500).json({message: 'Σφάλμα διαγραφής του αρχείου στην βάση'})
             } else {
@@ -177,14 +174,6 @@ function deleteFile (req, res, next) {
 
         }
       })
-      // } else {
-      //   let logEntry = logging(req.session.user.id, 'EDIT', 'fail', 'announcements', {
-      //     track: 'deleteFileFromAnnouncement',
-      //     text: 'Μη εξουσιοδοτημένος χρήστης'
-      //   }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-      //   log.error(logEntry)
-      //   res.status(401).json({message: 'Δεν έχεις δικάιωμα για αυτήν την ενέργεια!'})
-      // }
     }
   })
 }
