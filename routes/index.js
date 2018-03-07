@@ -1,9 +1,14 @@
-var express = require('express');
-var router = express.Router();
+var express = require('express')
+var router = express.Router()
+
+const auth = require('../configs/auth')
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+router.get('/', auth.checkAuth(false), function (req, res, next) {
+  next({
+    message: 'Unsupported get request.',
+    status: 400
+  })
+})
 
-module.exports = router;
+module.exports = router
