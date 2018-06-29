@@ -113,10 +113,9 @@ function checkToken (token, scopeRequired, userScopeRequired) {
  * @param needAuth : True/False = Needs a access token or not
  * @param scopeRequired : scope_name = access token scope required to access this function
  * @param userScopeRequired : 1-9 = eduPersonScopedAffiliation value required
- * @param goNextOnFail : True/False = continue even if the scope and eduPersonScopedAffiliation required don't meet
  * @returns req.user
  */
-function checkAuth (needAuth, scopeRequired, userScopeRequired, goNextOnFail) {
+function checkAuth (needAuth, scopeRequired, userScopeRequired) {
   return function (req, res, next) {
     if (!needAuth) {
       next()
@@ -128,9 +127,6 @@ function checkAuth (needAuth, scopeRequired, userScopeRequired, goNextOnFail) {
           req.user = user
           next()
         }, function (err) {
-          if (goNextOnFail)
-            next()
-          else
             next(err)
         })
 
