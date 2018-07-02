@@ -110,27 +110,21 @@ function checkToken (token, scopeRequired, userScopeRequired) {
 
 /**
  *
- * @param needAuth : True/False = Needs a access token or not
  * @param scopeRequired : scope_name = access token scope required to access this function
  * @param userScopeRequired : 1-9 = eduPersonScopedAffiliation value required
  * @returns req.user
  */
-function checkAuth (needAuth, scopeRequired, userScopeRequired) {
+function checkAuth (scopeRequired, userScopeRequired) {
   return function (req, res, next) {
-    if (!needAuth) {
-      next()
-    }
-    else {
-      let token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token']
-      checkToken(token, scopeRequired, userScopeRequired)
-        .then(function (user) {
-          req.user = user
-          next()
-        }, function (err) {
-            next(err)
-        })
+    let token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token']
+    checkToken(token, scopeRequired, userScopeRequired)
+      .then(function (user) {
+        req.user = user
+        next()
+      }, function (err) {
+        next(err)
+      })
 
-    }
   }
 }
 
