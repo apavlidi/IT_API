@@ -35,6 +35,19 @@ const WORDPRESS_CREDENTIALS = {
   password: 'F@tixGZLcsgPJFB8eVzu@9C0',
   rejectUnauthorized: false
 }
+
+const PERMISSIONS = {
+  student: 1,
+  professor: 2,
+  secretariat: 3,
+  professorWithMinAccess: 4,
+  professorWithMaxAccess: 5,
+  futureUseSix: 6,
+  futureUseSEven: 7,
+  futureUseEight: 8,
+  admin: 9
+};
+
 /*
 const nodemailer = require('nodemailer')
 const MAIL = nodemailer.createTransport({
@@ -50,5 +63,6 @@ module.exports = {
   WEB_BASE_URL,
   WORDPRESS_CREDENTIALS,
   //MAIL,
-  LDAP
+  LDAP,
+  PERMISSIONS
 }
