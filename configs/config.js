@@ -36,6 +36,19 @@ const WORDPRESS_CREDENTIALS = {
   rejectUnauthorized: false
 }
 
+const PERMISSIONS = {
+  student: 1,
+  professor: 2,
+  secretariat: 3,
+  professorWithMinAccess: 4,
+  professorWithMaxAccess: 5,
+  futureUseSix: 6,
+  futureUseSEven: 7,
+  futureUseEight: 8,
+  admin: 9
+};
+
+/*
 const nodemailer = require('nodemailer')
 const MAIL = nodemailer.createTransport({
   host: 'smtp.it.teithe.gr',
@@ -44,11 +57,12 @@ const MAIL = nodemailer.createTransport({
     rejectUnauthorized: false
   }
 })
-
+*/
 module.exports = {
   MONGO,
   WEB_BASE_URL,
   WORDPRESS_CREDENTIALS,
-  MAIL,
-  LDAP
+  //MAIL,
+  LDAP,
+  PERMISSIONS
 }
