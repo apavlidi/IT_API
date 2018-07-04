@@ -28,6 +28,19 @@ app.use(bodyParser.urlencoded({extended: false}))
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(fileUpload())
 
+app.all('/*', function (req, res, next) {
+  // CORS headers
+  res.header('Access-Control-Allow-Origin', '*') // restrict it to the required domain
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,PATCH,DELETE,OPTIONS')
+  // Set custom headers for CORS
+  res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token')
+  if (req.method == 'OPTIONS') {
+    res.status(200).end()
+  } else {
+    next()
+  }
+})
+
 app.use('/', index)
 app.use('/announcements', announcements)
 app.use('/categories', categories)
@@ -59,12 +72,14 @@ app.use(session({
   })
 }))
 
+
+
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  let err = new Error('Not Found')
-  err.status = 404
-  next(err)
-})
+// app.use(function (req, res, next) {
+//   let err = new Error('Not Found')
+//   err.status = 404
+//   next(err)
+// })
 
 // error handler
 app.use(function (err, req, res, next) {
@@ -79,9 +94,14 @@ app.use(function (err, req, res, next) {
   }
 
   // render the error page
-  res.status(err.status || 500)
-  console.log(err)
-  res.render('error')
+  //res.render('error')
+  res.json({
+    error: {
+      type: err.type,
+      code: err.code,
+      message: err.message,
+    }
+  })
 })
 
 module.exports = app

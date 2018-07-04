@@ -22,7 +22,7 @@ function getAnnouncementsCategories (req, res, next) {
     if (!formatedQuery.fields) {
       formatedQuery.fields = '-registered'
     }
-    database.AnnouncementsCategories.find(formatedQuery.filters).select(formatedQuery.fields).sort('_id').exec(function (err, categories) {
+    database.AnnouncementsCategories.find(formatedQuery.filters).select(formatedQuery.fields).sort(formatedQuery.sort).exec(function (err, categories) {
       if (err) {
         res.status(500).json({message: 'Συνέβη σφάλμα κατα την λήψη κατηγοριών'})
       } else {
@@ -37,7 +37,11 @@ function getAnnouncementsCategories (req, res, next) {
 function getAnnouncementsCategoriesPublic (req, res, next) {
   apiFunctions.sanitizeObject(req.query)
   apiFunctions.formatQuery(req.query).then(function (formatedQuery) {
-    database.AnnouncementsCategories.find({public: true}).select(formatedQuery.fields).sort('_id').select('-registered').exec(function (err, categories) {
+    if (!formatedQuery.fields) {
+      //TODO CHECK ABOUT THIS.SECURITY ISSUE
+      formatedQuery.fields = '-registered'
+    }
+    database.AnnouncementsCategories.find({public: true}).select(formatedQuery.fields).sort(formatedQuery.sort).exec(function (err, categories) {
       if (err) {
         next(new Error('Συνέβη σφάλμα κατα την λήψη κατηγοριών'))
       } else {

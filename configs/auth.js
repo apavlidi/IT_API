@@ -117,6 +117,8 @@ function checkToken (token, scopeRequired, userScopeRequired) {
 function checkAuth (scopeRequired, userScopeRequired) {
   return function (req, res, next) {
     let token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token']
+    delete req.body.access_token
+    delete req.query.access_token
     checkToken(token, scopeRequired, userScopeRequired)
       .then(function (user) {
         req.user = user

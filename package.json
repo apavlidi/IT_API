@@ -37,7 +37,8 @@
     "socket.io": "^2.0.4",
     "web-push": "^3.2.5",
     "wordpress": "^1.4.1",
-    "xss": "^0.3.7"
+    "xss": "^0.3.7",
+    "jsonwebtoken": "^8.2.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
