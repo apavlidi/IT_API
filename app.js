@@ -3,6 +3,7 @@ const logger = require('morgan')
 const bodyParser = require('body-parser')
 
 const index = require('./routes/index')
+const apiNotifications = require('./routes/notifications');
 
 const app = express()
 
@@ -26,6 +27,8 @@ app.all('/*', function (req, res, next) {
 })
 
 app.use('/', index)
+app.use('/notifications', apiNotifications);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
