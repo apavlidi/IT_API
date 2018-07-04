@@ -146,10 +146,10 @@ function createFileEntries (files, announcementId) {
     })
 }
 
-function checkIfEntryExists (categoryId, collection) {
+function checkIfEntryExists (entryId, collection) {
   return new Promise(
     function (resolve, reject) {
-      collection.findOne({_id: categoryId}, function (err, doc) {
+      collection.findOne({_id: entryId}, function (err, doc) {
         if (err || !doc) {
           reject(err)
         } else {

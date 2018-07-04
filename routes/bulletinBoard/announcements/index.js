@@ -5,6 +5,8 @@ const apiFunctions = require('../../apiFunctions')
 const announcementsFunc = require('./functions')
 const mongoose = require('mongoose')
 const wordpress = require('wordpress')
+const auth = require('../../../configs/auth')
+const config = require('../../../configs/config')
 
 const validSchemas = require('../joi')
 const WORDPRESS_CREDENTIALS = require('./../../../configs/config').WORDPRESS_CREDENTIALS
@@ -12,20 +14,13 @@ const clientWordpress = wordpress.createClient(WORDPRESS_CREDENTIALS)
 let LogEntry = require('../../logClass')
 const log = require('./../../../configs/logs').general
 
-router.get('/', getAnnouncements)
+router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), getAnnouncements)
+router.get('/public', getAnnouncementsPublic)
 router.get('/:id', getAnnouncement)
 router.get('/feed/:type/:categoryIds?', apiFunctions.validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
-router.get('/public', getAnnouncementsPublic)
-router.post('/', apiFunctions.validateInput('body', validSchemas.newAnnouncementsQuerySchema), insertNewAnnouncement)
-router.put('/:id', apiFunctions.validateInput('body', validSchemas.editAnnouncementsQuerySchema), editAnnouncement)
-router.delete('/:id', apiFunctions.validateInput('params', validSchemas.deleteAnnouncementSchema), deleteAnnouncement)
-
-const login = true
-let user = {
-  displayNameEn: 'apavlidi',
-  displayNameEl: 'apavlidiEl',
-  id: '12345'
-}
+router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.newAnnouncementsQuerySchema), insertNewAnnouncement)
+router.put('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.editAnnouncementsQuerySchema), editAnnouncement)
+router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('params', validSchemas.deleteAnnouncementSchema), deleteAnnouncement)
 
 function getAnnouncements (req, res, next) {
   apiFunctions.formatQuery(req.query).then(function (formatedQuery) {
@@ -34,6 +29,8 @@ function getAnnouncements (req, res, next) {
       if (err) {
         next(new Error('Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων.'))
       } else {
+        console.log('bike')
+        console.log(announcements)
         res.status(200).json(announcements)
       }
     })
@@ -96,6 +93,7 @@ function getAnnouncementsFeed (req, res, next) {
 function getAnnouncementsPublic (req, res, next) {
   database.AnnouncementsCategories.find({public: true}).select('_id').exec(function (err, publicCategories) {
     if (err) {
+      console.log(err)
       next(new Error('Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων'))
     } else {
       database.Announcements.find({_about: {$in: publicCategories}}).populate('_about', 'name').populate('attachments', 'name').exec(function (err, announcements) {
@@ -114,7 +112,8 @@ function insertNewAnnouncement (req, res, next) {
   let filesInput
   let announcementEntry = new database.Announcements()
   let announcementId = mongoose.Types.ObjectId()
-  let publisher = {nameEn: user.displayName, id: user.id, nameEl: user.displayNameEl}
+  console.log(req.user)
+  let publisher = {nameEn: req.user.displayName, id: req.user.id, nameEl: req.user.displayNameEl}
   announcementEntry._id = announcementId
   announcementEntry.title = req.body.title
   announcementEntry.text = req.body.text
@@ -124,7 +123,7 @@ function insertNewAnnouncement (req, res, next) {
   announcementEntry.publisher.id = publisher.id
 
   let validatePublisherPromise = Promise.resolve(false) // initialize a promise as false
-  if (req.body.publisher) { // TODO && req.session.user.scope >= PERMISSIONS.futureUseSix
+  if (req.body.publisher && req.user.scope >= config.PERMISSIONS.futureUseSix) { // TODO && req.session.user.scope >= PERMISSIONS.futureUseSix
     validatePublisherPromise = announcementsFunc.validatePublisher(req.body.publisher.publisherId) // if he sent a publisher we have to check it with a request to the ldap api
   }
 
@@ -183,7 +182,7 @@ function deleteAnnouncement (req, res, next) {
         'Σφάλμα κατα την ευρεση ανακοίνωσης με id: ' + announcementId, 'Σφάλμα κατα την διαγραφή ανακοίνωσης'))
     } else {
       //TODO check (announcement.publisher.id === req.session.user.id || req.session.user.scope === PERMISSIONS.admin)
-      if (true) {
+      if (announcement.publisher.id === req.user.id || req.user.eduPersonScopedAffiliation === config.PERMISSIONS.admin) {
         announcement.remove(function (err, announcementDeleted) {
           if (err) {
             next(new LogEntry('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteAnnouncement',
@@ -210,7 +209,7 @@ function deleteAnnouncement (req, res, next) {
   })
 }
 
-function editAnnouncement (req, res) {
+function editAnnouncement (req, res, next) {
   apiFunctions.sanitizeObject(req.body)
   apiFunctions.sanitizeObject(req.params)
   let files
@@ -218,6 +217,7 @@ function editAnnouncement (req, res) {
   let announcementToBeEdited
   let updatedAnnouncement = {}
   let requestedFiles
+
   //TODO Check id of req.files from from-end
   (req.files && req.files['uploads[]2']) ? requestedFiles = req.files['uploads[]2'] : requestedFiles = null
   announcementsFunc.gatherFilesInput(requestedFiles).then(filesReturned => {
@@ -225,7 +225,11 @@ function editAnnouncement (req, res) {
     return announcementsFunc.checkIfEntryExists(req.params.id, database.Announcements)
   }).then(announcement => {
     announcementToBeEdited = announcement
-    return announcementsFunc.createFileEntries(files, announcementToBeEdited._id)
+    if (!(announcement.publisher.id === req.user.id || req.user.eduPersonScopedAffiliation === config.PERMISSIONS.admin)) {
+      throw new LogEntry('error', 'unknown', 'EDIT', 'fail', 'announcements', 'not authorized', 'editAnnouncement',
+        'Δεν εχετε δικαίωμα επεξεργασίας: ' + announcementToBeEdited._id, 'Σφάλμα επεξεργασίας')
+    }
+    announcementsFunc.createFileEntries(files, announcementToBeEdited._id)
   }).then(fileIds => {
     if (files.length > 0) {
       fileIds.forEach(fileId => {
@@ -249,19 +253,19 @@ function editAnnouncement (req, res) {
     ).exec(function (err) {
       database.AnnouncementsCategories.findOne({_id: announcementToBeEdited._about}, function (err, categoryOld) {
         if (category.public && categoryOld.public) {
-          announcementsFunc.postToTeithe(updatedAnnouncement, 'edit')
+          //       announcementsFunc.postToTeithe(updatedAnnouncement, 'edit')
         } else if (category.public) {
-          announcementsFunc.postToTeithe(updatedAnnouncement, 'create')
+          //    announcementsFunc.postToTeithe(updatedAnnouncement, 'create')
         } else if (!category.public && categoryOld.public) {
-          clientWordpress.deletePost(announcementToBeEdited.wordpressId, function (error, data) {
-          })
+          //      clientWordpress.deletePost(announcementToBeEdited.wordpressId, function (error, data) {
+          //      })
         }
       })
       res.status(201).json({
         message: 'Η ανακοίνωση αποθηκεύτηκε επιτυχώς'
       })
     })
-  })
+  }).catch(next)
 }
 
 module.exports = {
