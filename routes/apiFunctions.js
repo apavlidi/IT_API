@@ -2,8 +2,6 @@ const Promise = require('promise')
 const xss = require('xss')
 const Joi = require('joi')
 
-const log = require('./../configs/logs').general
-
 function formatQuery (query) {
   return new Promise(
     function (resolve, reject) {
@@ -60,25 +58,16 @@ function validateInput (objectToBeValidateStr, schema) {
   }
 }
 
-function logging (type, user, action, status, ref, info, ip) {
-  let logEntry = {
-    user: user,
-    action: action,
-    status: status,
-    ref: ref,
-    info: info,
-    ip: ip
-  }
-  log.error(logEntry)
+function logging (type, applicationErrorClass) {
   switch (type) {
     case 'error':
-      log.error(logEntry)
+      //  log.error(applicationErrorClass)
       break
     case 'info':
-      log.info(logEntry)
+      //    log.info(applicationErrorClass)
       break
     default:
-      log.info(logEntry)
+    // log.info(applicationErrorClass)
   }
 }
 
