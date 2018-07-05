@@ -46,9 +46,21 @@ app.use(function (err, req, res, next) {
 
   // render the error page
   if (err.text) {
-    res.json(err.text)
+    res.json({
+      error: {
+        message: err.text,
+        type: err.type,
+        code: err.code,
+      }
+    })
   } else {
-    res.json('Συνέβη κάποιο σφάλμα,παρακαλώ προσπαθήστε αργότερα.')
+    res.json({
+      error: {
+        message: 'Συνέβη κάποιο σφάλμα.',
+        type: 'WrongEndPointError',
+        code: '2000',
+    }
+    })
   }
 })
 
