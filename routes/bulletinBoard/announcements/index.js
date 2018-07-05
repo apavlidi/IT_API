@@ -26,7 +26,7 @@ function getAnnouncements (req, res, next) {
   apiFunctions.formatQuery(req.query).then(function (formatedQuery) {
     database.Announcements.find(formatedQuery.filters).select(formatedQuery.fields).populate('_about',
       'name public').populate('attachments', 'name').sort(formatedQuery.sort).exec(function (err, announcements) {
-      if (!err) {
+      if (err) {
         next(new ApplicationErrorClass('getAnnouncements', req.user.id, 100, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων.', apiFunctions.getClientIp(req), 500))
       } else {
         res.status(200).json(announcements)
