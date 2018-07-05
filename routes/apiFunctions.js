@@ -2,9 +2,6 @@ const Promise = require('promise')
 const xss = require('xss')
 const Joi = require('joi')
 
-const log = require('./../configs/logs').general
-let applicationErrorClass = require('./applicationErrorClass')
-
 function formatQuery (query) {
   return new Promise(
     function (resolve, reject) {
@@ -61,22 +58,27 @@ function validateInput (objectToBeValidateStr, schema) {
   }
 }
 
-function logging (typeOfLog,) {
+function logging (typeOfLog, type, user, code, error, text, ip) {
   switch (typeOfLog) {
     case 'error':
-      log.error(applicationErrorClass)
+      //   log.error(type, user, code, error, text, ip)
       break
     case 'info':
-      log.info(applicationErrorClass)
+      //     log.info(type, user, code, error, text, ip)
       break
     default:
-      log.info(applicationErrorClass)
+    //log.info(type, user, code, error, text, ip)
   }
+}
+
+function getClientIp(req){
+  return req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress
 }
 
 module.exports = {
   sanitizeObject,
   formatQuery,
   validateInput,
-  logging
+  logging,
+  getClientIp
 }
