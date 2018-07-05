@@ -8,7 +8,7 @@ const fs = require('fs')
 const filesFunc = require('./functions')
 const fileType = require('file-type')
 const announcementsFunc = require('../announcements/functions')
-let logEntry = require('../../logClass')
+let applicationErrorClass = require('../../applicationErrorClass')
 
 router.get('/:id', downloadFile)
 router.get('/:announcementId/downloadAll', downloadFiles)
@@ -143,7 +143,7 @@ function deleteFile (req, res, next) {
 
   database.Announcements.findOne({'attachments': fileId}, function (err, announcement) {
     if (err || !announcement) {
-      next(new logEntry('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
+      next(new applicationErrorClass('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
         'Σφάλμα κατα την εύρεση αρχείου με id: ' + fileId))
     } else {
       //TODO Check if publisher is the same as the user or if its admin
@@ -151,20 +151,20 @@ function deleteFile (req, res, next) {
       announcement.attachments.pull(fileId)
       announcement.save(function (err) {
         if (err) {
-          next(new logEntry('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
+          next(new applicationErrorClass('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
             'Σφάλμα κατα την διαγραφή αρχείου με id: ' + fileId + ' απο την ανακοίνωση'))
         } else {
           database.File.findOneAndRemove({_id: fileId}, function (err) {
             if (err) {
-              next(new logEntry('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
+              next(new applicationErrorClass('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
                 'Σφάλμα κατα την διαγραφή αρχείου με id: ' + fileId + ' απο την την βάση'))
               // res.status(500).json({message: 'Σφάλμα διαγραφής του αρχείου στην βάση'})
             } else {
-              // let logEntry = logging(req.session.user.id, 'DELETE', 'success', 'announcements', {
+              // let applicationErrorClass = logging(req.session.user.id, 'DELETE', 'success', 'announcements', {
               //   track: 'deleteFileFromAnnouncement',
               //   text: 'Το αρχείο διαγράφηκε επιτυχώς με id: ' + fileId + ' απο την ανακοίνωση με id: ' + announcementId
               // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-              // log.info(logEntry)
+              // log.info(applicationErrorClass)
               announcementsFunc.postToTeithe(announcement, 'edit')
               res.status(200).json({
                 message: 'Το αρχείο διαγράφηκε επιτυχώς',

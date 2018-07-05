@@ -12,6 +12,7 @@ const announcementFiles = require('./routes/bulletinBoard/announcementFiles/inde
 const categories = require('./routes/bulletinBoard/categories/index').router
 const apiFunctions = require('./routes/apiFunctions')
 const log = require('./configs/logs').general
+const ApplicationErrorClass = require('./routes/applicationErrorClass')
 
 const index = require('./routes/index')
 const fileUpload = require('express-fileupload')
@@ -45,6 +46,7 @@ app.use('/', index)
 app.use('/announcements', announcements)
 app.use('/categories', categories)
 app.use('/files', announcementFiles)
+app.use(logErrors)
 
 app.io = require('socket.io')()
 
@@ -72,34 +74,38 @@ app.use(session({
   })
 }))
 
+//atch 404 and forward to error handler
+app.use(function (req, res, next) {
+  let err = new Error('Not Found')
+  err.status = 404
+  next(err)
+})
 
-
-// catch 404 and forward to error handler
-// app.use(function (req, res, next) {
-//   let err = new Error('Not Found')
-//   err.status = 404
-//   next(err)
-// })
+function logErrors (err, req, res, next) {
+  console.log(err)
+  console.log('logging the error...')
+  if (err instanceof ApplicationErrorClass) {
+    apiFunctions.logging('error', err)
+  }
+  next(err)
+}
 
 // error handler
 app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  //res.locals.message = err.message
-  //res.locals.error = req.app.get('env') === 'development' ? err : {}
-  console.log(err)
-  if (err.constructor.name === 'LogError') {
+  console.log('EXPRESS ERROR HANDLING')
+  console.log(err.constructor.name)
+  if (err.constructor.name === 'ApplicationErrorClass') {
     err.headers = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress
     delete err.type
-    log.error(err)
+    console.log('hia')
+    console.log(err)
   }
-
   // render the error page
-  //res.render('error')
   res.json({
     error: {
       type: err.type,
       code: err.code,
-      message: err.message,
+      message: err.text,
     }
   })
 })

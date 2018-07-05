@@ -3,7 +3,7 @@ const xss = require('xss')
 const Joi = require('joi')
 
 const log = require('./../configs/logs').general
-let LogEntry = require('./logClass')
+let applicationErrorClass = require('./applicationErrorClass')
 
 function formatQuery (query) {
   return new Promise(
@@ -61,19 +61,16 @@ function validateInput (objectToBeValidateStr, schema) {
   }
 }
 
-function logging (LogEntry) {
-  console.log(LogEntry.type)
-  console.log(LogEntry)
-
-  switch (LogEntry.type) {
+function logging (typeOfLog,) {
+  switch (typeOfLog) {
     case 'error':
-      log.error(LogEntry)
+      log.error(applicationErrorClass)
       break
     case 'info':
-      log.info(LogEntry)
+      log.info(applicationErrorClass)
       break
     default:
-      log.info(LogEntry)
+      log.info(applicationErrorClass)
   }
 }
 
