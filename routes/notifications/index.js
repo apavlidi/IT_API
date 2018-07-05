@@ -24,7 +24,7 @@ function getNotificationsUser (req, res, next) {
 
   if (validLimit) {
     let userId = req.user.id
-    database.Profile.findOne({'ldapId': userId}, limit).select('-ldapId -__v -_id').populate('notifications._notification', '-userId -__v -_id').exec(function (err, profile) {
+    database.Profile.findOne({'ldapId': userId}, limit).select('-ldapId -__v -_id -socialMedia').populate('notifications._notification', '-userId -__v -_id').exec(function (err, profile) {
       if (profile) {
         let notifications = profile.notifications
         database.Announcements.populate(notifications, {
@@ -32,6 +32,8 @@ function getNotificationsUser (req, res, next) {
           select: '_about title titleEn'
         }, function (err, doc) {
           let notificationsPopulated = profile.notifications
+          console.log(notificationsPopulated)
+          console.log('h')
           database.AnnouncementsCategories.populate(notificationsPopulated, {
             path: '_notification.related.id._about',
             select: 'name -_id'

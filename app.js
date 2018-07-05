@@ -1,7 +1,10 @@
 const express = require('express')
 const logger = require('morgan')
 const bodyParser = require('body-parser')
-
+const session = require('express-session')
+const MongoStore = require('connect-mongo')(session)
+const mongoose = require('mongoose')
+const config = require('./configs/config')
 const index = require('./routes/index')
 const apiNotifications = require('./routes/notifications');
 
@@ -12,6 +15,24 @@ const app = express()
 app.use(logger('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
+
+mongoose.Promise = global.Promise
+mongoose.connect(config.MONGO[process.env.NODE_ENV], {
+  connectTimeoutMS: 120000,
+  socketTimeoutMS: 120000
+})
+
+app.use(session({
+  secret: 'SDAsad7a844tcJm49glsdgagj4jrykg09sa4ak89treR5#Dsd',
+  resave: false,
+  saveUninitialized: true,
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection,
+    ttl: 60 * 60 // = 1 hours.
+  })
+}))
+
+
 
 app.all('/*', function (req, res, next) {
   // CORS headers

@@ -2,7 +2,6 @@ const Promise = require('promise')
 const xss = require('xss')
 const Joi = require('joi')
 
-const log = require('./../configs/logs').general
 
 function formatQuery (query) {
   return new Promise(
