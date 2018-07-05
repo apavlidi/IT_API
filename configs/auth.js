@@ -28,7 +28,7 @@ function getUser (userID) {
             type: 'SearchUserError',
             code: 4004,
             httpCode: 500,
-            message: 'Unexpected user search error, please try again later.'
+            text: 'Unexpected user search error, please try again later.'
           })
         }
         else {
@@ -43,7 +43,7 @@ function getUser (userID) {
               type: 'SearchUserError',
               code: 4005,
               httpCode: 500,
-              message: 'Unexpected user search error, please try again later.'
+              text: 'Unexpected user search error, please try again later.'
             })
             error = true
           })
@@ -66,14 +66,14 @@ function checkToken (token, scopeRequired, userScopeRequired) {
               type: 'TokenExpiredError',
               code: 4001,
               httpCode: 400,
-              message: 'Access token has expired.'
+              text: 'Access token has expired.'
             })
           else
             reject({
               type: 'TokenError',
               code: 4002,
               httpCode: 400,
-              message: 'An active access token required to complete this action.'
+              text: 'An active access token required to complete this action.'
             })
         }
         else {
@@ -89,7 +89,7 @@ function checkToken (token, scopeRequired, userScopeRequired) {
                     type: 'UserPermissionError',
                     code: 4006,
                     httpCode: 400,
-                    message: 'Permission denied. User cannot access this resource.'
+                    text: 'Permission denied. User cannot access this resource.'
                   })
                 }
               }, function (err) {
@@ -100,7 +100,7 @@ function checkToken (token, scopeRequired, userScopeRequired) {
               type: 'TokenError',
               code: 4003,
               httpCode: 400,
-              message: 'Access token doesn\'t have the required scope to complete this action. Scope required : ' + scopeRequired
+              text: 'Access token doesn\'t have the required scope to complete this action. Scope required : ' + scopeRequired
             })
           }
         }
@@ -115,7 +115,7 @@ function checkToken (token, scopeRequired, userScopeRequired) {
  * @param ignoreToken : True/False = continue even if the token doesn't exist
  * @returns req.user
  */
-function checkAuth (scopeRequired, userScopeRequired, ignoreToken=false) {
+function checkAuth (scopeRequired, userScopeRequired, ignoreToken) {
   return function (req, res, next) {
     let token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token']
     delete req.body.access_token
@@ -128,7 +128,10 @@ function checkAuth (scopeRequired, userScopeRequired, ignoreToken=false) {
         if (ignoreToken)
           next()
         else
+        {
           next(err)
+          console.log(err)
+        }
       })
 
   }

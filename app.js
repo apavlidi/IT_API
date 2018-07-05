@@ -93,21 +93,29 @@ function logErrors (err, req, res, next) {
 // error handler
 app.use(function (err, req, res, next) {
   console.log('EXPRESS ERROR HANDLING')
-  console.log(err.constructor.name)
-  if (err.constructor.name === 'ApplicationErrorClass') {
-    err.headers = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress
-    delete err.type
-    console.log('hia')
-    console.log(err)
-  }
+  console.log('εδώ εμφανίζουμε οτι θέλουμε στον τελικό χρήστη απο το object')
+  // set locals, only providing error in development
+  // res.locals.message = err.message
+  // res.locals.error = req.app.get('env') === 'development' ? err : {}
+
   // render the error page
-  res.json({
-    error: {
-      type: err.type,
-      code: err.code,
-      message: err.text,
-    }
-  })
+  if (err.text) {
+    res.json({
+      error: {
+        message: err.text,
+        type: err.type,
+        code: err.code,
+      }
+    })
+  } else {
+    res.json({
+      error: {
+        message: 'Συνέβη κάποιο σφάλμα.',
+        type: 'WrongEndPointError',
+        code: '2000',
+      }
+    })
+  }
 })
 
 module.exports = app
