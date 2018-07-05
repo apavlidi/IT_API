@@ -151,7 +151,7 @@ function checkIfEntryExists (entryId, collection) {
     function (resolve, reject) {
       collection.findOne({_id: entryId}, function (err, doc) {
         if (err || !doc) {
-          reject(err)
+          reject(new Error('Ουπς,συνέβη κάποιο σφάλμα.'))
         } else {
           resolve(doc)
         }

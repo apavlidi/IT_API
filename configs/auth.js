@@ -112,9 +112,10 @@ function checkToken (token, scopeRequired, userScopeRequired) {
  *
  * @param scopeRequired : scope_name = access token scope required to access this function
  * @param userScopeRequired : 1-9 = eduPersonScopedAffiliation value required
+ * @param ignoreToken : True/False = continue even if the token doesn't exist
  * @returns req.user
  */
-function checkAuth (scopeRequired, userScopeRequired) {
+function checkAuth (scopeRequired, userScopeRequired, ignoreToken=false) {
   return function (req, res, next) {
     let token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token']
     delete req.body.access_token
@@ -124,7 +125,10 @@ function checkAuth (scopeRequired, userScopeRequired) {
         req.user = user
         next()
       }, function (err) {
-        next(err)
+        if (ignoreToken)
+          next()
+        else
+          next(err)
       })
 
   }
