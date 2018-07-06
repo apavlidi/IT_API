@@ -10,11 +10,12 @@ const fileType = require('file-type')
 const announcementsFunc = require('../announcements/functions')
 const ApplicationErrorClass = require('../../applicationErrorClass')
 const auth = require('../../../configs/auth')
+const config = require('../../../configs/config')
 
 router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), downloadFile)
 router.get('/:announcementId/downloadAll', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), downloadFiles)
 router.get('/:id/view', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), viewFile)
-router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor, true), apiFunctions.validateInput('params', validSchemas.deleteFileFromAnnouncementSchema), deleteFile)
+router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('params', validSchemas.deleteFileFromAnnouncementSchema), deleteFile)
 
 function downloadFile (req, res, next) {
   apiFunctions.sanitizeObject(req.params)
@@ -27,7 +28,6 @@ function downloadFile (req, res, next) {
       if (err) {
         next(new ApplicationErrorClass('downloadFile', req.user.id, 159, err, 'Συνέβει κάποιο σφάλμα κατα την διαγραφή της κατηγορίας', apiFunctions.getClientIp(req), 500))
       } else {
-        console.log(file)
         if (file && file._announcement && file._announcement._about) {
           if ((file._announcement._about.public || req.user.id)) {
             let name = encodeURIComponent(file.name)
@@ -126,7 +126,6 @@ function viewFile (req, res, next) {
 function deleteFile (req, res, next) {
   apiFunctions.sanitizeObject(req.params)
   let fileId = req.params.id
-
   database.Announcements.findOne({'attachments': fileId}, function (err, announcement) {
     if (err || !announcement) {
       next(new ApplicationErrorClass('deleteFile', req.user.id, 169, null, 'Σφάλμα κατα την εύρεση αρχείου', apiFunctions.getClientIp(req), 500))
