@@ -5,6 +5,7 @@ const database = require('../../configs/database')
 const Joi = require('joi');
 const auth = require('../../configs/auth')
 const config = require('../../configs/config')
+const ApplicationErrorClass = require('./../applicationErrorClass')
 const apiFunctions = require('../apiFunctions')
 
 router.get('/notificationsUser/:limit?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), getNotificationsUser)
@@ -32,25 +33,23 @@ function getNotificationsUser (req, res, next) {
           select: '_about title titleEn'
         }, function (err, doc) {
           let notificationsPopulated = profile.notifications
-          console.log(notificationsPopulated)
-          console.log('h')
           database.AnnouncementsCategories.populate(notificationsPopulated, {
             path: '_notification.related.id._about',
             select: 'name -_id'
           }, function (err, profilePopulated) {
-            if (profilePopulated) {
+            if (profilePopulated && !err) {
               res.status(200).json(profile)
             } else {
-              res.status(500).json({message: 'To προφίλ χρήστη δεν υπάρχει'})
+              next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 200, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
             }
           })
         })
       } else {
-        res.status(500).json({message: 'To προφίλ χρήστη δεν υπάρχει'})
+        next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 201, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
       }
     })
   } else {
-    res.status(500).json({message: 'Λάθος εισαγωγή δεδομένων'})
+    next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 202, null, 'Λάθος εισαγωγή δεδομένων', apiFunctions.getClientIp(req), 500, true))
   }
 }
 
@@ -64,7 +63,7 @@ function readNotificationsUser (req, res, next) {
       profile.save()
       res.status(200).send()
     } else {
-      res.status(500).json({message: 'To προφίλ χρήστη δεν υπάρχει'})
+      next(new ApplicationErrorClass('readNotificationsUser', req.user.id, 203, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
     }
   })
 }
