@@ -59,31 +59,27 @@ function validateInput (objectToBeValidateStr, schema) {
   }
 }
 
-function logging (type, user, action, status, ref, info, ip) {
-  let logEntry = {
-    user: user,
-    action: action,
-    status: status,
-    ref: ref,
-    info: info,
-    ip: ip
-  }
-  log.error(logEntry)
-  switch (type) {
+function logging (typeOfLog, type, user, code, error, text, ip) {
+  switch (typeOfLog) {
     case 'error':
-      log.error(logEntry)
+      //   log.error(type, user, code, error, text, ip)
       break
     case 'info':
-      log.info(logEntry)
+      //     log.info(type, user, code, error, text, ip)
       break
     default:
-      log.info(logEntry)
+    //log.info(type, user, code, error, text, ip)
   }
+}
+
+function getClientIp(req){
+  return req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress
 }
 
 module.exports = {
   sanitizeObject,
   formatQuery,
   validateInput,
-  logging
+  logging,
+  getClientIp
 }
