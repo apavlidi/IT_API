@@ -46,7 +46,6 @@ app.use('/', index)
 app.use('/announcements', announcements)
 app.use('/categories', categories)
 app.use('/files', announcementFiles)
-app.use(logErrors)
 
 app.io = require('socket.io')()
 
@@ -81,15 +80,6 @@ app.use(function (req, res, next) {
   next(err)
 })
 
-function logErrors (err, req, res, next) {
-  console.log(err)
-  console.log('logging the error...')
-  if (err instanceof ApplicationErrorClass) {
-    apiFunctions.logging('error', err)
-  }
-  next(err)
-}
-
 // error handler
 app.use(function (err, req, res, next) {
   console.log('EXPRESS ERROR HANDLING')
@@ -100,15 +90,16 @@ app.use(function (err, req, res, next) {
 
   // render the error page
   if (err.text) {
-    res.json({
+    console.log(err)
+    res.status(err.httpCode).json({
       error: {
         message: err.text,
         type: err.type,
-        code: err.code,
+        code: err.httpCode,
       }
     })
   } else {
-    res.json({
+    res.status(500).json({
       error: {
         message: 'Συνέβη κάποιο σφάλμα.',
         type: 'WrongEndPointError',

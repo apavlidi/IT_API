@@ -11,6 +11,8 @@ const ldapConfig = require('../../../configs/config')
 const ldap = require('ldapjs')
 const filter = require('ldap-filters')
 const sendPush = require('./sendPush')
+const ApplicationErrorClass = require('../../applicationErrorClass')
+const apiFunctions = require('../../apiFunctions')
 
 const clientWordpress = wordpress.createClient(WORDPRESS_CREDENTIALS)
 const client = ldap.createClient({
@@ -129,17 +131,18 @@ function createFileEntries (files, announcementId) {
           newFile._announcement = announcementId
           newFile.save(function (err, newFile) {
             if (err) {
-              reject(err)
+              reject(new ApplicationErrorClass(null, null, 105, err, null, null, 500))
+            } else {
+              filesIds.push(newFile._id)
+              callback(null)
             }
-            filesIds.push(newFile._id)
-            callback(null)
           })
         })
       })
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(err)
+          reject(new ApplicationErrorClass(null, null, 106, err, null, null, 500))
         }
         resolve(filesIds)
       })
@@ -151,7 +154,7 @@ function checkIfEntryExists (entryId, collection) {
     function (resolve, reject) {
       collection.findOne({_id: entryId}, function (err, doc) {
         if (err || !doc) {
-          reject(new Error('Ουπς,συνέβη κάποιο σφάλμα.'))
+          reject(new ApplicationErrorClass(null, null, 104, err, null, null, 500))
         } else {
           resolve(doc)
         }
@@ -164,7 +167,7 @@ function gatherFilesInput (filesInput) {
     function (resolve, reject) {
       let files = []
       if (filesInput) {
-        let upload = filesInput;
+        let upload = filesInput
         if (Array.isArray(upload)) { // if multiple files are uploaded
           upload.forEach(file => {
             if (checkFileInput(file)) {
@@ -335,7 +338,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
             }
           }, function (err, updated) {
             if (err) {
-              reject(err)
+              reject(new ApplicationErrorClass('insertNewAnnouncement', null, 109, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
             }
             callback(null)
           })
@@ -344,7 +347,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(err)
+          reject(new ApplicationErrorClass('insertNewAnnouncement', null, 110, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
         }
         resolve()
       })
@@ -414,9 +417,10 @@ function createNotification (announcementId, publisher) {
     notification.related.id = announcementId
     notification.save(function (err, newNotification) {
       if (err) {
-        reject(err)
-      }
+        reject(new ApplicationErrorClass(null, null, 108, err, null, null, 500))
+      }else{
       resolve(newNotification)
+      }
     })
   })
 }

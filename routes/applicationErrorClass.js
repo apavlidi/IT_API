@@ -17,7 +17,6 @@ class ApplicationErrorClass {
       apiFunctions.logging('error', this.type, this.user, this.code, this.error, this.text, this.ip)
     }
   }
-
 }
 
 module.exports = ApplicationErrorClass
