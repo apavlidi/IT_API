@@ -1,5 +1,6 @@
 const database = require('../../../configs/database')
 const async = require('async')
+const ApplicationErrorClass = require('../../applicationErrorClass')
 
 function updateRegistrationToCategories (categories, userId, action) {
   return new Promise(
@@ -8,9 +9,12 @@ function updateRegistrationToCategories (categories, userId, action) {
 
       categories.forEach(function (id) {
         calls.push(function (callback) {
-          database.AnnouncementsCategories.update({'_id': id}, {action: {'registered': userId}}, function (err) {
+          let query;
+          (action === '$addToSet') ? query = {'$addToSet': {'registered': userId}} : query = {'$pull': {'registered': userId}}
+          console.log(query)
+          database.AnnouncementsCategories.update({'_id': id}, query, function (err) {
             if (err) {
-              reject(err)
+              reject(new ApplicationErrorClass(null, null, 152, err, null, null, 500))
             }
             callback(null)
           })
@@ -19,7 +23,7 @@ function updateRegistrationToCategories (categories, userId, action) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(err)
+          reject(new ApplicationErrorClass(null, null, 153, err, null, null, 500))
         }
         resolve()
       })

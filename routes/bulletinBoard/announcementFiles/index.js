@@ -8,12 +8,13 @@ const fs = require('fs')
 const filesFunc = require('./functions')
 const fileType = require('file-type')
 const announcementsFunc = require('../announcements/functions')
-let applicationErrorClass = require('../../applicationErrorClass')
+const ApplicationErrorClass = require('../../applicationErrorClass')
+const auth = require('../../../configs/auth')
 
-router.get('/:id', downloadFile)
-router.get('/:announcementId/downloadAll', downloadFiles)
-router.get('/:id/view', viewFile)
-router.delete('/:id', apiFunctions.validateInput('params', validSchemas.deleteFileFromAnnouncementSchema), deleteFile)
+router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), downloadFile)
+router.get('/:announcementId/downloadAll', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), downloadFiles)
+router.get('/:id/view', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), viewFile)
+router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor, true), apiFunctions.validateInput('params', validSchemas.deleteFileFromAnnouncementSchema), deleteFile)
 
 function downloadFile (req, res, next) {
   apiFunctions.sanitizeObject(req.params)
@@ -24,30 +25,28 @@ function downloadFile (req, res, next) {
       populate: {path: '_about', select: 'public'}
     }).exec(function (err, file) {
       if (err) {
-        res.status(404).render('404.ejs', {
-          // login: req.session.login,
-          // user: req.session.user
-        })
+        next(new ApplicationErrorClass('downloadFile', req.user.id, 159, err, 'Συνέβει κάποιο σφάλμα κατα την διαγραφή της κατηγορίας', apiFunctions.getClientIp(req), 500))
       } else {
         console.log(file)
-        if ((file && file._announcement && file._announcement._about && file._announcement._about.public)) { // req.session.login
-          let name = encodeURIComponent(file.name)
-          res.writeHead(200, {
-            'Content-Length': Buffer.byteLength(file.data),
-            'Content-Type': file.contentType,
-            'Content-Disposition': 'attachment;filename*=UTF-8\'\'' + name
-          })
-          res.end(file.data) //the second parameter is cashed to the browser
+        if (file && file._announcement && file._announcement._about) {
+          if ((file._announcement._about.public || req.user.id)) {
+            let name = encodeURIComponent(file.name)
+            res.writeHead(200, {
+              'Content-Length': Buffer.byteLength(file.data),
+              'Content-Type': file.contentType,
+              'Content-Disposition': 'attachment;filename*=UTF-8\'\'' + name
+            })
+            res.end(file.data) //the second parameter is cashed to the browser
+          } else {
+            next(new ApplicationErrorClass('downloadFile', null, 160, null, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', apiFunctions.getClientIp(req), 500))
+          }
         } else {
-          res.status(404).render('401.ejs', {
-            //login: req.session.login,
-            //   user: req.session.user
-          })
+          next(new ApplicationErrorClass('downloadFile', null, 161, null, 'Συνέβη κάποιο σφάλμα κατα την λήψη αρχείου', apiFunctions.getClientIp(req), 500))
         }
       }
     })
   } else {
-    next(new Error('Συνέβη κάποιο σφάλμα'))
+    next(new ApplicationErrorClass('downloadFile', null, 161, null, 'Συνέβη κάποιο σφάλμα κατα την λήψη αρχείου', apiFunctions.getClientIp(req), 500))
   }
 }
 
@@ -57,7 +56,7 @@ function downloadFiles (req, res, next) {
     let announcementId = req.params.announcementId
     database.Announcements.findOne({_id: announcementId}).populate('_about', 'public').exec(function (err, announcement) {
       //TODO check req.session.login
-      if (announcement._about.public) {
+      if (announcement._about.public || req.user) {
         let files = announcement.attachments
         filesFunc.addToZip(files).then(function (finalZip) {
           finalZip
@@ -75,18 +74,14 @@ function downloadFiles (req, res, next) {
               })
             })
         }).catch(function (err) {
-          res.status(500).json({message: 'Σφάλμα κατα την συμπίεση αρχείων'})
+          next(new ApplicationErrorClass('downloadFiles', null, 162, err, 'Σφάλμα κατα την συμπίεση αρχείων', apiFunctions.getClientIp(req), 500))
         })
       } else {
-        res.status(404).render('401.ejs', {
-          //login: req.session.login,
-          //  user: req.session.user
-        })
+        next(new ApplicationErrorClass('downloadFiles', null, 163, null, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', apiFunctions.getClientIp(req), 500))
       }
     })
-
   } else {
-    next(new Error('Συνέβη κάποιο σφάλμα'))
+    next(new ApplicationErrorClass('downloadFiles', null, 164, null, 'Συνέβη κάποιο σφάλμα κατα την λήψη αρχείων', apiFunctions.getClientIp(req), 500))
   }
 }
 
@@ -99,13 +94,10 @@ function viewFile (req, res, next) {
       populate: {path: '_about', select: 'public'}
     }).exec(function (err, file) {
       if (err) {
-        res.status(404).render('404.ejs', {
-          //login: req.session.login,
-          //     user: req.session.user
-        })
+        next(new ApplicationErrorClass('viewFile', null, 165, err, 'Συνέβη κάποιο σφάλμα κατα την προβολή αρχείου', apiFunctions.getClientIp(req), 500))
       } else {
         if (file && file._announcement && file._announcement._about) {
-          if (file._announcement._about.public) {
+          if (file._announcement._about.public || req.user) {
             let type = fileType(file.data)
             if (type != null && filesFunc.browserMimeTypesSupported(type.mime)) { //here we can check what types we want to send depending if the browser supports it (eg pdf is supported)
               res.contentType(type.mime)
@@ -119,21 +111,15 @@ function viewFile (req, res, next) {
               res.end(file.data) //the second parameter is cashed to the browser
             }
           } else {
-            res.status(404).render('401.ejs', {
-              //  login: req.session.login,
-              //   user: req.session.user
-            })
+            next(new ApplicationErrorClass('viewFile', null, 166, null, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', apiFunctions.getClientIp(req), 500))
           }
         } else {
-          res.status(404).render('404.ejs', {
-            //login: req.session.login,
-            //  user: req.session.user
-          })
+          next(new ApplicationErrorClass('viewFile', null, 167, null, 'Συνέβη κάποιο σφάλμα κατα την προβολή αρχείου', apiFunctions.getClientIp(req), 500))
         }
       }
     })
   } else {
-    next(new Error('Συνέβη κάποιο σφάλμα'))
+    next(new ApplicationErrorClass('viewFile', null, 168, null, 'Συνέβη κάποιο σφάλμα κατα την προβολή αρχείου', apiFunctions.getClientIp(req), 500))
   }
 }
 
@@ -143,37 +129,36 @@ function deleteFile (req, res, next) {
 
   database.Announcements.findOne({'attachments': fileId}, function (err, announcement) {
     if (err || !announcement) {
-      next(new applicationErrorClass('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
-        'Σφάλμα κατα την εύρεση αρχείου με id: ' + fileId))
+      next(new ApplicationErrorClass('deleteFile', req.user.id, 169, null, 'Σφάλμα κατα την εύρεση αρχείου', apiFunctions.getClientIp(req), 500))
     } else {
       //TODO Check if publisher is the same as the user or if its admin
-      //   if (announcement.publisher.id == req.session.user.id || req.session.user.scope == PERMISSIONS.admin) {
-      announcement.attachments.pull(fileId)
-      announcement.save(function (err) {
-        if (err) {
-          next(new applicationErrorClass('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
-            'Σφάλμα κατα την διαγραφή αρχείου με id: ' + fileId + ' απο την ανακοίνωση'))
-        } else {
-          database.File.findOneAndRemove({_id: fileId}, function (err) {
-            if (err) {
-              next(new applicationErrorClass('error', 'unknown', 'DELETE', 'fail', 'announcements', err, 'deleteFile',
-                'Σφάλμα κατα την διαγραφή αρχείου με id: ' + fileId + ' απο την την βάση'))
-              // res.status(500).json({message: 'Σφάλμα διαγραφής του αρχείου στην βάση'})
-            } else {
-              // let applicationErrorClass = logging(req.session.user.id, 'DELETE', 'success', 'announcements', {
-              //   track: 'deleteFileFromAnnouncement',
-              //   text: 'Το αρχείο διαγράφηκε επιτυχώς με id: ' + fileId + ' απο την ανακοίνωση με id: ' + announcementId
-              // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-              // log.info(applicationErrorClass)
-              announcementsFunc.postToTeithe(announcement, 'edit')
-              res.status(200).json({
-                message: 'Το αρχείο διαγράφηκε επιτυχώς',
-              })
-            }
-          })
-
-        }
-      })
+      if (announcement.publisher.id == req.user.id || req.user.scope == PERMISSIONS.admin) {
+        announcement.attachments.pull(fileId)
+        announcement.save(function (err) {
+          if (err) {
+            next(new ApplicationErrorClass('deleteFile', req.user.id, 170, err, 'Σφάλμα κατα την διαγραφή αρχείου', apiFunctions.getClientIp(req), 500))
+          } else {
+            database.File.findOneAndRemove({_id: fileId}, function (err) {
+              if (err) {
+                next(new ApplicationErrorClass('deleteFile', req.user.id, 171, err, 'Σφάλμα κατα την διαγραφή αρχείου', apiFunctions.getClientIp(req), 500))
+              } else {
+                //logging
+                // let applicationErrorClass = logging(req.session.user.id, 'DELETE', 'success', 'announcements', {
+                //   track: 'deleteFileFromAnnouncement',
+                //   text: 'Το αρχείο διαγράφηκε επιτυχώς με id: ' + fileId + ' απο την ανακοίνωση με id: ' + announcementId
+                // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
+                // log.info(applicationErrorClass)
+                //announcementsFunc.postToTeithe(announcement, 'edit')
+                res.status(200).json({
+                  message: 'Το αρχείο διαγράφηκε επιτυχώς',
+                })
+              }
+            })
+          }
+        })
+      } else {
+        next(new ApplicationErrorClass('deleteFile', req.user.id, 172, err, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', apiFunctions.getClientIp(req), 500))
+      }
     }
   })
 }

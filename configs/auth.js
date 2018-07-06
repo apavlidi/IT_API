@@ -130,7 +130,6 @@ function checkAuth (scopeRequired, userScopeRequired, ignoreToken) {
         else
         {
           next(err)
-          console.log(err)
         }
       })
 
