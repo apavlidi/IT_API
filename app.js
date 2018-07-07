@@ -3,16 +3,11 @@ const logger = require('morgan')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const config = require('./configs/config')
-const session = require('express-session')
-const MongoStore = require('connect-mongo')(session)
 const compression = require('compression')
 const path = require('path')
 const announcements = require('./routes/bulletinBoard/announcements/index').router
 const announcementFiles = require('./routes/bulletinBoard/announcementFiles/index').router
 const categories = require('./routes/bulletinBoard/categories/index').router
-const apiFunctions = require('./routes/apiFunctions')
-const log = require('./configs/logs').general
-const ApplicationErrorClass = require('./routes/applicationErrorClass')
 
 const index = require('./routes/index')
 const fileUpload = require('express-fileupload')
@@ -57,21 +52,11 @@ app.io.on('connection', function (socket) {
   })
 })
 
-mongoose.Promise = global.Promise
 mongoose.connect(config.MONGO[process.env.NODE_ENV], {
   connectTimeoutMS: 120000,
   socketTimeoutMS: 120000
 })
 
-app.use(session({
-  secret: 'SDAsad7a844tcJm49glsdgagj4jrykg09sa4ak89treR5#Dsd',
-  resave: false,
-  saveUninitialized: true,
-  store: new MongoStore({
-    mongooseConnection: mongoose.connection,
-    ttl: 60 * 60 // = 1 hours.
-  })
-}))
 
 //atch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -81,7 +66,7 @@ app.use(function (req, res, next) {
 })
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res) {
   console.log('EXPRESS ERROR HANDLING')
   console.log('εδώ εμφανίζουμε οτι θέλουμε στον τελικό χρήστη απο το object')
   // set locals, only providing error in development
