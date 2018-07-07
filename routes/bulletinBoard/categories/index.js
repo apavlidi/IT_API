@@ -9,10 +9,10 @@ const auth = require('../../../configs/auth')
 let ApplicationErrorClass = require('../../applicationErrorClass')
 const config = require('../../../configs/config')
 
-router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), getAnnouncementsCategories)
-router.get('/public', getAnnouncementsCategoriesPublic)
+router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncementsCategories)
+router.get('/public', apiFunctions.formatQuery, getAnnouncementsCategoriesPublic)
 router.put('/register', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.registerCategoriesSchema), registerCategories)
-router.get('/isRegistered',auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), getIsRegisteredCategories)
+router.get('/isRegistered', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getIsRegisteredCategories)
 
 router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.newCategorySchema), newCategory)
 router.put('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.editCategorySchemaBody), apiFunctions.validateInput('params', validSchemas.editCategorySchemaParams), editCategory)
@@ -20,34 +20,30 @@ router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor)
 
 //TODO Check if field 'registered' has to be returned
 function getAnnouncementsCategories (req, res, next) {
-  apiFunctions.formatQuery(req.query).then(function (formatedQuery) {
-    if (!formatedQuery.fields) {
-      formatedQuery.fields = '-registered'
+  if (!req.query.fields) {
+    req.query.fields = '-registered'
+  }
+  database.AnnouncementsCategories.find(req.query.filters).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, categories) {
+    if (err) {
+      next(new ApplicationErrorClass('getAnnouncementsCategories', req.user.id, 150, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
+    } else {
+      res.status(200).json(categories)
     }
-    database.AnnouncementsCategories.find(formatedQuery.filters).select(formatedQuery.fields).sort(formatedQuery.sort).exec(function (err, categories) {
-      if (err) {
-        next(new ApplicationErrorClass('getAnnouncementsCategories', req.user.id, 150, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
-      } else {
-        res.status(200).json(categories)
-      }
-    })
   })
 }
 
 function getAnnouncementsCategoriesPublic (req, res, next) {
   apiFunctions.sanitizeObject(req.query)
-  apiFunctions.formatQuery(req.query).then(function (formatedQuery) {
-    if (!formatedQuery.fields) {
-      //TODO CHECK ABOUT THIS.SECURITY ISSUE
-      formatedQuery.fields = '-registered'
+  if (!req.query.fields) {
+    //TODO CHECK ABOUT THIS.SECURITY ISSUE
+    req.query.fields = '-registered'
+  }
+  database.AnnouncementsCategories.find({public: true}).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, categories) {
+    if (err) {
+      next(new ApplicationErrorClass('getAnnouncementsCategoriesPublic', null, 151, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
+    } else {
+      res.status(200).json(categories)
     }
-    database.AnnouncementsCategories.find({public: true}).select(formatedQuery.fields).sort(formatedQuery.sort).exec(function (err, categories) {
-      if (err) {
-        next(new ApplicationErrorClass('getAnnouncementsCategoriesPublic', null, 151, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
-      } else {
-        res.status(200).json(categories)
-      }
-    })
   })
 }
 
@@ -59,8 +55,8 @@ function registerCategories (req, res, next) {
   console.log(arrayNotRegistered)
   console.log(req.user.id)
 
-  categoriesFunc.updateRegistrationToCategories(arrayRegistered, req.user.id, "$addToSet").then(function () {
-    return categoriesFunc.updateRegistrationToCategories(arrayNotRegistered, req.user.id, "$pull")
+  categoriesFunc.updateRegistrationToCategories(arrayRegistered, req.user.id, '$addToSet').then(function () {
+    return categoriesFunc.updateRegistrationToCategories(arrayNotRegistered, req.user.id, '$pull')
   }).then(function () {
     res.status(200).json({
       message: 'Η εγγραφή πραγματοποιήθηκε επιτυχώς',
@@ -77,7 +73,7 @@ function registerCategories (req, res, next) {
 //TODO Change req.session.user.id
 function getIsRegisteredCategories (req, res, next) {
   apiFunctions.sanitizeObject(req.query)
-  database.AnnouncementsCategories.find({}).select('name id registered').sort('_id').exec(function (err, categories) {
+  database.AnnouncementsCategories.find({}).select('id registered').sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, categories) {
     if (err) {
       next(new ApplicationErrorClass('getIsRegisteredCategories', null, 154, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
     } else {

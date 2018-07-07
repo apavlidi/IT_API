@@ -12,39 +12,37 @@ const validSchemas = require('../joi')
 const WORDPRESS_CREDENTIALS = require('./../../../configs/config').WORDPRESS_CREDENTIALS
 const clientWordpress = wordpress.createClient(WORDPRESS_CREDENTIALS)
 const ApplicationErrorClass = require('../../applicationErrorClass')
-const log = require('./../../../configs/logs').general
 
-router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), getAnnouncements)
+router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.formatQuery, getAnnouncements)
 router.get('/public', getAnnouncementsPublic)
-router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.validateInput('params', validSchemas.getAnnouncementSchema), getAnnouncement)
+router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.validateInput('params', validSchemas.getAnnouncementSchema), apiFunctions.formatQuery, getAnnouncement)
 router.get('/feed/:type/:categoryIds?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
 router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.newAnnouncementsQuerySchema), insertNewAnnouncement)
-router.put('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.editAnnouncementsQuerySchema), editAnnouncement)
+router.patch('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.editAnnouncementsQuerySchema), editAnnouncement)
 router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('params', validSchemas.deleteAnnouncementSchema), deleteAnnouncement)
 
 function getAnnouncements (req, res, next) {
-  apiFunctions.formatQuery(req.query).then(function (formatedQuery) {
-    database.Announcements.find(formatedQuery.filters).select(formatedQuery.fields).populate('_about',
-      'name public').populate('attachments', 'name').sort(formatedQuery.sort).exec(function (err, announcements) {
-      if (err) {
-        next(new ApplicationErrorClass('getAnnouncements', req.user.id, 100, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων.', apiFunctions.getClientIp(req), 500))
-      } else {
-        res.status(200).json(announcements)
-      }
-    })
+  database.Announcements.find(req.query.filters).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, announcements) {
+    if (err || !announcements) {
+      next(new ApplicationErrorClass('getAnnouncements', null, 100, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων.', apiFunctions.getClientIp(req), 500))
+    } else {
+      res.status(200).json(announcements)
+    }
   })
 }
 
-// TODO Replace login check
 function getAnnouncement (req, res, next) {
   let announcementsId = req.params.id
-  database.Announcements.findOne({_id: announcementsId}).populate('_about', 'name public').populate('attachments',
-    'name').exec(function (err, announcement) {
+  database.Announcements.findOne({_id: announcementsId}).populate('_about', 'public').select(formatedQuery.fields).exec(function (err, announcement) {
     if (err) {
       next(new Error('Συνεβη καποιο λάθος κατα την λήψη ανακοίνωσης.'))
     } else {
       announcementsFunc.checkIfEntryExists(announcement._about, database.AnnouncementsCategories).then(() => {
         if (req.user || announcement._about.public) {
+          announcement._about.public = undefined //remove the public property
+          if (req.query.fields && req.query.fields.indexOf('_about') === -1) {
+            announcement._about = undefined //remove the _about property if its not on query
+          }
           res.status(200).json(announcement)
         } else {
           next(new ApplicationErrorClass('getAnnouncement', null, 101, err, 'Δεν έχεις δικάιωμα για αυτήν την ενέργεια!', apiFunctions.getClientIp(req), 401))
@@ -90,18 +88,20 @@ function getAnnouncementsFeed (req, res, next) {
 }
 
 function getAnnouncementsPublic (req, res, next) {
-  database.AnnouncementsCategories.find({public: true}).select('_id').exec(function (err, publicCategories) {
-    if (err) {
-      next(new ApplicationErrorClass('getAnnouncementsPublic', 'unknown', 105, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', apiFunctions.getClientIp(req), 500))
-    } else {
-      database.Announcements.find({_about: {$in: publicCategories}}).populate('_about', 'name').populate('attachments', 'name').exec(function (err, announcements) {
-        if (err) {
-          next(new ApplicationErrorClass('getAnnouncementsPublic', 'unknown', 106, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', apiFunctions.getClientIp(req), 500))
-        } else {
-          res.status(200).json(announcements)
-        }
-      })
-    }
+  apiFunctions.formatQuery(req.query).then(function (formatedQuery) {
+    database.AnnouncementsCategories.find({public: true}).select('_id').exec(function (err, publicCategories) {
+      if (err) {
+        next(new ApplicationErrorClass('getAnnouncementsPublic', null, 105, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', apiFunctions.getClientIp(req), 500))
+      } else {
+        database.Announcements.find({_about: {$in: publicCategories}}).select(formatedQuery.fields).sort(formatedQuery.sort).skip(parseInt(formatedQuery.page) * parseInt(formatedQuery.limit)).limit(parseInt(formatedQuery.limit)).exec(function (err, announcements) {
+          if (err) {
+            next(new ApplicationErrorClass('getAnnouncementsPublic', null, 106, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', apiFunctions.getClientIp(req), 500))
+          } else {
+            res.status(200).json(announcements)
+          }
+        })
+      }
+    })
   })
 }
 

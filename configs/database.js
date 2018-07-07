@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 
+mongoose.Promise = global.Promise
+
+
 const accountTypesSchema = Schema({
     title: String,
     dec: String,
@@ -93,7 +96,7 @@ announcementsCategoriesSchema.pre('remove', function (next) {
     Announcements.find({_about: this._id}, '_id', function (err, announcementsIds) {
         Announcements.remove(
             {_id: {$in: announcementsIds}}
-        ).exec(function (err, announcementsDeleted) {
+        ).exec(function (err) {
             if (err) {
                 next();
             } else {
@@ -109,8 +112,8 @@ profileSchema.pre('remove', function (next) {
     Announcements.find({'publisher.id': profile.ldapId}, '_id', function (err, announcementsIds) {
         announcementsIds.forEach(announcementId => {
             Announcements.findOne({_id: announcementId}, function (err, announcement) {
-                announcement.remove(function (err, result) {
-                    AnnouncementsCategories.update({}, {"$pull": {"registered": profile.ldapId}}, {multi: true}, function (err, result) {
+                announcement.remove(function () {
+                    AnnouncementsCategories.update({}, {"$pull": {"registered": profile.ldapId}}, {multi: true}, function () {
                         next();
                     });
                 });
@@ -118,7 +121,7 @@ profileSchema.pre('remove', function (next) {
         });
     });
 
-    AnnouncementsCategories.update({}, {"$pull": {"registered": profile.ldapId}}, {multi: true}, function (err, result) {
+    AnnouncementsCategories.update({}, {"$pull": {"registered": profile.ldapId}}, {multi: true}, function () {
         next();
     });
 });
@@ -133,8 +136,8 @@ announcementsSchema.pre('remove', function (next) {
         });
         Notification.remove(
             {_id: {$in: notificationsIds}}
-        ).exec(function (err, notificationsDeleted) {
-            Profile.update({}, {"$pull": {"notifications": {"_notification": {$in: ids}}}}, {multi: true}, function (err, result) {
+        ).exec(function () {
+            Profile.update({}, {"$pull": {"notifications": {"_notification": {$in: ids}}}}, {multi: true}, function (err) {
                 if (err) {
                     next();
                 } else {

@@ -1,32 +1,54 @@
-const Promise = require('promise')
 const xss = require('xss')
 const Joi = require('joi')
 
-function formatQuery (query) {
-  return new Promise(
-    function (resolve, reject) {
-      let selectedFields = null
-      let formatedSelectedFields = null
-      let formatedSort = [['date', 'descending']]
-      if (Object.prototype.hasOwnProperty.call(query, 'fields')) {
-        selectedFields = query.fields
-        delete query.fields
-        formatedSelectedFields = selectedFields.split(',').join(' ')
-      }
-      if (Object.prototype.hasOwnProperty.call(query, 'sort')) {
-        let sortBy = null
-        let sortDir = 'ascending'
-        formatedSort = query.sort
-        if (query.sort.charAt(0) === '-') {
-          sortDir = 'descending'
-          query.sort = query.sort.substr(1, query.sort.length)
-        }
-        sortBy = query.sort
-        delete query.sort
-        formatedSort = [[sortBy, sortDir]]
-      }
-      resolve({filters: query, fields: formatedSelectedFields, sort: formatedSort})
-    })
+function formatQuery (req, res, next) {
+  let query = req.query
+  let selectedFields = null
+  let formatedSelectedFields = null
+  let formatedSort = [['date', 'descending']]
+  let formatedPage = 0
+  let formatedLimit = 0
+  let formatedQ = null
+
+  if (Object.prototype.hasOwnProperty.call(query, 'q')) {
+    formatedQ = JSON.parse(query.q)
+    delete query.q
+  }
+  if (Object.prototype.hasOwnProperty.call(query, 'fields')) {
+    selectedFields = query.fields
+    delete query.fields
+    formatedSelectedFields = selectedFields.split(',').join(' ')
+  }
+  if (Object.prototype.hasOwnProperty.call(query, 'page')) {
+    formatedPage = query.page
+    delete query.page
+  }
+  if (Object.prototype.hasOwnProperty.call(query, 'pageSize')) {
+    formatedLimit = query.pageSize
+    delete query.pageSize
+  }
+  if (Object.prototype.hasOwnProperty.call(query, 'sort')) {
+    let sortBy;
+    let sortDir = 'ascending'
+    formatedSort = query.sort
+    if (query.sort.charAt(0) === '-') {
+      sortDir = 'descending'
+      query.sort = query.sort.substr(1, query.sort.length)
+    }
+    sortBy = query.sort
+    delete query.sort
+    formatedSort = [[sortBy, sortDir]]
+  }
+  console.log('22')
+
+  req.query = {
+    filters: formatedQ,
+    fields: formatedSelectedFields,
+    sort: formatedSort,
+    page: formatedPage,
+    limit: formatedLimit
+  }
+  next()
 }
 
 function sanitizeObject (obj) {
@@ -71,7 +93,7 @@ function logging (typeOfLog, type, user, code, error, text, ip) {
   }
 }
 
-function getClientIp(req){
+function getClientIp (req) {
   return req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress
 }
 
