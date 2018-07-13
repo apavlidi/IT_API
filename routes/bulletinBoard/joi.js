@@ -17,13 +17,6 @@ const getAnnouncementFeedSchema = Joi.object().keys({
   categoryIds: Joi.any().allow()
 })
 
-const deleteAnnouncementSchema = Joi.object().keys({
-  id: Joi.required()
-})
-
-const deleteFileFromAnnouncementSchema = Joi.object().keys({
-  id: Joi.required()
-})
 
 const newAnnouncementsQuerySchema = Joi.object().keys({
   title: Joi.string().trim().min(1).max(80).required(),
@@ -58,34 +51,19 @@ const editCategorySchemaBody = Joi.object().keys({
   wid: Joi.number().integer()
 })
 
-const editCategorySchemaParams = Joi.object().keys({
-  id: Joi.string().required()
-})
 
 const registerCategoriesSchema = Joi.object().keys({
-  'categoriesRegistered': Joi.required(),
-  'categoriesNotRegistered': Joi.required()
+  'categoriesRegistered': Joi.array().required(),
+  'categoriesNotRegistered': Joi.array().required()
 })
 
-const deleteCategorySchema = Joi.object().keys({
-  id: Joi.required()
-})
-
-const getAnnouncementSchema = Joi.object().keys({
-  id: Joi.required()
-})
 
 module.exports = {
   deleteAnnouncementsQuerySchema,
   newAnnouncementsQuerySchema,
   editAnnouncementsQuerySchema,
-  deleteAnnouncementSchema,
   newCategorySchema,
-  editCategorySchemaParams,
   editCategorySchemaBody,
-  deleteCategorySchema,
   registerCategoriesSchema,
-  getAnnouncementSchema,
   getAnnouncementFeedSchema,
-  deleteFileFromAnnouncementSchema
 }
