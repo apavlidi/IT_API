@@ -1,5 +1,7 @@
 const xss = require('xss')
 const Joi = require('joi')
+const ApplicationErrorClass = require('./applicationErrorClass')
+const _ = require('lodash')
 
 function formatQuery (req, res, next) {
   let query = req.query
@@ -39,7 +41,6 @@ function formatQuery (req, res, next) {
     delete query.sort
     formatedSort = [[sortBy, sortDir]]
   }
-  console.log('22')
 
   req.query = {
     filters: formatedQ,
@@ -51,16 +52,28 @@ function formatQuery (req, res, next) {
   next()
 }
 
+function sanitizeInput (req, res, next) {
+  if (!_.isEmpty(req.query)) {
+    sanitizeObject(req.query)
+  }
+  if (!_.isEmpty(req.params)) {
+    sanitizeObject(req.params)
+  }
+  if (!_.isEmpty(req.body)) {
+    sanitizeObject(req.body)
+  }
+  next()
+}
+
 function sanitizeObject (obj) {
   Object.keys(obj).forEach(function (key) {
     if (typeof obj[key] === 'object') {
       return sanitizeObject(obj[key])
     }
     obj[key] = xss(obj[key], {
-      whiteList: [],        // empty, means filter out all tags
-      stripIgnoreTag: true,      // filter out all HTML not in the whilelist
-      stripIgnoreTagBody: ['script'] // the script tag is a special case, we need
-      // to filter out its content
+      whiteList: [],
+      stripIgnoreTag: true,
+      stripIgnoreTagBody: ['script']
     })
   })
 }
@@ -68,13 +81,12 @@ function sanitizeObject (obj) {
 function validateInput (objectToBeValidateStr, schema) {
   return function (req, res, next) {
     let objectToBeValidate = objectToBeValidateStr === 'params' ? req.params : req.body
-    sanitizeObject(objectToBeValidate)
     Joi.validate(objectToBeValidate, schema, function (err) {
       if (!err) {
         next()
       } else {
         console.log(err)
-        res.status(500).json({message: 'Σφάλμα κατα την εισαγωγή δεδομένων'})
+        next(new ApplicationErrorClass(null, null, 199, err, 'Σφάλμα κατα την εισαγωγή δεδομένων.', null, 500))
       }
     })
   }
@@ -98,7 +110,7 @@ function getClientIp (req) {
 }
 
 module.exports = {
-  sanitizeObject,
+  sanitizeInput,
   formatQuery,
   validateInput,
   logging,

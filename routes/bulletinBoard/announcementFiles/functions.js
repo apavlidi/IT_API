@@ -35,7 +35,35 @@ function browserMimeTypesSupported(type) {
   return (type === "application/pdf" || type === "image/gif" || type === "image/jpeg" || type === "image/png" || type === "image/bmp");
 }
 
+function getFile (fileId, userLogged) {
+  return new Promise((resolve, reject) => {
+    if (mongoose.Types.ObjectId.isValid(fileId)) {
+      database.File.findOne({_id: fileId}).populate('_announcement', '_about').populate({
+        path: '_announcement',
+        populate: {path: '_about', select: 'public'}
+      }).exec(function (err, file) {
+        if (err || !file) {
+          reject(new ApplicationErrorClass('viewFile', null, 165, err, 'Συνέβη κάποιο σφάλμα κατα την προβολή αρχείου', apiFunctions.getClientIp(req), 500))
+        } else {
+          if (file._announcement && file._announcement._about) {
+            if ((file._announcement._about.public || userLogged)) {
+              resolve(file)
+            } else {
+              reject(new ApplicationErrorClass('downloadFile', null, 160, null, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', null, 500))
+            }
+          } else {
+            reject(new ApplicationErrorClass('downloadFile', null, 161, null, 'Συνέβη κάποιο σφάλμα κατα την λήψη αρχείου', null, 500))
+          }
+        }
+      })
+    } else {
+      reject(new ApplicationErrorClass('viewFile', null, 168, null, 'Συνέβη κάποιο σφάλμα κατα την προβολή αρχείου', apiFunctions.getClientIp(req), 500))
+    }
+  })
+}
+
 module.exports = {
   addToZip,
-  browserMimeTypesSupported
+  browserMimeTypesSupported,
+  getFile
 }

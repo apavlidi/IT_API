@@ -11,14 +11,13 @@ const config = require('../../../configs/config')
 
 router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncementsCategories)
 router.get('/public', apiFunctions.formatQuery, getAnnouncementsCategoriesPublic)
-router.put('/register', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.registerCategoriesSchema), registerCategories)
-router.get('/isRegistered', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getIsRegisteredCategories)
+router.put('/register', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.registerCategoriesSchema), updateRegistrationToCategories)
+router.get('/isRegistered', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getIsRegisteredToCategories)
 
-router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.newCategorySchema), newCategory)
-router.put('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.editCategorySchemaBody), apiFunctions.validateInput('params', validSchemas.editCategorySchemaParams), editCategory)
-router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('params', validSchemas.deleteCategorySchema), deleteCategory)
+router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.newCategorySchema), newCategory)
+router.put('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.editCategorySchemaBody), editCategory)
+router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), deleteCategory)
 
-//TODO Check if field 'registered' has to be returned
 function getAnnouncementsCategories (req, res, next) {
   if (!req.query.fields) {
     req.query.fields = '-registered'
@@ -33,9 +32,7 @@ function getAnnouncementsCategories (req, res, next) {
 }
 
 function getAnnouncementsCategoriesPublic (req, res, next) {
-  apiFunctions.sanitizeObject(req.query)
   if (!req.query.fields) {
-    //TODO CHECK ABOUT THIS.SECURITY ISSUE
     req.query.fields = '-registered'
   }
   database.AnnouncementsCategories.find({public: true}).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, categories) {
@@ -47,14 +44,9 @@ function getAnnouncementsCategoriesPublic (req, res, next) {
   })
 }
 
-function registerCategories (req, res, next) {
-  apiFunctions.sanitizeObject(req.body)
+function updateRegistrationToCategories (req, res, next) {
   let arrayRegistered = JSON.parse(req.body.categoriesRegistered)
   let arrayNotRegistered = JSON.parse(req.body.categoriesNotRegistered)
-  console.log(arrayRegistered)
-  console.log(arrayNotRegistered)
-  console.log(req.user.id)
-
   categoriesFunc.updateRegistrationToCategories(arrayRegistered, req.user.id, '$addToSet').then(function () {
     return categoriesFunc.updateRegistrationToCategories(arrayNotRegistered, req.user.id, '$pull')
   }).then(function () {
@@ -70,9 +62,7 @@ function registerCategories (req, res, next) {
   })
 }
 
-//TODO Change req.session.user.id
-function getIsRegisteredCategories (req, res, next) {
-  apiFunctions.sanitizeObject(req.query)
+function getIsRegisteredToCategories (req, res, next) {
   database.AnnouncementsCategories.find({}).select('id registered').sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, categories) {
     if (err) {
       next(new ApplicationErrorClass('getIsRegisteredCategories', null, 154, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
@@ -86,7 +76,6 @@ function getIsRegisteredCategories (req, res, next) {
 }
 
 function newCategory (req, res, next) {
-  apiFunctions.sanitizeObject(req.body)
   database.AnnouncementsCategories.findOne({name: req.body.categoryTitle}, function (err, categoryExists) {
     if (!categoryExists) {
       let category = new database.AnnouncementsCategories()
@@ -124,12 +113,10 @@ function newCategory (req, res, next) {
 }
 
 function editCategory (req, res, next) {
-  apiFunctions.sanitizeObject(req.params)
-  apiFunctions.sanitizeObject(req.body)
   let editedCategory = req.body
   let categoryId = req.params.id
   if (editedCategory.publicCategory === 'true') {
-    if (editedCategory.wid !== 5 && editedCategory.wid !== 31) {
+    if (editedCategory.wid != 5 && editedCategory.wid != 31) {
       editedCategory.wid = 5
     }
   } else {
@@ -159,7 +146,6 @@ function editCategory (req, res, next) {
 }
 
 function deleteCategory (req, res, next) {
-  apiFunctions.sanitizeObject(req.params)
   let category = req.params.id
   database.AnnouncementsCategories.findOne({_id: category}, function (err, category) {
     if (!category || err) {

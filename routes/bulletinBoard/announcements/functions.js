@@ -90,7 +90,6 @@ function getAnnouncementsRSSPromise (announcements, rssCategories, categoryValue
     })
 }
 
-// TODO Check if publisher exists
 function validatePublisher (publisherId) {
   return new Promise(
     function (resolve, reject) {
@@ -203,19 +202,13 @@ function postToTeithe (announcement, action) {
             }
           }, function (error, id) {
             let update = {wordpressId: id}
-            console.log(announcement._id)
             database.Announcements.update({_id: announcement._id},
               update
             ).exec(function (err, announcementUpdated) {
-              console.log('hi')
-              console.log(id)
               console.log(announcementUpdated)
             })
-
           })
         } else if (action === 'edit') {
-          console.log('hi')
-          console.log(announcement)
           clientWordpress.editPost(announcement.wordpressId, {
             title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' + announcement.titleEn + '<!--:-->',
             content: wordpressContent,
@@ -244,13 +237,14 @@ function sendEmails (announcementEntry) {
         let bodyText = buildEmailBody(sender.name, announcementEntry.text, announcementEntry.title, categoryName, WEB_BASE_URL.url + '/announcements/announcement/' + announcementEntry.id)
         async.forEach(emails, function (to) {
           let mailOptions = {
-            from: '"IT-News (' + sender.name + ')" <notify@eng.it.teithe.gr>', // sender address
+            from: '"IT-News (' + sender.name + ')" <notify@eng.it.teithe.gr>',
             to: to,
-            subject: '[Apps-News] ' + categoryName + ': ' + announcementEntry.title, // Subject line
-            html: bodyText // html body
+            subject: '[Apps-News] ' + categoryName + ': ' + announcementEntry.title,
+            html: bodyText
           }
           MAIL.sendMail(mailOptions, (error, info) => {
             if (error) {
+              console.log(error)
               return error
             }
           })
@@ -317,24 +311,17 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
       category.registered.forEach(function (id) {
         calls.push(function (callback) {
           database.Profile.findOne({
-            'ldapId': {
-              $eq: id,
-              $ne: publisherId
-            }
+            'ldapId': {$eq: id, $ne: publisherId}
           }).select('notySub -_id').exec(function (err, profile) {
-            if (!err) {
-              if (profile) {
-                sendPush.sendNotification(profile.notySub, announcementEntry, category)
-              }
+            if (!err && profile) {
+              //TODO TEST NOTIES
+              // sendPush.sendNotification(profile.notySub, announcementEntry, category)
             }
           })
 
           database.Profile.update({'ldapId': {$eq: id, $ne: publisherId}}, {
             '$addToSet': {
-              'notifications': {
-                _notification: notificationId,
-                seen: false
-              }
+              'notifications': {_notification: notificationId, seen: false}
             }
           }, function (err, updated) {
             if (err) {
@@ -365,7 +352,7 @@ function generateWordpressContent (newAnnouncementId, text, textEn, attachments,
           calls.push(function (callback) {
             database.File.findOne({_id: attachments[i]}).exec(function (err, file) {
               if (file) {
-                attachmentsHtml += 'Επισύναψη: <a href="' + WEB_BASE_URL.url + '/api/announcements/' + newAnnouncementId + '/download/' + attachments[i] + '">' + file.name + '</a><br/>'
+                attachmentsHtml += 'Επισύναψη: <a href="' + WEB_BASE_URL.url + '/files/' + attachments[i] + '">' + file.name + '</a><br/>'
               }
               callback(null)
             })
@@ -418,8 +405,8 @@ function createNotification (announcementId, publisher) {
     notification.save(function (err, newNotification) {
       if (err) {
         reject(new ApplicationErrorClass(null, null, 108, err, null, null, 500))
-      }else{
-      resolve(newNotification)
+      } else {
+        resolve(newNotification)
       }
     })
   })
