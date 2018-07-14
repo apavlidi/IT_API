@@ -61,6 +61,7 @@ app.use(function (err, req, res, next) {
   console.log('EXPRESS ERROR HANDLING')
   console.log('εδώ εμφανίζουμε οτι θέλουμε στον τελικό χρήστη απο το object')
   if (err.text) {
+    console.log(err)
     res.status(err.httpCode).json({
       error: {
         message: err.text,

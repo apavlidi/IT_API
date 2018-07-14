@@ -25,6 +25,7 @@ function downloadFile (req, res, next) {
     })
     res.end(file.data) //the second parameter is cashed to the browser
   }).catch(function (applicationError) {
+    applicationError.type = 'downloadFile'
     applicationError.ip = apiFunctions.getClientIp(req)
     next(applicationError)
   })
@@ -78,6 +79,7 @@ function viewFile (req, res, next) {
       res.end(file.data) //the second parameter is cashed to the browser
     }
   }).catch(function (applicationError) {
+    applicationError.type = 'viewFile'
     applicationError.ip = apiFunctions.getClientIp(req)
     next(applicationError)
   })

@@ -19,43 +19,52 @@ const client = ldap.createClient({
   url: ldapConfig.LDAP[process.env.NODE_ENV].host
 })
 
-function getAnnouncementsRSSPromise (announcements, rssCategories, categoryValues, feedType, res, isAuthenticated) {
+function getDescriptionRSSLogged (rssCategories) {
+  let descriptionRSS
+  if (rssCategories) {
+    descriptionRSS = 'Ανακοινώσεις για τις παρακάτω κατηγορίες: '
+    rssCategories.forEach(category => {
+      descriptionRSS += category.name + ', '
+    })
+    descriptionRSS = descriptionRSS.substr(0, descriptionRSS.lastIndexOf(','))
+  }
+  return descriptionRSS
+}
+
+function getDescriptionRSSDependOnLogged (isAuthenticated) {
+  return isAuthenticated ? 'Όλες οι ανακοινώσεις' : 'Όλες οι δημόσιες ανακοινώσεις'
+}
+
+function createFeedObj (description) {
+  return new Feed({
+    title: 'Τμήμα Πληροφορικής - Ανακοινώσεις',
+    id: 'https://apps.it.teithe.gr/',
+    description: description,
+    generator: 'Feed for Apps',
+    link: 'https://apps.it.teithe.gr/announcements',
+    copyright: 'All rights reserved 2017, Alexis Pavlidis',
+    feedLinks: {
+      atom: '/api/announcements/feed/atom',
+      rss: 'https://apps.it.teithe.gr/api/announcements/feed/rss'
+    },
+    author: {
+      name: 'Alexis Pavlidis'
+    }
+  })
+}
+
+function appendPostsToFeed (feed, posts) {
   return new Promise(
     function (resolve, reject) {
       let calls = []
-      let descriptionRSS
-      if (categoryValues) {
-        descriptionRSS = 'Ανακοινώσεις για τις παρακάτω κατηγορίες: '
-        rssCategories.forEach(category => {
-          descriptionRSS += category.name + ', '
-        })
-        descriptionRSS = descriptionRSS.substr(0, descriptionRSS.lastIndexOf(','))
-      } else {
-        descriptionRSS = isAuthenticated ? 'Όλες οι ανακοινώσεις' : 'Όλες οι δημόσιες ανακοινώσεις'
-      }
-      let feed = new Feed({
-        title: 'Τμήμα Πληροφορικής - Ανακοινώσεις',
-        id: 'https://apps.it.teithe.gr/',
-        description: descriptionRSS,
-        generator: 'Feed for Apps',
-        link: 'https://apps.it.teithe.gr/announcements',
-        copyright: 'All rights reserved 2017, Alexis Pavlidis',
-        feedLinks: {
-          atom: '/api/announcements/feed/atom',
-          rss: 'https://apps.it.teithe.gr/api/announcements/feed/rss'
-        },
-        author: {
-          name: 'Alexis Pavlidis'
-        }
-      })
 
-      announcements.forEach(function (announcement) {
+      posts.forEach(function (announcement) {
         calls.push(function (callback) {
           feed.addItem({
             title: announcement.title,
             description: announcement._about.name,
-            link: 'https://apps.it.teithe.gr/announcements/announcement/' + announcement._id,
-            id: 'https://apps.it.teithe.gr/announcements/announcement/' + announcement._id,
+            link: 'https://apps.it.teithe.gr/announcements/' + announcement._id,
+            id: 'https://apps.it.teithe.gr/announcements/' + announcement._id,
             content: announcement.text,
             author: [{
               name: announcement.publisher.name
@@ -66,11 +75,21 @@ function getAnnouncementsRSSPromise (announcements, rssCategories, categoryValue
           callback(null)
         })
       })
-
       async.parallel(calls, function (err) {
-        if (err) {
-          reject(err)
-        }
+        resolve()
+      })
+
+    })
+}
+
+function getAnnouncementsRSSPromise (announcements, rssCategories, categoryValues, feedType, res, isAuthenticated) {
+  return new Promise(
+    function (resolve, reject) {
+      let descriptionRSS
+      categoryValues ? descriptionRSS = getDescriptionRSSLogged(rssCategories) : descriptionRSS = getDescriptionRSSDependOnLogged(isAuthenticated)
+      let feed = createFeedObj(descriptionRSS)
+
+      appendPostsToFeed(feed, announcements).then(function () {
         let response
         switch (feedType) {
           case 'rss':
@@ -87,6 +106,45 @@ function getAnnouncementsRSSPromise (announcements, rssCategories, categoryValue
         }
         resolve(response)
       })
+
+      // announcements.forEach(function (announcement) {
+      //   calls.push(function (callback) {
+      //     feed.addItem({
+      //       title: announcement.title,
+      //       description: announcement._about.name,
+      //       link: 'https://apps.it.teithe.gr/announcements/announcement/' + announcement._id,
+      //       id: 'https://apps.it.teithe.gr/announcements/announcement/' + announcement._id,
+      //       content: announcement.text,
+      //       author: [{
+      //         name: announcement.publisher.name
+      //       }],
+      //       contributor: [],
+      //       date: announcement.date
+      //     })
+      //     callback(null)
+      //   })
+      // })
+      //
+      // async.parallel(calls, function (err) {
+      //   if (err) {
+      //     reject(err)
+      //   }
+      //   let response
+      //   switch (feedType) {
+      //     case 'rss':
+      //       res.set('Content-Type', 'text/xml')
+      //       response = feed.rss2()
+      //       break
+      //     case 'json' :
+      //       res.setHeader('Content-Type', 'application/json')
+      //       response = feed.json1()
+      //       break
+      //     default:
+      //       res.set('Content-Type', 'text/plain')
+      //       response = feed.atom1()
+      //   }
+      //   resolve(response)
+      // })
     })
 }
 
@@ -121,13 +179,14 @@ function createFileEntries (files, announcementId) {
 
       files.forEach(function (file) {
         calls.push(function (callback) {
-          let newFile = new database.File()
           let fileId = mongoose.Types.ObjectId()
-          newFile.name = file.name
-          newFile._id = fileId
-          newFile.contentType = file.mimetype
-          newFile.data = file.data
-          newFile._announcement = announcementId
+          let newFile = new database.File({
+            name: file.name,
+            _id: fileId,
+            contentType: file.mimetype,
+            data: file.data,
+            _announcement: announcementId
+          })
           newFile.save(function (err, newFile) {
             if (err) {
               reject(new ApplicationErrorClass(null, null, 105, err, null, null, 500))
@@ -168,11 +227,7 @@ function gatherFilesInput (filesInput) {
       if (filesInput) {
         let upload = filesInput
         if (Array.isArray(upload)) { // if multiple files are uploaded
-          upload.forEach(file => {
-            if (checkFileInput(file)) {
-              files.push(file)
-            }
-          })
+          files = pushAllFiles(upload)
         } else {
           if (checkFileInput(upload)) {
             files.push(upload)
@@ -181,6 +236,16 @@ function gatherFilesInput (filesInput) {
       }
       resolve(files)
     })
+}
+
+function pushAllFiles (filesUploaded) {
+  let filesGathered = []
+  filesUploaded.forEach(file => {
+    if (checkFileInput(file)) {
+      filesGathered.push(file)
+    }
+  })
+  return filesGathered
 }
 
 function checkFileInput (file) {
@@ -205,7 +270,6 @@ function postToTeithe (announcement, action) {
             database.Announcements.update({_id: announcement._id},
               update
             ).exec(function (err, announcementUpdated) {
-              console.log(announcementUpdated)
             })
           })
         } else if (action === 'edit') {
@@ -234,7 +298,7 @@ function sendEmails (announcementEntry) {
       console.log('Mail All = ' + emails)
       console.log('Mail Error finding = ' + err)
       if (emails.length) {
-        let bodyText = buildEmailBody(sender.name, announcementEntry.text, announcementEntry.title, categoryName, WEB_BASE_URL.url + '/announcements/announcement/' + announcementEntry.id)
+        let bodyText = buildEmailBody(sender.name, announcementEntry.text, announcementEntry.title, categoryName, WEB_BASE_URL.url + '/announcements/' + announcementEntry.id)
         async.forEach(emails, function (to) {
           let mailOptions = {
             from: '"IT-News (' + sender.name + ')" <notify@eng.it.teithe.gr>',
@@ -244,7 +308,6 @@ function sendEmails (announcementEntry) {
           }
           MAIL.sendMail(mailOptions, (error, info) => {
             if (error) {
-              console.log(error)
               return error
             }
           })
@@ -312,10 +375,10 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
         calls.push(function (callback) {
           database.Profile.findOne({
             'ldapId': {$eq: id, $ne: publisherId}
-          }).select('notySub -_id').exec(function (err, profile) {
+          }).exec(function (err, profile) {
             if (!err && profile) {
-              //TODO TEST NOTIES
-              // sendPush.sendNotification(profile.notySub, announcementEntry, category)
+              //TODO THIS NEEDS TO BE CHECKED WHEN USER IS IMPLEMENTED
+              //sendPush.sendNotification(profile.notySub, announcementEntry, category)
             }
           })
 
