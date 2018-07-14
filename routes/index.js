@@ -11,12 +11,4 @@ router.get('/', function (req, res, next) {
   res.render('index')
 })
 
-router.get('/error', function (req, res, next) {
-  return next(new ApplicationErrorClass('getError', 'unknown', 100, 'real error', 'Σφάλμα κατα την ενέργεια σας', apiFunctions.getClientIp(req), 400, true))
-})
-
-router.get('/log', function (req, res, next) {
-  apiFunctions.logging('info', 'getError', 'unknown', 100, 'real error', 'Σφάλμα κατα την ενέργεια σας', apiFunctions.getClientIp(req))
-})
-
 module.exports = router

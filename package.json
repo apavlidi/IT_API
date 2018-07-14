@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "NODE_ENV=development node ./bin/www",
     "startDevWindows": "set NODE_ENV=development&&node ./bin/www",
     "coverageWindows": "set NODE_ENV=test&&istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec",
     "coverage": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec"
@@ -37,7 +37,7 @@
     "promise": "^8.0.1",
     "request": "^2.83.0",
     "socket.io": "^2.0.4",
-    "web-push": "^3.2.5",
+    "web-push": "3.3.2",
     "wordpress": "^1.4.1",
     "xss": "^0.3.7"
   },

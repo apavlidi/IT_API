@@ -2,7 +2,7 @@ const webpush = require('web-push')
 
 const vapidKeys = webpush.generateVAPIDKeys()
 
-webpush.setGCMAPIKey('AAAAau40-NU:APA91bFxjg8vhahzVBx8Q8I7R_E9uY8h7TKJ72GjoNL3HQZqHazUq_kO5qR9YBMBTeELyrbUdQ-gwuzLiBVmo6TEVQr_TKPuYpzhTuVqJCbVEKxFPsTnkECeqWcpMpdtqnFeSFp3hqn_ ')
+webpush.setGCMAPIKey('AIzaSyAEgB5mvcfheAaWQoRR2NI82waqWbwywaQ')
 
 webpush.setVapidDetails(
   'mailto:your@email.com',

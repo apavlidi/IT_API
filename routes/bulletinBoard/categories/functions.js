@@ -11,7 +11,6 @@ function updateRegistrationToCategories (categories, userId, action) {
         calls.push(function (callback) {
           let query;
           (action === '$addToSet') ? query = {'$addToSet': {'registered': userId}} : query = {'$pull': {'registered': userId}}
-          console.log(query)
           database.AnnouncementsCategories.update({'_id': id}, query, function (err) {
             if (err) {
               reject(new ApplicationErrorClass(null, null, 152, err, null, null, 500))

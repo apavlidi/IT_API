@@ -50,7 +50,7 @@ const PERMISSIONS = {
 
 const nodemailer = require('nodemailer')
 const MAIL = nodemailer.createTransport({
-  host: 'smtp.it.teithe.gr',
+  host: 'smtp.teithe.gr',
   port: 25,
   tls: {
     rejectUnauthorized: false

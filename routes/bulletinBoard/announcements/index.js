@@ -18,8 +18,8 @@ router.get('/public', apiFunctions.formatQuery, getAnnouncementsPublic)
 router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.formatQuery, getAnnouncement)
 router.get('/feed/:type/:categoryIds?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
 router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.newAnnouncementsQuerySchema), insertNewAnnouncement)
-router.patch('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.editAnnouncementsQuerySchema), editAnnouncement)
-router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), deleteAnnouncement)
+router.patch('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.editAnnouncementsQuerySchema), editAnnouncement)
+router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), deleteAnnouncement)
 
 function getAnnouncements (req, res, next) {
   database.Announcements.find(req.query.filters).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, announcements) {
@@ -59,9 +59,9 @@ function getAnnouncementsFeed (req, res, next) {
 
   if (req.params.categoryIds) {
     let categoryIds = req.params.categoryIds.split(',')
-    filter = login ? {_id: {$in: categoryIds}} : {value: {$in: categoryIds}, public: true}
+    filter = login ? {_id: {$in: categoryIds}} : {_id: {$in: categoryIds}, public: true}
   } else {
-    filter = login ? {public: true} : {}
+    filter = login ? {} : {public: true}
   }
 
   database.AnnouncementsCategories.find(filter).select('_id name').sort([['date', 'descending']]).exec(function (err, rssCategories) {
@@ -145,8 +145,8 @@ function insertNewAnnouncement (req, res, next) {
   }).then(newNotification => {
     return announcementsFunc.sendNotifications(announcementEntry, newNotification.id, publisher.id)
   }).then(newNotification => {
-    //TODO SEND EMAILS
     announcementsFunc.postToTeithe(announcementEntry, 'create')
+    //TODO ENABLE SEND EMAILS
     //announcementsFunc.sendEmails(announcementEntry);
     req.app.io.emit('new announcement', newNotification)
     res.status(201).json({
@@ -176,7 +176,7 @@ function deleteAnnouncement (req, res, next) {
             //logging
             // next(new ApplicationErrorClass('info', 'unknown', 'DELETE', 'success', 'announcements', err, 'deleteAnnouncement',
             //   'H ανακοίνωση διαγράφηκε επιτυχώς με id: ' + announcementId, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
-            //clientWordpress.deletePost(announcement.wordpressId, function (error, data) {})
+            clientWordpress.deletePost(announcement.wordpressId, function (error, data) {})
             res.status(200).json({
               message: 'H ανακοίνωση διαγράφηκε επιτυχώς',
               announcementDeleted
