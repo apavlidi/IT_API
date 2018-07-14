@@ -13,7 +13,7 @@ const config = require('../../../configs/config')
 router.get('/:fileId', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), downloadFile)
 router.get('/:announcementId/downloadAll', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), downloadFiles)
 router.get('/:fileId/view', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), viewFile)
-router.delete('/:fileId', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), deleteFile)
+router.delete('/:fileId', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), deleteFile)
 
 function downloadFile (req, res, next) {
   filesFunc.getFile(req.params.fileId, req.user).then(file => {
