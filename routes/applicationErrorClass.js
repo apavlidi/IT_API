@@ -18,6 +18,7 @@ class ApplicationErrorClass {
     }
   }
 
+
 }
 
 module.exports = ApplicationErrorClass

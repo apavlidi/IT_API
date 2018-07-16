@@ -3,21 +3,55 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
-    "startDevWindows": "set NODE_ENV=development&&node ./bin/www"
+    "start": "NODE_ENV=development node ./bin/www",
+    "startDevWindows": "set NODE_ENV=development&&node ./bin/www",
+    "coverageWindows": "set NODE_ENV=test&&istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec",
+    "coverage": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec"
   },
   "dependencies": {
-    "body-parser": "~1.18.2",
-    "cookie-parser": "~1.4.3",
-    "debug": "~2.6.9",
-    "ejs": "~2.5.7",
-    "express": "~4.15.5",
-    "joi": "^13.4.0",
+    "async": "^2.6.0",
+    "body-parser": "^1.18.2",
+    "compression": "^1.7.1",
+    "connect-mongo": "^2.0.1",
+    "cookie-parser": "^1.4.3",
+    "debug": "^3.1.0",
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
+    "express-fileupload": "^0.3.0",
+    "express-session": "^1.15.6",
+    "feed": "^1.1.1",
+    "file-type": "^7.6.0",
+    "formidable": "^1.1.1",
+    "joi": "^13.1.1",
     "jsonwebtoken": "^8.2.0",
+    "jszip": "^3.1.5",
+    "ldap-filters": "^2.2.2",
     "ldapjs": "^1.0.2",
-    "morgan": "~1.9.0",
+    "lodash": "^4.17.10",
+    "log4js": "^1.1.1",
+    "log4js-node-mongodb": "^2.2.1",
+    "mongoose": "^5.0.0",
+    "morgan": "^1.9.0",
+    "nodemailer": "^4.4.2",
+    "path": "^0.12.7",
     "promise": "^8.0.1",
-    "serve-favicon": "~2.4.5",
-    "xss": "^1.0.3"
+    "request": "^2.83.0",
+    "socket.io": "^2.0.4",
+    "web-push": "3.3.2",
+    "wordpress": "^1.4.1",
+    "xss": "^0.3.7"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "istanbul": "^0.4.5",
+    "mocha": "^5.0.0",
+    "standard": "^10.0.3",
+    "superagent": "^3.0.0"
+  },
+  "standard": {
+    "ignore": [
+      "configs/database.js",
+      "test/announcements.js"
+    ]
   }
 }

@@ -46,23 +46,22 @@ const PERMISSIONS = {
   futureUseSEven: 7,
   futureUseEight: 8,
   admin: 9
-};
+}
 
-/*
 const nodemailer = require('nodemailer')
 const MAIL = nodemailer.createTransport({
-  host: 'smtp.it.teithe.gr',
+  host: 'smtp.teithe.gr',
   port: 25,
   tls: {
     rejectUnauthorized: false
   }
 })
-*/
+
 module.exports = {
   MONGO,
   WEB_BASE_URL,
   WORDPRESS_CREDENTIALS,
-  //MAIL,
+  MAIL,
   LDAP,
   PERMISSIONS
 }
