@@ -162,6 +162,7 @@ const userRegSchema = Schema({
   uid: String,
   dn: String,
   token: String,
+  scope:Number,
   createdAt: {type: Date, expires: 60 , default: Date.now}
 })
 

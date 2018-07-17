@@ -24,6 +24,7 @@
   //   data: formData,
   //   success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
   //     console.log('yes')
+  //     console.log(data)
   //
   //   },
   //   error: function (data) {
@@ -32,8 +33,8 @@
   // })
 
   // var formData = new FormData()
-  // formData.append('mail','alexisomg@hotmail.gr');
-  // formData.append('token','12345');
+  // formData.append('mail','alexisomg4@hotmail.gr');
+  // formData.append('token','e672dc4c0009712b7569c582f88bf6f91a309bd1');
   //
   // $.ajax({
   //   url: '/reg/mtoken',
@@ -43,23 +44,40 @@
   //   data: formData,
   //   success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
   //     console.log('yes')
-  //
+  //     console.log(data)
   //   },
   //   error: function (data) {
   //     console.log('no')
   //   }
   // })
 
-  // $.get('/reg/info/4742d26853f431cad0e7934a585ee080d1de0dd3', function (data) {
-  //   console.log(data)
-  // })
+  $.get('/reg/info/e672dc4c0009712b7569c582f88bf6f91a309bd1', function (data) {
+    var formData = new FormData()
+    formData.append('password','***REMOVED***');
+
+    $.ajax({
+      url: '/reg/updatepass/e672dc4c0009712b7569c582f88bf6f91a309bd1',
+      type: 'POST',
+      contentType: false,
+      processData: false,
+      data: formData,
+      success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
+        console.log('yes')
+
+      },
+      error: function (data) {
+        console.log('no')
+      }
+    })
+    console.log(data)
+  })
 
 
   // var formData = new FormData()
-  // formData.append('newMail','alexisomg4@hotmail.gr');
+  // formData.append('newMail','apavlidi@it.teithe.gr');
   //
   // $.ajax({
-  //   url: '/reg/updatemail/4742d26853f431cad0e7934a585ee080d1de0dd3',
+  //   url: '/reg/updatemail/e672dc4c0009712b7569c582f88bf6f91a309bd1',
   //   type: 'POST',
   //   contentType: false,
   //   processData: false,
@@ -73,23 +91,7 @@
   //   }
   // })
 
-  // var formData = new FormData()
-  // formData.append('password','cU!221455');
-  //
-  // $.ajax({
-  //   url: '/reg/updatepass/4742d26853f431cad0e7934a585ee080d1de0dd3',
-  //   type: 'POST',
-  //   contentType: false,
-  //   processData: false,
-  //   data: formData,
-  //   success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
-  //     console.log('yes')
-  //
-  //   },
-  //   error: function (data) {
-  //     console.log('no')
-  //   }
-  // })
+
 
 </script>
 
