@@ -1,8 +1,8 @@
 const ApplicationErrorClass = require('../../applicationErrorClass')
 const config = require('../../../configs/config')
 const database = require('../../../configs/database')
-const crypt = require('crypt3/sync');
-const ldap = require('ldapjs');
+const crypt = require('crypt3/sync')
+const ldap = require('ldapjs')
 
 function buildOptions (filter, scope, attributes) {
   return {
@@ -56,15 +56,14 @@ function checkIfTokenExistsAndRetrieveUser (token) {
     })
 }
 
-function checkPassword (owasp,password) {
+function checkPassword (owasp, password) {
   return new Promise(
     function (resolve, reject) {
       let result = owasp.test(password)
       if (result.strong || result.isPassphrase) {
         resolve()
       } else {
-        console.log(result.errors[0])
-        reject(new ApplicationErrorClass(null, null, 40, err, 'Υπήρχε σφάλμα στον κωδικό', null, 500)
+        reject(new ApplicationErrorClass(null, null, 40, result.errors[0], 'Υπήρχε σφάλμα στον κωδικό', null, 500)
         )
       }
     })
@@ -94,10 +93,10 @@ function changePasswordLdap (ldapMainBinded, userDN, password) {
     })
 }
 
-function changeScopeLdap (ldapMainBinded, userDN) {
+function changeScopeLdap (ldapMainBinded, userDN, userScope) {
   return new Promise(
     function (resolve, reject) {
-      let scope = config.SCOPE_ACTIVATED
+      let scope = (userScope === 0) ? config.SCOPE_ACTIVATED : userScope
 
       let changeScope = new ldap.Change({
         operation: 'replace',
@@ -113,7 +112,19 @@ function changeScopeLdap (ldapMainBinded, userDN) {
         }
       })
     })
+}
 
+function deleteRegToken (token) {
+  return new Promise(
+    function (resolve, reject) {
+      database.UserReg.findOneAndRemove({token: token}).exec(function (err) {
+        if (err) {
+          reject(new ApplicationErrorClass(null, null, 44, err, 'Υπήρχε σφάλμα κατα την εύρεση token.', null, 500))
+        } else {
+          resolve()
+        }
+      })
+    })
 }
 
 module.exports = {
@@ -123,5 +134,6 @@ module.exports = {
   checkIfTokenExistsAndRetrieveUser,
   checkPassword,
   changeScopeLdap,
-  changePasswordLdap
+  changePasswordLdap,
+  deleteRegToken
 }
