@@ -10,6 +10,7 @@ const app = express()
 const announcements = require('./routes/bulletinBoard/announcements/index').router
 const announcementFiles = require('./routes/bulletinBoard/announcementFiles/index').router
 const categories = require('./routes/bulletinBoard/categories/index').router
+const notifications = require('./routes/notifications/index').router
 const index = require('./routes/index')
 const config = require('./configs/config')
 const apiFunctions = require('./routes/apiFunctions')
@@ -40,6 +41,7 @@ app.use('/', index)
 app.use('/announcements', announcements)
 app.use('/categories', categories)
 app.use('/files', announcementFiles)
+app.use('/notifications', notifications)
 
 app.io = require('socket.io')()
 

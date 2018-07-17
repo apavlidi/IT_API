@@ -1,56 +1,50 @@
 const express = require('express')
 const router = express.Router()
-const PERMISSIONS = require('./../../configs/config').PERMISSIONS
 const database = require('../../configs/database')
-const Joi = require('joi');
+const Joi = require('joi')
 const auth = require('../../configs/auth')
 const config = require('../../configs/config')
 const ApplicationErrorClass = require('./../applicationErrorClass')
 const apiFunctions = require('../apiFunctions')
+const validSchemas = require('./joi')
 
-router.get('/notificationsUser/:limit?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), getNotificationsUser)
-router.post('/readNotificationsUser', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), readNotificationsUser)
+router.get('/:limit?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, apiFunctions.validateInput('params', validSchemas.getNotificationsUser), getNotificationsUser)
+router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), readNotificationsUser)
 
 function getNotificationsUser (req, res, next) {
   let notsCounter = req.params.limit
   let limit = null
-  let validLimit = true
   if (notsCounter) {
-    Joi.validate(notsCounter, Joi.number().integer().min(0), function (err) {
-      (!err) ? limit = {
-        notifications: {$slice: -notsCounter}
-      } : validLimit = false
-    })
+    limit = {
+      notifications: {$slice: -notsCounter}
+    }
   }
 
-  if (validLimit) {
-    let userId = req.user.id
-    database.Profile.findOne({'ldapId': userId}, limit).select('-ldapId -__v -_id -socialMedia').populate('notifications._notification', '-userId -__v -_id').exec(function (err, profile) {
-      if (profile) {
-        let notifications = profile.notifications
-        database.Announcements.populate(notifications, {
-          path: '_notification.related.id',
-          select: '_about title titleEn'
-        }, function (err, doc) {
-          let notificationsPopulated = profile.notifications
-          database.AnnouncementsCategories.populate(notificationsPopulated, {
-            path: '_notification.related.id._about',
-            select: 'name -_id'
-          }, function (err, profilePopulated) {
-            if (profilePopulated && !err) {
-              res.status(200).json(profile)
-            } else {
-              next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 200, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
-            }
-          })
+  let userId = req.user.id
+  database.Profile.findOne({'ldapId': userId}, limit).select('-ldapId -__v -_id -socialMedia').populate('notifications._notification', '-userId -__v -_id').exec(function (err, profile) {
+    if (profile) {
+      let notifications = profile.notifications
+      database.Announcements.populate(notifications, {
+        path: '_notification.related.id',
+        select: '_about title titleEn'
+      }, function (err, doc) {
+        let notificationsPopulated = profile.notifications
+        database.AnnouncementsCategories.populate(notificationsPopulated, {
+          path: '_notification.related.id._about',
+          select: 'name -_id'
+        }, function (err, profilePopulated) {
+          if (profilePopulated && !err) {
+            console.log(profile)
+            res.status(200).json(profile)
+          } else {
+            next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 200, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
+          }
         })
-      } else {
-        next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 201, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
-      }
-    })
-  } else {
-    next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 202, null, 'Λάθος εισαγωγή δεδομένων', apiFunctions.getClientIp(req), 500, true))
-  }
+      })
+    } else {
+      next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 201, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
+    }
+  })
 }
 
 function readNotificationsUser (req, res, next) {
@@ -68,4 +62,6 @@ function readNotificationsUser (req, res, next) {
   })
 }
 
-module.exports = router
+module.exports = {
+  router: router
+}
