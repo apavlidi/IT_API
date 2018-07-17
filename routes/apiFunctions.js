@@ -1,33 +1,68 @@
-const Promise = require('promise')
 const xss = require('xss')
 const Joi = require('joi')
+const ApplicationErrorClass = require('./applicationErrorClass')
+const _ = require('lodash')
 
+function formatQuery (req, res, next) {
+  let query = req.query
+  let selectedFields = null
+  let formatedSelectedFields = null
+  let formatedSort = [['date', 'descending']]
+  let formatedPage = 0
+  let formatedLimit = 0
+  let formatedQ = null
 
-function formatQuery (query) {
-  return new Promise(
-    function (resolve, reject) {
-      let selectedFields = null
-      let formatedSelectedFields = null
-      let formatedSort = [['date', 'descending']]
-      if (Object.prototype.hasOwnProperty.call(query, 'fields')) {
-        selectedFields = query.fields
-        delete query.fields
-        formatedSelectedFields = selectedFields.split(',').join(' ')
-      }
-      if (Object.prototype.hasOwnProperty.call(query, 'sort')) {
-        let sortBy = null
-        let sortDir = 'ascending'
-        formatedSort = query.sort
-        if (query.sort.charAt(0) === '-') {
-          sortDir = 'descending'
-          query.sort = query.sort.substr(1, query.sort.length)
-        }
-        sortBy = query.sort
-        delete query.sort
-        formatedSort = [[sortBy, sortDir]]
-      }
-      resolve({filters: query, fields: formatedSelectedFields, sort: formatedSort})
-    })
+  if (Object.prototype.hasOwnProperty.call(query, 'q')) {
+    formatedQ = JSON.parse(query.q)
+    delete query.q
+  }
+  if (Object.prototype.hasOwnProperty.call(query, 'fields')) {
+    selectedFields = query.fields
+    delete query.fields
+    formatedSelectedFields = selectedFields.split(',').join(' ')
+  }
+  if (Object.prototype.hasOwnProperty.call(query, 'page')) {
+    formatedPage = query.page
+    delete query.page
+  }
+  if (Object.prototype.hasOwnProperty.call(query, 'pageSize')) {
+    formatedLimit = query.pageSize
+    delete query.pageSize
+  }
+  if (Object.prototype.hasOwnProperty.call(query, 'sort')) {
+    let sortBy;
+    let sortDir = 'ascending'
+    formatedSort = query.sort
+    if (query.sort.charAt(0) === '-') {
+      sortDir = 'descending'
+      query.sort = query.sort.substr(1, query.sort.length)
+    }
+    sortBy = query.sort
+    delete query.sort
+    formatedSort = [[sortBy, sortDir]]
+  }
+
+  req.query = {
+    filters: formatedQ,
+    fields: formatedSelectedFields,
+    sort: formatedSort,
+    page: formatedPage,
+    limit: formatedLimit
+  }
+  next()
+}
+
+function sanitizeInput (req, res, next) {
+  if (!_.isEmpty(req.query)) {
+    sanitizeObject(req.query)
+  }
+  if (!_.isEmpty(req.params)) {
+    sanitizeObject(req.params)
+  }
+  if (!_.isEmpty(req.body)) {
+    sanitizeObject(req.body)
+  }
+  next()
 }
 
 function sanitizeObject (obj) {
@@ -36,10 +71,9 @@ function sanitizeObject (obj) {
       return sanitizeObject(obj[key])
     }
     obj[key] = xss(obj[key], {
-      whiteList: [],        // empty, means filter out all tags
-      stripIgnoreTag: true,      // filter out all HTML not in the whilelist
-      stripIgnoreTagBody: ['script'] // the script tag is a special case, we need
-      // to filter out its content
+      whiteList: [],
+      stripIgnoreTag: true,
+      stripIgnoreTagBody: ['script']
     })
   })
 }
@@ -47,13 +81,12 @@ function sanitizeObject (obj) {
 function validateInput (objectToBeValidateStr, schema) {
   return function (req, res, next) {
     let objectToBeValidate = objectToBeValidateStr === 'params' ? req.params : req.body
-    sanitizeObject(objectToBeValidate)
     Joi.validate(objectToBeValidate, schema, function (err) {
       if (!err) {
         next()
       } else {
         console.log(err)
-        res.status(500).json({message: 'Σφάλμα κατα την εισαγωγή δεδομένων'})
+        next(new ApplicationErrorClass(null, null, 199, err, 'Σφάλμα κατα την εισαγωγή δεδομένων.', null, 500))
       }
     })
   }
@@ -72,12 +105,12 @@ function logging (typeOfLog, type, user, code, error, text, ip) {
   }
 }
 
-function getClientIp(req){
+function getClientIp (req) {
   return req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress
 }
 
 module.exports = {
-  sanitizeObject,
+  sanitizeInput,
   formatQuery,
   validateInput,
   logging,
