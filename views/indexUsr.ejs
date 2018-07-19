@@ -51,8 +51,9 @@
   //   }
   // })
 
-  // $.get('/reg/info/b33c3ca1ee6575ee8ce1e322a1edaab4b53f952a032222b3add45d1c1615ea30f7c904316a0fe827bef94b46c4', function (data) {
-  // })
+  $.get('/user/all?fields=id', function (data) {
+    console.log(data)
+  })
 
   //  var formData = new FormData()
   // formData.append('password','Alexis5!');
@@ -151,26 +152,26 @@
 
 
 
-  var formData = new FormData()
-  formData.append('token', '37ce180670ccbef31b2f9552365b145401b9191635a2a1179b28d59144c3215914c8df2f3ed2a405a73ecb054f');
-  formData.append('newPassword', 'Alexis2!');
-  formData.append('newPasswordVerify', 'Alexis23!');
-
-  $.ajax({
-    url: '/user/reset/token',
-    type: 'POST',
-    contentType: false,
-    processData: false,
-    data: formData,
-    success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
-      console.log('yes')
-      console.log(data)
-
-    },
-    error: function (data) {
-      console.log('no')
-    }
-  })
+  // var formData = new FormData()
+  // formData.append('token', '37ce180670ccbef31b2f9552365b145401b9191635a2a1179b28d59144c3215914c8df2f3ed2a405a73ecb054f');
+  // formData.append('newPassword', 'Alexis2!');
+  // formData.append('newPasswordVerify', 'Alexis23!');
+  //
+  // $.ajax({
+  //   url: '/user/reset/token',
+  //   type: 'POST',
+  //   contentType: false,
+  //   processData: false,
+  //   data: formData,
+  //   success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
+  //     console.log('yes')
+  //     console.log(data)
+  //
+  //   },
+  //   error: function (data) {
+  //     console.log('no')
+  //   }
+  // })
 
 </script>
 
