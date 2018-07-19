@@ -12,6 +12,8 @@ const announcementFiles = require('./routes/bulletinBoard/announcementFiles/inde
 const categories = require('./routes/bulletinBoard/categories/index').router
 const index = require('./routes/index')
 const reg = require('./routes/user/reg/index').router
+const user = require('./routes/user/user/index').router
+
 
 const config = require('./configs/config')
 const apiFunctions = require('./routes/apiFunctions')
@@ -43,6 +45,8 @@ app.use('/announcements', announcements)
 app.use('/categories', categories)
 app.use('/files', announcementFiles)
 app.use('/reg', reg)
+app.use('/user', user)
+
 
 
 app.io = require('socket.io')()
