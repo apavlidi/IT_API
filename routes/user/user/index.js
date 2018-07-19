@@ -1,5 +1,7 @@
-var express = require('express')
-var router = express.Router()
+const express = require('express')
+const router = express.Router()
+const owasp = require('owasp-password-strength-test')
+
 
 const ApplicationErrorClass = require('./../../applicationErrorClass')
 const apiFunctions = require('./../../apiFunctions')
@@ -9,7 +11,6 @@ const joi = require('./joi')
 const functions = require('./function')
 const functionsUser = require('./../function')
 const database = require('../../../configs/database')
-const owasp = require('owasp-password-strength-test')
 
 let ldapMain = config.LDAP_CLIENT
 owasp.config(config.OWASP_CONFIG)
@@ -18,6 +19,22 @@ router.post('/chpw', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), a
 router.post('/chmail', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', joi.updateMail), updateMail)
 router.post('/reset', apiFunctions.validateInput('body', joi.resetPassword), resetPassword)
 router.post('/reset/token', apiFunctions.validateInput('body', joi.resetPasswordToken), resetPasswordToken)
+
+router.get('/all/:id?', getUsers)
+
+function getUsers (req, res, next) {
+  let userId = req.params.id
+  functions.ldapSearchQueryFormat(req.query, userId)
+    .then(function (options) {
+      return functions.searchUsersOnLDAP(ldapMain, options)
+    }).then(users => {
+    return functions.appendDatabaseInfo(users)
+  }).then(users => {
+    res.json(users)
+  }).catch(function (applicationError) {
+    next(applicationError)
+  })
+}
 
 function resetPasswordToken (req, res, next) {
   let token = req.body.token
@@ -47,7 +64,7 @@ function resetPasswordToken (req, res, next) {
     }).then(() => {
       res.sendStatus(200)
     }).catch(function (applicationError) {
-     next(applicationError)
+      next(applicationError)
     })
   } else {
     next(new ApplicationErrorClass('resetPasswordToken', null, 50, null, 'Οι κωδικοί δεν ταυτίζοντε.', apiFunctions.getClientIp(req), 500))
@@ -62,7 +79,6 @@ function resetPassword (req, res, next) {
   let opts = functionsUser.buildOptions('(uid=' + resetUsername + ')', 'sub', ['uid', 'mail']) //check if this is the correct id
   functionsUser.searchUserOnLDAP(ldapMain, opts).then(userFromLdap => {
     user = userFromLdap
-    console.log(user)
     if (functions.validateIputForReset(user, resetMail)) {
       return functions.buildTokenAndMakeEntryForReset(user)
     } else {

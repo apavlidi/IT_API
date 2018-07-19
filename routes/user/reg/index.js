@@ -39,7 +39,7 @@ function updatePassReg (req, res, next) {
   }).then(() => {
     return functions.deleteRegToken(token)
   }).then(() => {
-    res.json({chpw: true})
+    res.sendStatus(200)
   }).catch(function (applicationError) {
     applicationError.type = 'updatePassReg'
     applicationError.ip = apiFunctions.getClientIp(req)
@@ -47,7 +47,6 @@ function updatePassReg (req, res, next) {
   })
 }
 
-//IN ORDER TO WORK YOU NEED TO HIT /info FIRST
 function updateMailReg (req, res, next) {
   let newEmail = req.body.newMail
   functionsUser.checkIfTokenExistsAndRetrieveUser(req.params.token, database.UserReg).then(userFromDatabase => {
@@ -67,17 +66,16 @@ function updateMailReg (req, res, next) {
 
 function getInfoFromLdap (req, res, next) {
   let token = req.params.token
-  let userFromDatabase = {}
 
   functionsUser.checkIfTokenExistsAndRetrieveUser(token, database.UserReg).then(userFromDatabase => {
+    console.log(userFromDatabase)
     let opts = functionsUser.buildOptions('(uid=' + userFromDatabase.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
     return functionsUser.searchUserOnLDAP(ldapMain, opts)
   }).then(userFromLdap => {
-    userFromDatabase.dn = userFromLdap.dn
-    userFromDatabase.scope = userFromLdap.eduPersonScopedAffiliation
-    userFromDatabase.save(function (err) {
-      res.status(200).send(userFromLdap)
-    })
+    console.log(userFromLdap)
+    res.status(200).send(userFromLdap)
+  }).catch(function (applicationError) {
+    next(applicationError)
   })
 }
 
@@ -103,10 +101,18 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
       })
       results.on('end', function () {
         functions.validateUserAndPassOnPithia(ldapTei, user, password).then(() => {
+          let opts = functionsUser.buildOptions('(uid=' + user.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
+          return functionsUser.searchUserOnLDAP(ldapMain, opts)
+        }).then(userFromLdap => {
           let hash = crypto.randomBytes(45).toString('hex')
-          let newUser = new database.UserReg({uid: user.uid, dn: user.dn, token: hash})
+          let newUser = new database.UserReg({
+            uid: userFromLdap.uid,
+            dn: userFromLdap.dn,
+            token: hash,
+            scope: userFromLdap.eduPersonScopedAffiliation
+          })
           newUser.save(function () {
-            res.status(200).send({uid: user.uid, token: hash})
+            res.status(200).send({token: hash})
           })
         }).catch(function (applicationError) {
           next(applicationError)
@@ -115,12 +121,11 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
     }
   })
 
-  //TODO CHECK FOR UNBINDES
   ldapTei.unbind(function (err) {
   })
 }
 
-//TODO THIS IS ABOUT MAIL TOKEN AUTH.IT NEEDS TO BE DISCUSSED
+//TODO CHECK WHEN LDAP CREATES TOKEN FOR ACTIVATING
 function checkTokenUser (req, res, next) {
   let mail = req.body.mail
   let token = req.body.token
