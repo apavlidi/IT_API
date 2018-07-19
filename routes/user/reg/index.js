@@ -5,10 +5,10 @@ var crypto = require('crypto')
 
 const ApplicationErrorClass = require('./../../applicationErrorClass')
 const apiFunctions = require('./../../apiFunctions')
-const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
 const joi = require('./joi')
 const functions = require('./functions')
+const functionsUser = require('./../function')
 const database = require('../../../configs/database')
 const owasp = require('owasp-password-strength-test')
 
@@ -22,20 +22,20 @@ router.post('/updatemail/:token', apiFunctions.validateInput('body', joi.updateM
 router.post('/updatepass/:token', apiFunctions.validateInput('body', joi.updatePassReg), updatePassReg)
 
 function updatePassReg (req, res, next) {
-  let token  = req.params.token
+  let token = req.params.token
   let password = req.body.password
   let user = {}
   let ldapBinded = null
-  functions.checkIfTokenExistsAndRetrieveUser(token).then(userFromDatabase => {
+  functionsUser.checkIfTokenExistsAndRetrieveUser(token, database.UserReg).then(userFromDatabase => {
     user = userFromDatabase
-    return functions.checkPassword(owasp, password)
+    return functionsUser.checkPassword(owasp, password)
   }).then(() => {
-    return functions.bindLdap(ldapMain)
+    return functionsUser.bindLdap(ldapMain)
   }).then(ldapMainBinded => {
     ldapBinded = ldapMainBinded
     return functions.changeScopeLdap(ldapBinded, user.dn, user.scope)
   }).then(() => {
-    return functions.changePasswordLdap(ldapBinded, user.dn, password)
+    return functionsUser.changePasswordLdap(ldapBinded, user.dn, password)
   }).then(() => {
     return functions.deleteRegToken(token)
   }).then(() => {
@@ -50,22 +50,11 @@ function updatePassReg (req, res, next) {
 //IN ORDER TO WORK YOU NEED TO HIT /info FIRST
 function updateMailReg (req, res, next) {
   let newEmail = req.body.newMail
-  functions.checkIfTokenExistsAndRetrieveUser(req.params.token).then(userFromDatabase => {
-    let changeMailOpts = new ldap.Change({
-      operation: 'replace',
-      modification: {
-        mail: newEmail
-      }
-    })
-
-    functions.bindLdap(ldapMain).then(ldapMainBinded => {
-      ldapMainBinded.modify(userFromDatabase.dn, changeMailOpts, function (err) {
-        if (err) {
-          next(new ApplicationErrorClass('updateMailReg', null, 39, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
-        } else {
-          res.status(200)
-        }
-      })
+  functionsUser.checkIfTokenExistsAndRetrieveUser(req.params.token, database.UserReg).then(userFromDatabase => {
+    functionsUser.bindLdap(ldapMain).then(ldapMainBinded => {
+      return functionsUser.changeMailLdap(ldapMainBinded, userFromDatabase.dn, newEmail)
+    }).then(() => {
+      res.status(200)
     }).catch(function (err) {
       next(new ApplicationErrorClass('updateMailReg', null, 40, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
     })
@@ -77,32 +66,18 @@ function updateMailReg (req, res, next) {
 }
 
 function getInfoFromLdap (req, res, next) {
-  database.UserReg.findOne({token: req.params.token}).exec(function (err, userFromDatabase) {
-    if (!err && userFromDatabase) {
-      let opts = functions.buildOptions('(uid=' + userFromDatabase.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
+  let token = req.params.token
+  let userFromDatabase = {}
 
-      ldapMain.search(config.LDAP[process.env.NODE_ENV].baseUserDN, opts, function (err, results) {
-        if (err) {
-          next(new ApplicationErrorClass('getInfo', null, 36, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
-        }
-        let userFromLdap = {}
-        results.on('searchEntry', function (entry) {
-          userFromLdap = entry.object
-        })
-        results.on('error', function (err) {
-          next(new ApplicationErrorClass('getInfo', null, 37, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
-        })
-        results.on('end', function () {
-          userFromDatabase.dn = userFromLdap.dn
-          userFromDatabase.scope = userFromLdap.eduPersonScopedAffiliation
-          userFromDatabase.save(function (err) {
-            res.status(200).send(userFromLdap)
-          })
-        })
-      })
-    } else {
-      next(new ApplicationErrorClass('getInfo', null, 35, null, 'Παρακαλώ δοκιμάστε ξανά από το βήμα 1', apiFunctions.getClientIp(req), 500))
-    }
+  functionsUser.checkIfTokenExistsAndRetrieveUser(token, database.UserReg).then(userFromDatabase => {
+    let opts = functionsUser.buildOptions('(uid=' + userFromDatabase.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
+    return functionsUser.searchUserOnLDAP(ldapMain, opts)
+  }).then(userFromLdap => {
+    userFromDatabase.dn = userFromLdap.dn
+    userFromDatabase.scope = userFromLdap.eduPersonScopedAffiliation
+    userFromDatabase.save(function (err) {
+      res.status(200).send(userFromLdap)
+    })
   })
 }
 
@@ -113,7 +88,7 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
 
   let username = req.body.usernamePithia
   let password = req.body.passwordPithia
-  let opts = functions.buildOptions('(uid=' + username + ')', 'sub', 'uid')
+  let opts = functionsUser.buildOptions('(uid=' + username + ')', 'sub', 'uid')
 
   ldapTei.search(config.LDAP_TEI.baseUserDN, opts, function (err, results) {
     if (err) {
@@ -128,18 +103,19 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
       })
       results.on('end', function () {
         functions.validateUserAndPassOnPithia(ldapTei, user, password).then(() => {
-          let hash = crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
+          let hash = crypto.randomBytes(45).toString('hex')
           let newUser = new database.UserReg({uid: user.uid, dn: user.dn, token: hash})
           newUser.save(function () {
-            res.status(200).send({uid: user.uid, auth: true})
+            res.status(200).send({uid: user.uid, token: hash})
           })
-        }).catch(function (err) {
-          next(err)
+        }).catch(function (applicationError) {
+          next(applicationError)
         })
       })
     }
   })
 
+  //TODO CHECK FOR UNBINDES
   ldapTei.unbind(function (err) {
   })
 }
