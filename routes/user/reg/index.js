@@ -68,11 +68,9 @@ function getInfoFromLdap (req, res, next) {
   let token = req.params.token
 
   functionsUser.checkIfTokenExistsAndRetrieveUser(token, database.UserReg).then(userFromDatabase => {
-    console.log(userFromDatabase)
     let opts = functionsUser.buildOptions('(uid=' + userFromDatabase.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
     return functionsUser.searchUserOnLDAP(ldapMain, opts)
   }).then(userFromLdap => {
-    console.log(userFromLdap)
     res.status(200).send(userFromLdap)
   }).catch(function (applicationError) {
     next(applicationError)
