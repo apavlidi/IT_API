@@ -36,12 +36,9 @@ function enableNotySub (req, res, next) {
   database.Profile.findOne({ldapId: req.user.id}).exec(function (err, profile) {
     if (!err && profile) {
       functions.checkIfSubscribedAlready(req.user.id, req.body.browserFp).then(result => {
-        console.log(result.isSubscribed)
         if (result.isSubscribed) {
-          console.log('h1')
           return functions.modifyNotySub(result.profile, req.body, true)
         } else {
-          console.log('h2')
           return functions.createNewNotySubscription(profile, req.body)
         }
       }).then(() => {
@@ -54,8 +51,6 @@ function enableNotySub (req, res, next) {
 }
 
 function getNotySub (req, res) {
-  console.log('h')
-  console.log(req.user.id)
   let fp = req.query.fp
   database.Profile.findOne({
     ldapId: req.user.id,
