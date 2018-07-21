@@ -22,7 +22,6 @@ function validateUserAndPassOnPithia (ldapBind, user, password) {
     })
 }
 
-
 function changeScopeLdap (ldapMainBinded, userDN, userScope) {
   return new Promise(
     function (resolve, reject) {
