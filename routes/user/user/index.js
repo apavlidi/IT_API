@@ -2,15 +2,15 @@ const express = require('express')
 const router = express.Router()
 const owasp = require('owasp-password-strength-test')
 
-
 const ApplicationErrorClass = require('./../../applicationErrorClass')
 const apiFunctions = require('./../../apiFunctions')
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
 const joi = require('./joi')
 const functions = require('./function')
-const functionsUser = require('./../function')
+const functionsUser = require('../functionsUser')
 const database = require('../../../configs/database')
+const vCardT = require('vcards-js')
 
 let ldapMain = config.LDAP_CLIENT
 owasp.config(config.OWASP_CONFIG)
@@ -20,17 +20,43 @@ router.post('/chmail', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student),
 router.post('/reset', apiFunctions.validateInput('body', joi.resetPassword), resetPassword)
 router.post('/reset/token', apiFunctions.validateInput('body', joi.resetPasswordToken), resetPasswordToken)
 
-router.get('/all/:id?', getUsers)
+router.get('/vcard/:id', getUserVCard)
+router.get('/', getUsers)
 
-function getUsers (req, res, next) {
+function getUserVCard (req, res, next) {
   let userId = req.params.id
-  functions.ldapSearchQueryFormat(req.query, userId)
+  let options = functionsUser.buildOptions('(uid=' + userId + ')', 'sub', ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI']) //check if this is the correct id
+  functions.searchUsersOnLDAP(ldapMain, options).then(user => {
+    delete user.controls
+    delete user.dn
+    if (Object.keys(user).length !== 0) {
+      let vCard = vCardT()
+      vCard.firstName = user['displayName;lang-el']
+      vCard.organization = 'Τμήμα Πληροφορικής ΑΤΕΙΘ'
+      vCard.workPhone = user['telephoneNumber']
+      vCard.title = user['title;lang-el']
+      vCard.workUrl = user['labeledURI']
+      vCard.note = user['description;lang-el']
+      vCard.email = user['secondarymail']
+      res.set('Content-Type', 'text/vcard; name="user.vcf"')
+      res.set('Content-Disposition', 'inline; filename="user.vcf"')
+      res.send(vCard.getFormattedString())
+    } else {
+      next(new ApplicationErrorClass('getUserVCard', null, 80, null, 'Κάτι πήγε στραβά.', apiFunctions.getClientIp(req), 500))
+    }
+  })
+}
+
+//TODO CHECK FOR PAGING IF POSSIBLE
+function getUsers (req, res, next) {
+  functions.ldapSearchQueryFormat(req.query)
     .then(function (options) {
       return functions.searchUsersOnLDAP(ldapMain, options)
     }).then(users => {
-    return functions.appendDatabaseInfo(users)
+    return functionsUser.appendDatabaseInfo(users, req.query)
   }).then(users => {
-    res.json(users)
+    let usersSorted = functions.checkForSorting(users, req.query)
+    res.status(200).json(usersSorted)
   }).catch(function (applicationError) {
     next(applicationError)
   })
@@ -155,5 +181,5 @@ function updateMail (req, res, next) {
 }
 
 module.exports = {
-  router: router
+  router
 }

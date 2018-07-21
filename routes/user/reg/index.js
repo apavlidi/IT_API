@@ -8,7 +8,7 @@ const apiFunctions = require('./../../apiFunctions')
 const config = require('../../../configs/config')
 const joi = require('./joi')
 const functions = require('./functions')
-const functionsUser = require('./../function')
+const functionsUser = require('../functionsUser')
 const database = require('../../../configs/database')
 const owasp = require('owasp-password-strength-test')
 
