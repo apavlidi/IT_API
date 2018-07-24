@@ -35,7 +35,6 @@ function photoTypeIsValid (photo) {
   return (photo.mimetype == 'image/png' || photo.mimetype == 'image/jpeg' || photo.mimetype == 'image/bmp')
 }
 
-//TODO REFACTOR
 function updateSocialMediaIfNecessary (userId, reqBody) {
   return new Promise(
     function (resolve, reject) {
