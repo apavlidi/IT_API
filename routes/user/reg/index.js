@@ -6,7 +6,7 @@ var crypto = require('crypto')
 const ApplicationErrorClass = require('./../../applicationErrorClass')
 const apiFunctions = require('./../../apiFunctions')
 const config = require('../../../configs/config')
-const joi = require('./joi')
+const validSchemas = require('./joi')
 const functions = require('./functions')
 const functionsUser = require('../functionsUser')
 const database = require('../../../configs/database')
@@ -16,10 +16,10 @@ let ldapMain = config.LDAP_CLIENT
 owasp.config(config.OWASP_CONFIG)
 
 router.get('/info/:token', getInfoFromLdap)
-router.post('/pauth', apiFunctions.validateInput('body', joi.pithiaUser), checkPithiaUserAndCreateEntryDB)
-router.post('/mtoken', apiFunctions.validateInput('body', joi.tokenUser), checkTokenUser)
-router.post('/updatemail/:token', apiFunctions.validateInput('body', joi.updateMailReg), updateMailReg)
-router.post('/updatepass/:token', apiFunctions.validateInput('body', joi.updatePassReg), updatePassReg)
+router.post('/pauth', apiFunctions.validateInput('body', validSchemas.pithiaUser), checkPithiaUserAndCreateEntryDB)
+router.post('/mtoken', apiFunctions.validateInput('body', validSchemas.tokenUser), checkTokenUser)
+router.post('/updatemail/:token', apiFunctions.validateInput('body', validSchemas.updateMailReg), updateMailReg)
+router.post('/updatepass/:token', apiFunctions.validateInput('body', validSchemas.updatePassReg), updatePassReg)
 
 function updatePassReg (req, res, next) {
   let token = req.params.token

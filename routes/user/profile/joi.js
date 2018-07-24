@@ -1,4 +1,4 @@
-const Joi = require('joi');
+const Joi = require('joi')
 
 const profileUpdate = Joi.object().keys({
   'displayName;lang-el': Joi.string().allow(''),
@@ -14,7 +14,7 @@ const profileUpdate = Joi.object().keys({
   googlePlus: Joi.string().uri().optional().allow(''),
   linkedIn: Joi.string().uri().optional().allow(''),
   socialMediaExtra: Joi.string().optional()
-});
+})
 
 module.exports = {
   profileUpdate: profileUpdate

@@ -7,25 +7,26 @@ const apiFunctions = require('./../../apiFunctions')
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
 const ApplicationErrorClass = require('./../../applicationErrorClass')
-const joi = require('./joi')
+const validSchemas = require('./joi')
 
 router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), getNotySub)
-router.patch('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', joi.enableNotySub), enableNotySub)
-router.delete('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', joi.disableNotySub), disableNotySub)
+router.patch('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.enableNotySub), enableNotySub)
+router.delete('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.disableNotySub), disableNotySub)
 
 function disableNotySub (req, res, next) {
   database.Profile.findOne({ldapId: req.user.id}).exec(function (err, profile) {
     if (!err && profile) {
-      functions.checkIfSubscribedAlready(req.user.id, req.body.browserFp).then(result => {
-        if (req.body.all && req.body.all === 'true') {
-          return functions.disableAllNotiesSub(result.profile)
-        }
-        if (result.isSubscribed) {
-          return functions.modifyNotySub(result.profile, req.body, false)
-        }
-      }).then(() => {
-        res.status(200).json()
-      })
+      if (req.body.all && req.body.all === 'true') {
+        functions.disableAllNotiesSub(profile).then(() => {
+          res.sendStatus(200)
+        })
+      } else {
+        functions.checkIfSubscribedAlready(req.user.id, req.body.browserFp).then(result => {
+          functions.modifyNotySub(result.profile, req.body, false).then(() => {
+            res.sendStatus(200)
+          })
+        })
+      }
     } else {
       next(new ApplicationErrorClass('updateNotySub', req.user, 77, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
     }
