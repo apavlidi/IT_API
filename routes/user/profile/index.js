@@ -6,13 +6,13 @@ const functionsUser = require('../functionsUser')
 const functions = require('./function')
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
+const validSchemas = require('./joi')
 let ldapMain = config.LDAP_CLIENT
 const filter = require('ldap-filters')
-const ldapFunction = require('./../../../configs/ldap')
 const database = require('../../../configs/database')
 
 router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), getUserProfile)
-router.patch('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), updatePublicProfile)
+router.patch('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.profileUpdate), updatePublicProfile)
 router.delete('/photo', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), deleteProfilePhoto)
 
 function deleteProfilePhoto (req, res, next) {
@@ -30,8 +30,8 @@ function deleteProfilePhoto (req, res, next) {
 function updatePublicProfile (req, res, next) {
   let dataProfile = req.body
   let ldapBinded = null
-  functions.updatePhotoProfile(req.user, req.files).then(() => {
-    return functions.updateSocialMedia(req.user.id, req.body)
+  functions.updatePhotoProfileIfNecessary(req.user, req.files).then(() => {
+    return functions.updateSocialMediaIfNecessary(req.user.id, req.body)
   }).then(() => {
     return functionsUser.bindLdap(ldapMain)
   }).then(ldapMainBinded => {
@@ -40,15 +40,13 @@ function updatePublicProfile (req, res, next) {
     let opts = functionsUser.buildOptions(output.toString(), 'sub', 'id')
     return functionsUser.searchUserOnLDAP(ldapBinded, opts)
   }).then(user => {
-    let displayNameEl = dataProfile['displayName;lang-el']
-    if (displayNameEl) {
-      dataProfile.displayName = ldapFunction.elotTranslate(displayNameEl)
-    }
-    dataProfile.description.substring(0, 1000)
-    dataProfile['description;lang-el'].substring(0, 1000)
     return functions.modifyAttributesOnLDAP(ldapBinded, dataProfile, user.dn)
   }).then(() => {
     res.sendStatus(200)
+  }).catch(function (applicationError) {
+    applicationError.type = 'updatePublicProfile'
+    applicationError.ip = apiFunctions.getClientIp(req)
+    next(applicationError)
   })
 }
 

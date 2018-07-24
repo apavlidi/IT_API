@@ -1,7 +1,9 @@
 const INTEGER_FIELDS = ['id', 'regyear', 'regsem', 'uidNumber', 'gidNumber', 'status']
 
+const PERMITTED_FIELDS_TO_MODIFY_IN_PROFILE = ['displayName;lang-el', 'displayName', 'labeledURI', 'telephoneNumber', 'secondarymail', 'description', 'description;lang-el', 'eduPersonEntitlement']
+
 //elot translate
-function translate(text) {
+function translate (text) {
 
   /*@cc_on @if (@_jscript_version <= 5.0) return 'Scripting engine ' + @_jscript_version + ' not supported' @end @*/
 
@@ -145,7 +147,7 @@ function translate(text) {
 
   return text
 
-  function fixCase(text, mirror) {
+  function fixCase (text, mirror) {
 
     if (grCaps[mirror.charAt(0)]) {
 
@@ -167,7 +169,7 @@ function translate(text) {
 
   }
 
-  function stringToSet(s) {
+  function stringToSet (s) {
 
     var o = {}
 
@@ -182,9 +184,11 @@ function translate(text) {
   }
 
 }
+
 //elot translate
 
 module.exports = {
   INTEGER_FIELDS,
-  elotTranslate: translate
+  elotTranslate: translate,
+  PERMITTED_FIELDS_TO_MODIFY_IN_PROFILE
 }
