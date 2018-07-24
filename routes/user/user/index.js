@@ -6,7 +6,7 @@ const ApplicationErrorClass = require('./../../applicationErrorClass')
 const apiFunctions = require('./../../apiFunctions')
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
-const joi = require('./joi')
+const validSchemas = require('./joi')
 const functions = require('./function')
 const functionsUser = require('../functionsUser')
 const database = require('../../../configs/database')
@@ -15,18 +15,18 @@ const vCardT = require('vcards-js')
 let ldapMain = config.LDAP_CLIENT
 owasp.config(config.OWASP_CONFIG)
 
-router.post('/chpw', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', joi.chpw), updatePassword)
-router.post('/chmail', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', joi.updateMail), updateMail)
-router.post('/reset', apiFunctions.validateInput('body', joi.resetPassword), resetPassword)
-router.post('/reset/token', apiFunctions.validateInput('body', joi.resetPasswordToken), resetPasswordToken)
+router.post('/chpw', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.chpw), updatePassword)
+router.post('/chmail', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.updateMail), updateMail)
+router.post('/reset', apiFunctions.validateInput('body', validSchemas.resetPassword), resetPassword)
+router.post('/reset/token', apiFunctions.validateInput('body', validSchemas.resetPasswordToken), resetPasswordToken)
 
 router.get('/vcard/:id', getUserVCard)
 router.get('/', getUsers)
 
 function getUserVCard (req, res, next) {
   let userId = req.params.id
-  let options = functionsUser.buildOptions('(uid=' + userId + ')', 'sub', ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI']) //check if this is the correct id
-  functions.searchUsersOnLDAP(ldapMain, options).then(user => {
+  let options = functionsUser.buildOptions('(id=' + userId + ')', 'sub', ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI']) //check if this is the correct id
+  functionsUser.searchUserOnLDAP(ldapMain, options).then(user => {
     delete user.controls
     delete user.dn
     if (Object.keys(user).length !== 0) {

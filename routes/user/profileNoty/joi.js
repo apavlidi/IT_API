@@ -8,7 +8,7 @@ const enableNotySub = Joi.object().keys({
 })
 
 const disableNotySub = Joi.object().keys({
-  browserFp: Joi.string().required(),
+  browserFp: Joi.string().allow(),
   all: Joi.string().valid('true').allow()
 })
 
