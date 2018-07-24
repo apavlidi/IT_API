@@ -162,7 +162,6 @@ function addUserToArray (user, userCounter, usersArray) {
   usersArray.push(tmp)
 }
 
-//TODO MAKE THIS WITH PAGING THIS IS LIKE API.FORMATQUERY MAYBE MERGE IT
 function ldapSearchQueryFormat (query) {
   return new Promise(
     function (resolve, reject) {
