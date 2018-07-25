@@ -166,7 +166,7 @@ function ldapSearchQueryFormat (query) {
   return new Promise(
     function (resolve, reject) {
       let formatedLimit
-      let attrPublic = ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI', 'eduPersonEntitlement']
+      let attrPublic = ['id', 'displayName', 'displayName;lang-el', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI', 'eduPersonEntitlement']
       let searchAttr = [filter.attribute('eduPersonAffiliation').contains('staff')] //by default return only staff
 
       attrPublic = functionsUser.buildFieldsQueryLdap(attrPublic, query)
@@ -174,13 +174,17 @@ function ldapSearchQueryFormat (query) {
       searchAttr = buildFilterQueryLdap(attrPublic, query, searchAttr)
       let output = filter.AND(searchAttr)
 
-      resolve({
-        filter: output.toString(),
-        scope: 'sub',
-        paged: {pageSize: 250, pagePause: false},
-        sizeLimit: formatedLimit,
-        attributes: attrPublic
-      })
+      if (output.filters.length > 0) {
+        resolve({
+          filter: output.toString(),
+          scope: 'sub',
+          paged: {pageSize: 250, pagePause: false},
+          sizeLimit: formatedLimit,
+          attributes: attrPublic
+        })
+      } else {
+        reject(new ApplicationErrorClass(null, null, 61, null, 'Το πεδιο αυτό δεν υπάρχει', null, 500))
+      }
     })
 }
 
@@ -192,7 +196,7 @@ function buildFilterQueryLdap (attrPublic, query, searchAttr) {
         searchAttr = []
         Object.keys(queryQ).forEach(function (attr) {
           if (isAttributeInPublicAttributes(attr, attrPublic)) {
-            if (isAttributeInteger(attr) || attr === 'labeledURI' || attr === 'eduPersonEntitlement') {
+            if (isAttributeInteger(attr) || attr === 'labeledURI' || attr === 'eduPersonEntitlement' || attr === 'eduPersonAffiliation') {
               searchAttr.push(filter.attribute(attr).equalTo(queryQ[attr]))
             } else {
               searchAttr.push(filter.attribute(attr).contains(queryQ[attr]))

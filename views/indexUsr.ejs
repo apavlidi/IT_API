@@ -62,9 +62,9 @@ text/plain, application/pdf, image/*" type="file" name="uploads[]" multiple="mul
   //   }
   // })
 
-  // $.get('/user',function(data){
-  //   console.log(data)
-  // })
+  $.get('/user?q={"displayName;lang-el":"αντώνης","eduPersonAffiliation":"staff"}', function (data) {
+    console.log(data)
+  })
   //
   // $.get('/user/vcard/it144305',function(data){
   //   console.log(data)
@@ -211,7 +211,6 @@ text/plain, application/pdf, image/*" type="file" name="uploads[]" multiple="mul
     formData.append('googlePlus', '888')
     formData.append('linkedIn', '7')
     formData.append('linkedIn2', '7')
-
 
     let socialMediaExtraSubmit = []
     socialMediaExtraSubmit.push({
