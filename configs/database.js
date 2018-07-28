@@ -149,7 +149,7 @@ announcementsSchema.pre('remove', function (next) {
   })
 })
 
-const userRegSchema = Schema({
+const userRegMailTokenSchema = Schema({
   uid: String,
   dn: String,
   scope: String,
@@ -158,20 +158,29 @@ const userRegSchema = Schema({
   createdAt: {type: Date, expires: 60 * 60 * 48, default: Date.now}
 })
 
+const userRegSchema = Schema({
+  uid: String,
+  dn: String,
+  token: String,
+  scope:Number,
+  createdAt: {type: Date, expires: 60 , default: Date.now}
+})
+
 const userPwdResetSchema = Schema({
   uid: String,
   dn: String,
   mail: String,
   token: String,
-  createdAt: {type: Date, expires: 60 * 60 * 1, default: Date.now}
+  createdAt: {type: Date, expires: 60, default: Date.now}
 })
 
+const UserReg = mongoose.model('UserReg', userRegSchema)
 const Announcements = mongoose.model('Announcements', announcementsSchema)
 const AnnouncementsCategories = mongoose.model('AnnouncementsCategories', announcementsCategoriesSchema)
 const File = mongoose.model('File', fileSchema)
 const AccountType = mongoose.model('AccountType', accountTypesSchema)
 const LDAPConfigs = mongoose.model('LDAPConfigs', LDAPConfigsSchema)
-const UserReg = mongoose.model('UserReg', userRegSchema)
+const UserRegMailToken = mongoose.model('UserRegMailToken', userRegMailTokenSchema)
 const Notification = mongoose.model('Notification', notificationSchema)
 const Profile = mongoose.model('Profile', profileSchema)
 const UserPassReset = mongoose.model('UserPassReset', userPwdResetSchema)
@@ -185,5 +194,6 @@ module.exports = {
   UserReg,
   Profile,
   Notification,
-  UserPassReset
+  UserPassReset,
+  UserRegMailToken
 }

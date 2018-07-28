@@ -11,6 +11,11 @@ const announcements = require('./routes/bulletinBoard/announcements/index').rout
 const announcementFiles = require('./routes/bulletinBoard/announcementFiles/index').router
 const categories = require('./routes/bulletinBoard/categories/index').router
 const index = require('./routes/index')
+const reg = require('./routes/user/reg/index').router
+const user = require('./routes/user/user/index').router
+const profile = require('./routes/user/profile/index').router
+const noty = require('./routes/user/profileNoty/index').router
+
 const config = require('./configs/config')
 const apiFunctions = require('./routes/apiFunctions')
 
@@ -40,6 +45,10 @@ app.use('/', index)
 app.use('/announcements', announcements)
 app.use('/categories', categories)
 app.use('/files', announcementFiles)
+app.use('/reg', reg)
+app.use('/user', user)
+app.use('/profile', profile)
+app.use('/noty', noty)
 
 app.io = require('socket.io')()
 
@@ -60,6 +69,7 @@ mongoose.connect(config.MONGO[process.env.NODE_ENV], {
 app.use(function (err, req, res, next) {
   console.log('EXPRESS ERROR HANDLING')
   console.log('εδώ εμφανίζουμε οτι θέλουμε στον τελικό χρήστη απο το object')
+  console.log(err)
   if (err.text) {
     console.log(err)
     res.status(err.httpCode).json({
