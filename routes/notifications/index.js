@@ -34,7 +34,7 @@ function getNotificationsUser (req, res, next) {
           select: 'name -_id'
         }, function (err, profilePopulated) {
           if (profilePopulated && !err) {
-            console.log(profile)d
+            console.log(profile)
             res.status(200).json(profile)
           } else {
             next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 200, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
