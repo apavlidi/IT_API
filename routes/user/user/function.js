@@ -162,19 +162,20 @@ function addUserToArray (user, userCounter, usersArray) {
   usersArray.push(tmp)
 }
 
-function ldapSearchQueryFormat (query) {
+function ldapSearchQueryFormat (query, isPublic) {
   return new Promise(
     function (resolve, reject) {
       let formatedLimit
       let attrPublic = ['id', 'displayName', 'displayName;lang-el', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI', 'eduPersonEntitlement']
-      let searchAttr = [filter.attribute('eduPersonAffiliation').contains('staff')] //by default return only staff
+      let searchAttr
+      isPublic ? searchAttr = [filter.attribute('eduPersonAffiliation').contains('staff')] : searchAttr = []
 
       attrPublic = functionsUser.buildFieldsQueryLdap(attrPublic, query)
       formatedLimit = buildLimitQueryLdap(query)
       searchAttr = buildFilterQueryLdap(attrPublic, query, searchAttr)
       let output = filter.AND(searchAttr)
 
-      if (output.filters.length > 0) {
+      if (output.filters.length > 0 || !isPublic) {
         resolve({
           filter: output.toString(),
           scope: 'sub',
