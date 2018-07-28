@@ -21,7 +21,7 @@ function getNotificationsUser (req, res, next) {
   }
 
   let userId = req.user.id
-  database.Profile.findOne({'ldapId': userId}, limit).select('-ldapId -__v -_id -socialMedia').populate('notifications._notification', '-userId -__v -_id').exec(function (err, profile) {
+  database.Profile.findOne({'ldapId': userId}, limit).select('-ldapId -__v -_id -socialMedia -profilePhoto').populate('notifications._notification', '-userId -__v -_id').exec(function (err, profile) {
     if (profile) {
       let notifications = profile.notifications
       database.Announcements.populate(notifications, {
@@ -34,7 +34,7 @@ function getNotificationsUser (req, res, next) {
           select: 'name -_id'
         }, function (err, profilePopulated) {
           if (profilePopulated && !err) {
-            console.log(profile)
+            console.log(profile)d
             res.status(200).json(profile)
           } else {
             next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 200, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
