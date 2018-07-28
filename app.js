@@ -15,6 +15,8 @@ const reg = require('./routes/user/reg/index').router
 const user = require('./routes/user/user/index').router
 const profile = require('./routes/user/profile/index').router
 const noty = require('./routes/user/profileNoty/index').router
+const ldapUsers = require('./routes/ldap/users/index').router
+
 
 const config = require('./configs/config')
 const apiFunctions = require('./routes/apiFunctions')
@@ -49,6 +51,8 @@ app.use('/reg', reg)
 app.use('/user', user)
 app.use('/profile', profile)
 app.use('/noty', noty)
+app.use('/users', ldapUsers)
+
 
 app.io = require('socket.io')()
 

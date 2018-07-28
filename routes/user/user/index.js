@@ -49,7 +49,7 @@ function getUserVCard (req, res, next) {
 
 //TODO CHECK FOR PAGING IF POSSIBLE
 function getUsers (req, res, next) {
-  functions.ldapSearchQueryFormat(req.query)
+  functions.ldapSearchQueryFormat(req.query,true)
     .then(function (options) {
       return functions.searchUsersOnLDAP(ldapMain, options)
     }).then(users => {
