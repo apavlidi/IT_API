@@ -1,7 +1,6 @@
 const ApplicationErrorClass = require('../../applicationErrorClass')
 const config = require('../../../configs/config')
 const database = require('../../../configs/database')
-const crypt = require('crypt3/sync')
 const ldap = require('ldapjs')
 
 function validateUserAndPassOnPithia (ldapBind, user, password) {

@@ -1,8 +1,6 @@
 const crypt = require('crypt3/sync')
 const crypto = require('crypto')
-const async = require('async')
 const filter = require('ldap-filters')
-const text2png = require('text2png')
 const _ = require('lodash')
 
 const functionsUser = require('../functionsUser')
@@ -83,17 +81,32 @@ function sendEmailToken (mailToken) {
     })
 }
 
-function buildEmailToken (user, token) {
-  let bodyText = mailTexts.resetMailText['el'](token, user.uid, config.WEB_BASE_URL.url)
-  let subject = mailTexts.resetMailSubject['el'].normalUser
-  if (user.scope > 1) {
-    subject = mailTexts.resetMailSubject['el'].privUser
+function buildEmailToken (user, token, action) {
+  let bodyText
+  let subject
+  let from
+
+  if (action === 'Activation') {
+    bodyText = mailTexts.activationMailText['el'](token, user.mail, config.WEB_BASE_URL.url)
+    subject = mailTexts.activationMailSubject['el'].normalUser
+    if (user.scope > 1) {
+      subject = mailTexts.activationMailSubject['el'].privUser
+    }
+    from = mailTexts.activationMailFrom.el
+  } else if (action === 'Reset Mail') {
+    bodyText = mailTexts.resetMailText['el'](token, user.uid, config.WEB_BASE_URL.url)
+    subject = mailTexts.resetMailSubject['el'].normalUser
+    if (user.scope > 1) {
+      subject = mailTexts.resetMailSubject['el'].privUser
+    }
+    from = mailTexts.resetMailFrom.el
   }
+
   return {
-    from: mailTexts.resetMailFrom.el, // sender address
-    to: user.mail, // list of receivers
-    subject: subject, // Subject line
-    html: bodyText // html body
+    from: from,
+    to: user.mail,
+    subject: subject,
+    html: bodyText
   }
 }
 
@@ -104,7 +117,7 @@ function validateIputForReset (user, resetMail) {
 function buildTokenAndMakeEntryForReset (user) {
   return new Promise(
     function (resolve, reject) {
-      let token = crypto.randomBytes(45).toString('hex') //maybe make a func to build token
+      let token = buildToken()
       let tmpResetRequest = new database.UserPassReset({
         uid: user.uid,
         dn: user.dn,
@@ -121,58 +134,24 @@ function buildTokenAndMakeEntryForReset (user) {
     })
 }
 
-function searchUsersOnLDAP (ldapMain, opts) {
-  return new Promise(
-    function (resolve, reject) {
-      ldapMain.search(config.LDAP[process.env.NODE_ENV].baseUserDN, opts, function (err, results) {
-        if (err) {
-          reject(err)
-        } else {
-          let usersArray = []
-          let userCounter = 0
-          results.on('searchEntry', function (user) {
-            addUserToArray(user.object, userCounter++, usersArray)
-          })
-          results.on('error', function (err) {
-            (err.code === 4) ? resolve(usersArray) : reject()
-          })
-          results.on('end', function (result) {
-            resolve(usersArray)
-          })
-        }
-      })
-    })
+function buildToken () {
+  return crypto.randomBytes(45).toString('hex')
 }
 
-function addUserToArray (user, userCounter, usersArray) {
-  let tmp = user
-  delete tmp.dn
-  delete tmp.controls
-  tmp.serNumber = userCounter
-  if (user.secondarymail) {
-    tmp.secondarymail = text2png(user.secondarymail, {
-      font: '14px Futura',
-      textColor: 'black',
-      bgColor: 'white',
-      lineSpacing: 1,
-      padding: 1,
-      output: 'dataURL'
-    })
-  }
-  usersArray.push(tmp)
-}
+
 
 function ldapSearchQueryFormat (query, isPublic) {
   return new Promise(
     function (resolve, reject) {
       let formatedLimit
-      let attrPublic = ['id', 'displayName', 'displayName;lang-el', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI', 'eduPersonEntitlement']
+      let attributesPermitted
       let searchAttr
+      isPublic ? attributesPermitted = ['id', 'displayName', 'displayName;lang-el', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI', 'eduPersonEntitlement'] : attributesPermitted = []
       isPublic ? searchAttr = [filter.attribute('eduPersonAffiliation').contains('staff')] : searchAttr = []
 
-      attrPublic = functionsUser.buildFieldsQueryLdap(attrPublic, query)
+      attributesPermitted = functionsUser.buildFieldsQueryLdap(attributesPermitted, query)
       formatedLimit = buildLimitQueryLdap(query)
-      searchAttr = buildFilterQueryLdap(attrPublic, query, searchAttr)
+      searchAttr = buildFilterQueryLdap(attributesPermitted, query, searchAttr)
       let output = filter.AND(searchAttr)
 
       if (output.filters.length > 0 || !isPublic) {
@@ -181,7 +160,7 @@ function ldapSearchQueryFormat (query, isPublic) {
           scope: 'sub',
           paged: {pageSize: 250, pagePause: false},
           sizeLimit: formatedLimit,
-          attributes: attrPublic
+          attributes: attributesPermitted
         })
       } else {
         reject(new ApplicationErrorClass(null, null, 61, null, 'Το πεδιο αυτό δεν υπάρχει', null, 500))
@@ -189,14 +168,14 @@ function ldapSearchQueryFormat (query, isPublic) {
     })
 }
 
-function buildFilterQueryLdap (attrPublic, query, searchAttr) {
+function buildFilterQueryLdap (attributesPermitted, query, searchAttr) {
   try {
     if (Object.prototype.hasOwnProperty.call(query, 'q')) {
       let queryQ = JSON.parse(query.q)
       if (!_.isEmpty(queryQ)) {
         searchAttr = []
         Object.keys(queryQ).forEach(function (attr) {
-          if (isAttributeInPublicAttributes(attr, attrPublic)) {
+          if (isAttributeInPublicAttributes(attr, attributesPermitted) || attributesPermitted.length === 0) {
             if (isAttributeInteger(attr) || attr === 'labeledURI' || attr === 'eduPersonEntitlement' || attr === 'eduPersonAffiliation') {
               searchAttr.push(filter.attribute(attr).equalTo(queryQ[attr]))
             } else {
@@ -223,12 +202,6 @@ function isAttributeInPublicAttributes (attribute, attributesPublic) {
 function buildLimitQueryLdap (query) {
   if (Object.prototype.hasOwnProperty.call(query, 'limit')) {
     return parseInt(query.limit)
-  }
-}
-
-function buildPageSizeQueryLdap (query) {
-  if (Object.prototype.hasOwnProperty.call(query, 'pageSize')) {
-    return parseInt(query.pageSize)
   }
 }
 
@@ -263,7 +236,7 @@ module.exports = {
   deleteResetToken,
   passwordsAreSame,
   ldapSearchQueryFormat,
-  searchUsersOnLDAP,
-  checkForSorting
+  checkForSorting,
+  buildToken
 }
 
