@@ -12,19 +12,146 @@
         integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
         crossorigin="anonymous"></script>
 <script>
-  $.get('/users?access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE', function (data) {
-    console.log(data)
-  })
+  // $.get('/users?q={"id":"5106"}&access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE', function (data) {
+  //   console.log(data)
+  // })
+
+  // $.get('/groups?access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE', function (data) {
+  //   console.log(data)
+  // })
+
+  // $.get('/accountTypes?fields=title,value&access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE', function (data) {
+  //   console.log(data)
+  // })
+
+  // $.get('/user2/5106?access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE', function (data) {
+  //   console.log(data)
+  // })
 
   // var formData = new FormData()
-  // formData.append('browserFp', '55Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.01d354538d3af49f9a5d3d6a5394e73e5')
-  // formData.append('auth', '1')
-  // formData.append('p256dh', '2')
-  // formData.append('endpoint', '3https://android.googleapis.com/gcm/send/djA2Ox5DJ8s:APA91bENs_7BWCMD07Ks_focqu1wHzAqCFVgdJ4NtKbSJrzdWJbJvHQo1iA600zSI3aiz3INQik-9Ma24eWsOHPecoQ8-kdo6roV42ifqRfYNUrUD1qXsTAUXdKH03a0h6wU3Ej7Glg3')
+  // formData.append('cn', 'test2')
+  // $.ajax({
+  //   url: '/groups?access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE',
+  //   type: 'POST',
+  //   contentType: false,
+  //   processData: false,
+  //   data: formData,
+  //   success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
+  //     console.log('yes')
+  //     console.log(data)
+  //
+  //   },
+  //   error: function (data) {
+  //     console.log('no')
+  //   }
+  // })
+
+  // formData.append('description', 'test')
+  // formData.append('description;lang-el', 'test')
+  // formData.append('eduPersonAffiliation', 'test')
+  // formData.append('eduPersonPrimaryAffiliation', 'test')
+  // formData.append('eduPersonScopedAffiliation', '1')
+  // formData.append('am', 'test')
+  // formData.append('regyear', '1')
+  // formData.append('mail', 'test@it.teithe.gr')
+  // formData.append('secondarymail', 'test@it.teithe.gr')
+  // formData.append('regsem', '1')
+  // formData.append('id', '1')
+  // formData.append('status', '1')
+  // formData.append('sem', '1')
+  // formData.append('gidNumber', '1')
+  // formData.append('homeDirectory', '1')
+
+  // var formData = new FormData()
+  // formData.append('name', 'test')
+  // formData.append('lname', 'test')
+  // formData.append('type', '1')
+  // formData.append('typeP', '1')
+  // formData.append('scope', '1')
+  // formData.append('mail', 'apavlidi@it.teithe.gr')
+  // formData.append('gid', '1')
+  // formData.append('am', '123')
+  // formData.append('title', 'test')
+  // formData.append('titleGr', 'test')
+  // formData.append('uid', 'test2')
+  // formData.append('basedn', 'ou=student,ou=people,dc=it,dc=teithe,dc=gr')
   //
   // $.ajax({
-  //   url: '/noty?access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE',
+  //   url: '/user2?access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE',
+  //   type: 'POST',
+  //   contentType: false,
+  //   processData: false,
+  //   data: formData,
+  //   success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
+  //     console.log('yes')
+  //     console.log(data)
+  //
+  //   },
+  //   error: function (data) {
+  //     console.log('no')
+  //   }
+  // })
+
+  var formData = new FormData()
+  formData.append('attr', 'regsem')
+  formData.append('value', '5')
+
+
+  $.ajax({
+    url: '/user2/62?access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE',
+    type: 'PATCH',
+    contentType: false,
+    processData: false,
+    data: formData,
+    success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
+      console.log('yes')
+      console.log(data)
+
+    },
+    error: function (data) {
+      console.log('no')
+    }
+  })
+
+  // $.ajax({
+  //   url: '/user2/55?access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE',
+  //   type: 'DELETE',
+  //   contentType: false,
+  //   processData: false,
+  //   success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
+  //     console.log('yes')
+  //     console.log(data)
+  //
+  //   },
+  //   error: function (data) {
+  //     console.log('no')
+  //   }
+  // })
+
+  // var formData = new FormData()
+  // formData.append('data', '55')
+  // $.ajax({
+  //   url: '/configs/id?access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE',
   //   type: 'PATCH',
+  //   contentType: false,
+  //   processData: false,
+  //   data: formData,
+  //   success: function (data) { //afou bi to arxio tote vale kai tin anakinosi
+  //     console.log('yes')
+  //     console.log(data)
+  //
+  //   },
+  //   error: function (data) {
+  //     console.log('no')
+  //   }
+  // })
+
+  // var formData = new FormData()
+  // formData.append('dn', 'cn=test2,ou=groups,dc=it,dc=teithe,dc=gr')
+  //
+  // $.ajax({
+  //   url: '/groups?access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.CC-mr6gI43FXKV02KKNTJNB1C-RmrvXi4sTbURwHJiyMSgh99iTytKGKRma5VQx5t7fwDW8tblMTG0HAXxC6jZo9LDJEaso5t-v9JoaIkdi_f5ZDCfRa9XZRuC_VwuSmlx4ShMryn9gvRx9bZhGSir5Nm154yOVrqjvjrxmZZTIiMgRQU2c4s3BJ0ihkIgBm-a4LlfoVEr77MgV5Uk249HvvsHXD-6Z8_FkPLI7SA3rDkyt18Ye5qQiDZUUzGe5kBfsiUV6A89JG3wYHJHowZ3brahvHgKbqMl17GUI2Jpiq-7x2l_1U70_mGvAc79_gkGer3jJlHae-5TH7IY2pXxBvNz8PIkv9TGNxbhrlW7JowbA1G_cAFtiEmDWWhuUkFYySVO4bF9aE_lXQR79Pj8kQWesZ4z_HrApxTVBe320Q8vyhrtR9Msg9xOdmxsshB2SAp2ocjc9fme6PIIl2XY5rrEObBJUCakcQAK8J6fSJP69zJuU0hQa3g2IYyS4K5W4vPFYB1NVVOwmZ2D5POpbaDWPer7VAwuy9B8662tHb2VokdbZ6eH9pmr5b2vbZLRvngLu90rsBtlf34JYuagY2qP8vhUe9yqM7qAN9F6odr5jOq6UquK6UUhwXV_PGV33xjZRt12nz2aG8W9rTNiEkq9B6srF5pz1bALApYLE',
+  //   type: 'DELETE',
   //   contentType: false,
   //   processData: false,
   //   data: formData,
