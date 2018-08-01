@@ -40,7 +40,6 @@ function updateUser (req, res, next) {
   }).then(() => {
     res.sendStatus(200)
   }).catch(function (applicationError) {
-    console.log(req.user)
     applicationError.type = 'updateUser'
     applicationError.user = req.user.id
     applicationError.ip = apiFunctions.getClientIp(req)
