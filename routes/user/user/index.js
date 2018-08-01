@@ -11,6 +11,7 @@ const functions = require('./function')
 const functionsUser = require('../functionsUser')
 const database = require('../../../configs/database')
 const vCardT = require('vcards-js')
+const ldapFunctions = require('../../ldapFunctions')
 
 let ldapMain = config.LDAP_CLIENT
 owasp.config(config.OWASP_CONFIG)
@@ -25,8 +26,8 @@ router.get('/', getUsers)
 
 function getUserVCard (req, res, next) {
   let userId = req.params.id
-  let options = functionsUser.buildOptions('(id=' + userId + ')', 'sub', ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI']) //check if this is the correct id
-  functionsUser.searchUserOnLDAP(ldapMain, options).then(user => {
+  let options = ldapFunctions.buildOptions('(id=' + userId + ')', 'sub', ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI']) //check if this is the correct id
+  ldapFunctions.searchUserOnLDAP(ldapMain, options).then(user => {
     delete user.controls
     delete user.dn
     if (Object.keys(user).length !== 0) {
@@ -49,9 +50,9 @@ function getUserVCard (req, res, next) {
 
 //TODO CHECK FOR PAGING IF POSSIBLE
 function getUsers (req, res, next) {
-  functions.ldapSearchQueryFormat(req.query,true)
+  functions.ldapSearchQueryFormat(req.query, true)
     .then(function (options) {
-      return functions.searchUsersOnLDAP(ldapMain, options)
+      return ldapFunctions.searchUsersOnLDAP(ldapMain, options)
     }).then(users => {
     return functionsUser.appendDatabaseInfo(users, req.query)
   }).then(users => {
@@ -74,11 +75,11 @@ function resetPasswordToken (req, res, next) {
       user = userFromDatabase
       return functionsUser.checkPassword(owasp, newPassword)
     }).then(() => {
-      return functionsUser.bindLdap(ldapMain)
+      return ldapFunctions.bindLdap(ldapMain)
     }).then(ldapMainBinded => {
       ldapBinded = ldapMainBinded
-      let opts = functionsUser.buildOptions('(uid=' + user.uid + ')', 'sub', ['pwdHistory', 'userPassword']) //check if this is the correct id
-      return functionsUser.searchUserOnLDAP(ldapMainBinded, opts)
+      let opts = ldapFunctions.buildOptions('(uid=' + user.uid + ')', 'sub', ['pwdHistory', 'userPassword']) //check if this is the correct id
+      return ldapFunctions.searchUserOnLDAP(ldapMainBinded, opts)
     }).then(user => {
       if (!functions.newPasswordExistsInHistory(user, newPassword, next)) {
         return functionsUser.changePasswordLdap(ldapBinded, user.dn, newPassword)
@@ -102,8 +103,8 @@ function resetPassword (req, res, next) {
   let resetUsername = req.body.username
   let user = {}
   //TODO REQUEST GOOGLE REPATCHA
-  let opts = functionsUser.buildOptions('(uid=' + resetUsername + ')', 'sub', ['uid', 'mail']) //check if this is the correct id
-  functionsUser.searchUserOnLDAP(ldapMain, opts).then(userFromLdap => {
+  let opts = ldapFunctions.buildOptions('(uid=' + resetUsername + ')', 'sub', ['uid', 'mail']) //check if this is the correct id
+  ldapFunctions.searchUserOnLDAP(ldapMain, opts).then(userFromLdap => {
     user = userFromLdap
     if (functions.validateIputForReset(user, resetMail)) {
       return functions.buildTokenAndMakeEntryForReset(user)
@@ -111,7 +112,7 @@ function resetPassword (req, res, next) {
       throw new ApplicationErrorClass('resetPassword', null, 53, null, 'Τα στοιχεία σας δεν είναι σωστά.', apiFunctions.getClientIp(req), 500)
     }
   }).then(token => {
-    let mailToken = functions.buildEmailToken(user, token)
+    let mailToken = functions.buildEmailToken(user, token, 'Reset Mail')
     return functions.sendEmailToken(mailToken)
   }).then(() => {
     res.status(200).json({
@@ -133,11 +134,11 @@ function updatePassword (req, res, next) {
 
   if (functions.passwordsAreDifferent(oldPassword, newPassword)) {
     functionsUser.checkPassword(owasp, newPassword).then(() => {
-      return functionsUser.bindLdap(ldapMain)
+      return ldapFunctions.bindLdap(ldapMain)
     }).then(ldapMainBinded => {
       ldapBinded = ldapMainBinded
-      let opts = functionsUser.buildOptions('(uid=' + req.user.uid + ')', 'sub', ['pwdHistory', 'userPassword']) //check if this is the correct id
-      return functionsUser.searchUserOnLDAP(ldapMainBinded, opts)
+      let opts = ldapFunctions.buildOptions('(uid=' + req.user.uid + ')', 'sub', ['pwdHistory', 'userPassword']) //check if this is the correct id
+      return ldapFunctions.searchUserOnLDAP(ldapMainBinded, opts)
     }).then(user => {
       if (functions.oldPassIsCorrect(user, oldPassword)) {
         if (!functions.newPasswordExistsInHistory(user, newPassword)) {
@@ -164,10 +165,10 @@ function updatePassword (req, res, next) {
 function updateMail (req, res, next) {
   let newEmail = req.body.newMail
   let ldapBinded = null
-  let opts = functionsUser.buildOptions('(uid=' + req.user.uid + ')', 'sub', 'uid') //check if this is the correct id
-  functionsUser.bindLdap(ldapMain).then(ldapMainBinded => {
+  let opts = ldapFunctions.buildOptions('(uid=' + req.user.uid + ')', 'sub', 'uid') //check if this is the correct id
+  ldapFunctions.bindLdap(ldapMain).then(ldapMainBinded => {
     ldapBinded = ldapMainBinded
-    return functionsUser.searchUserOnLDAP(ldapBinded, opts)
+    return ldapFunctions.searchUserOnLDAP(ldapBinded, opts)
   }).then(user => {
     return functionsUser.changeMailLdap(ldapBinded, user.dn, newEmail)
   }).then(() => {

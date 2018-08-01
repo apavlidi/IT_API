@@ -128,7 +128,7 @@ function extraSocialMediaExistsInProfile (profile, extraSocialMedia) {
   })
 }
 
-function modifyAttributesOnLDAP (ldapMain, dataProfile, userDN) {
+function modifyAttributesOnLDAPbyProfile (ldapMain, dataProfile, userDN) {
   return new Promise(
     function (resolve, reject) {
       modifyDataProfileInput(dataProfile)
@@ -176,5 +176,5 @@ function modifyDataProfileInput (dataProfile) {
 module.exports = {
   updateSocialMediaIfNecessary,
   updatePhotoProfileIfNecessary,
-  modifyAttributesOnLDAP
+  modifyAttributesOnLDAPbyProfile
 }

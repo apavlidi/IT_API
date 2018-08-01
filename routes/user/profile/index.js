@@ -1,8 +1,8 @@
-var express = require('express')
-var router = express.Router()
-
+const express = require('express')
+const router = express.Router()
 const apiFunctions = require('./../../apiFunctions')
 const functionsUser = require('../functionsUser')
+const ldapFunctions = require('../../ldapFunctions')
 const functions = require('./function')
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
@@ -33,14 +33,14 @@ function updatePublicProfile (req, res, next) {
   functions.updatePhotoProfileIfNecessary(req.user, req.files).then(() => {
     return functions.updateSocialMediaIfNecessary(req.user.id, req.body)
   }).then(() => {
-    return functionsUser.bindLdap(ldapMain)
+    return ldapFunctions.bindLdap(ldapMain)
   }).then(ldapMainBinded => {
     ldapBinded = ldapMainBinded
     let output = filter.AND([filter.attribute('id').equalTo(req.user.id)])
-    let opts = functionsUser.buildOptions(output.toString(), 'sub', 'id')
-    return functionsUser.searchUserOnLDAP(ldapBinded, opts)
+    let opts = ldapFunctions.buildOptions(output.toString(), 'sub', 'id')
+    return ldapFunctions.searchUserOnLDAP(ldapBinded, opts)
   }).then(user => {
-    return functions.modifyAttributesOnLDAP(ldapBinded, dataProfile, user.dn)
+    return functions.modifyAttributesOnLDAPbyProfile(ldapBinded, dataProfile, user.dn)
   }).then(() => {
     res.sendStatus(200)
   }).catch(function (applicationError) {
@@ -51,8 +51,8 @@ function updatePublicProfile (req, res, next) {
 }
 
 function getUserProfile (req, res, next) {
-  let opts = functionsUser.buildOptions('(id=' + req.user.id + ')', 'sub', functionsUser.buildFieldsQueryLdap(['am', 'description', 'eduPersonEntitlement', 'pwdChangedTime', 'displayName', 'regyear', 'regsem', 'sem', 'givenName', 'sn', 'fathersname', 'cn', 'secondarymail', 'mail', 'eduPersonAffiliation', 'eduPersonPrimaryAffiliation', 'title', 'telephoneNumber', 'labeledURI'], req.query))
-  functionsUser.searchUserOnLDAP(ldapMain, opts).then(user => {
+  let opts = ldapFunctions.buildOptions('(id=' + req.user.id + ')', 'sub', functionsUser.buildFieldsQueryLdap(['am', 'description', 'eduPersonEntitlement', 'pwdChangedTime', 'displayName', 'regyear', 'regsem', 'sem', 'givenName', 'sn', 'fathersname', 'cn', 'secondarymail', 'mail', 'eduPersonAffiliation', 'eduPersonPrimaryAffiliation', 'title', 'telephoneNumber', 'labeledURI'], req.query))
+  ldapFunctions.searchUserOnLDAP(ldapMain, opts).then(user => {
     delete user.controls
     delete user.dn
     return functionsUser.appendDatabaseInfo([user], req.query)
