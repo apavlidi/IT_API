@@ -1,7 +1,7 @@
-var express = require('express')
-var router = express.Router()
+const express = require('express')
+const router = express.Router()
 const ldap = require('ldapjs')
-var crypto = require('crypto')
+const crypto = require('crypto')
 
 const ApplicationErrorClass = require('./../../applicationErrorClass')
 const apiFunctions = require('./../../apiFunctions')
@@ -11,6 +11,7 @@ const functions = require('./functions')
 const functionsUser = require('../functionsUser')
 const database = require('../../../configs/database')
 const owasp = require('owasp-password-strength-test')
+const ldapFunctions = require('../../ldapFunctions')
 
 let ldapMain = config.LDAP_CLIENT
 owasp.config(config.OWASP_CONFIG)
@@ -30,7 +31,7 @@ function updatePassReg (req, res, next) {
     user = userFromDatabase
     return functionsUser.checkPassword(owasp, password)
   }).then(() => {
-    return functionsUser.bindLdap(ldapMain)
+    return ldapFunctions.bindLdap(ldapMain)
   }).then(ldapMainBinded => {
     ldapBinded = ldapMainBinded
     return functions.changeScopeLdap(ldapBinded, user.dn, user.scope)
@@ -50,7 +51,7 @@ function updatePassReg (req, res, next) {
 function updateMailReg (req, res, next) {
   let newEmail = req.body.newMail
   functionsUser.checkIfTokenExistsAndRetrieveUser(req.params.token, database.UserReg).then(userFromDatabase => {
-    functionsUser.bindLdap(ldapMain).then(ldapMainBinded => {
+    ldapFunctions.bindLdap(ldapMain).then(ldapMainBinded => {
       return functionsUser.changeMailLdap(ldapMainBinded, userFromDatabase.dn, newEmail)
     }).then(() => {
       res.status(200)
@@ -68,8 +69,8 @@ function getInfoFromLdap (req, res, next) {
   let token = req.params.token
 
   functionsUser.checkIfTokenExistsAndRetrieveUser(token, database.UserReg).then(userFromDatabase => {
-    let opts = functionsUser.buildOptions('(uid=' + userFromDatabase.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
-    return functionsUser.searchUserOnLDAP(ldapMain, opts)
+    let opts = ldapFunctions.buildOptions('(uid=' + userFromDatabase.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
+    return ldapFunctions.searchUserOnLDAP(ldapMain, opts)
   }).then(userFromLdap => {
     res.status(200).send(userFromLdap)
   }).catch(function (applicationError) {
@@ -84,7 +85,7 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
 
   let username = req.body.usernamePithia
   let password = req.body.passwordPithia
-  let opts = functionsUser.buildOptions('(uid=' + username + ')', 'sub', 'uid')
+  let opts = ldapFunctions.buildOptions('(uid=' + username + ')', 'sub', 'uid')
 
   ldapTei.search(config.LDAP_TEI.baseUserDN, opts, function (err, results) {
     if (err) {
@@ -99,8 +100,8 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
       })
       results.on('end', function () {
         functions.validateUserAndPassOnPithia(ldapTei, user, password).then(() => {
-          let opts = functionsUser.buildOptions('(uid=' + user.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
-          return functionsUser.searchUserOnLDAP(ldapMain, opts)
+          let opts = ldapFunctions.buildOptions('(uid=' + user.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
+          return ldapFunctions.searchUserOnLDAP(ldapMain, opts)
         }).then(userFromLdap => {
           let hash = crypto.randomBytes(45).toString('hex')
           let newUser = new database.UserReg({

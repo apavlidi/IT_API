@@ -1,31 +1,9 @@
 const ApplicationErrorClass = require('../applicationErrorClass')
-const config = require('../../configs/config')
 const database = require('../../configs/database')
 const crypt = require('crypt3/sync')
 const ldap = require('ldapjs')
 const async = require('async')
 const _ = require('lodash')
-
-function bindLdap (ldapMain) {
-  return new Promise(
-    function (resolve, reject) {
-      ldapMain.bind(config.LDAP[process.env.NODE_ENV].user, config.LDAP[process.env.NODE_ENV].password, function (err) {
-        if (err) {
-          reject(new ApplicationErrorClass(null, null, 38, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
-        } else {
-          resolve(ldapMain)
-        }
-      })
-    })
-}
-
-function buildOptions (filter, scope, attributes) {
-  return {
-    filter: filter,
-    scope: scope,
-    attributes: attributes
-  }
-}
 
 function checkIfTokenExistsAndRetrieveUser (token, schema) {
   return new Promise(
@@ -50,24 +28,6 @@ function checkPassword (owasp, password) {
         reject(new ApplicationErrorClass(null, null, 40, result.errors[0], 'Υπήρχε σφάλμα στον κωδικό', null, 500)
         )
       }
-    })
-}
-
-function searchUserOnLDAP (ldap, options) {
-  return new Promise(
-    function (resolve, reject) {
-      let user = {}
-      ldap.search(config.LDAP[process.env.NODE_ENV].baseUserDN, options, function (err, results) {
-        results.on('searchEntry', function (entry) {
-          user = entry.object
-        })
-        results.on('error', function (err) {
-          reject(new ApplicationErrorClass(null, null, 32, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
-        })
-        results.on('end', function (result) {
-          resolve(user)
-        })
-      })
     })
 }
 
@@ -164,28 +124,31 @@ function buildDataForUserFromDB (user, profile, query) {
   return user
 }
 
-function buildFieldsQueryLdap (attr, query) {
+function buildFieldsQueryLdap (attributesPermitted, query) {
   let filterAttr = ['id'] //this needs in order to return always id
 
   if (Object.prototype.hasOwnProperty.call(query, 'fields')) {
     let fields = query.fields.split(',')
-    fields.forEach(field => {
-      if (attr.indexOf(field) > -1) {
+
+    if (attributesPermitted.length === 0) {
+      fields.forEach(field => {
         filterAttr.push(field)
-      }
-    })
-  }
-  if (Object.prototype.hasOwnProperty.call(query, 'fields')) {
+      })
+    } else {
+      fields.forEach(field => {
+        if (attributesPermitted.indexOf(field) > -1) {
+          filterAttr.push(field)
+        }
+      })
+    }
+
     return filterAttr
   } else {
-    return attr
+    return attributesPermitted
   }
 }
 
 module.exports = {
-  bindLdap,
-  buildOptions,
-  searchUserOnLDAP,
   checkPassword,
   changePasswordLdap,
   changeMailLdap,
