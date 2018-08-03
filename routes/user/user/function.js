@@ -153,7 +153,6 @@ function ldapSearchQueryFormat (query, isPublic) {
       formatedLimit = buildLimitQueryLdap(query)
       searchAttr = buildFilterQueryLdap(attributesPermitted, query, searchAttr)
       let output = filter.AND(searchAttr)
-
       if (output.filters.length > 0 || !isPublic) {
         resolve({
           filter: output.toString(),
@@ -237,6 +236,6 @@ module.exports = {
   passwordsAreSame,
   ldapSearchQueryFormat,
   checkForSorting,
-  buildToken
+  buildToken,
 }
 
