@@ -3,6 +3,7 @@ const config = require('../../../configs/config')
 const database = require('../../../configs/database')
 const ldap = require('ldapjs')
 const ldapConfig = require('../../../configs/ldap')
+const functionsUser = require('../../user/functionsUser')
 
 const ldapBaseDN = (uid, basedn) => {
   return 'uid=' + uid + ',' + basedn
@@ -30,6 +31,7 @@ function buildUser (reqBody) {
 function createUser (ldapBinded, newUser) {
   return new Promise(
     function (resolve, reject) {
+      console.log(newUser)
       let basedn = newUser.basedn
       if (newUser.eduPersonScopedAffiliation > config.PERMISSIONS.student) {
         newUser.displayName = newUser.cn
@@ -38,19 +40,35 @@ function createUser (ldapBinded, newUser) {
       delete newUser.basedn //It must be deleted!
 
       checkIfUserExists(ldapBinded, newUser, basedn).then(result => {
+        console.log('y')
+
         let err = result[0]
         let matchedStatus = result[1]
 
         if (doesNotExist(err, newUser.status)) {
+          console.log('y2')
+
           getNextUidNumber().then(uid => {
             newUser.uidNumber = uid
             return getNextIdNumber()
           }).then(id => {
+            console.log('y3')
+
             newUser.id = id
+            console.log(newUser)
+
+            console.log(newUser.uid)
+            console.log(basedn)
+
             ldapBinded.add(ldapBaseDN(newUser.uid, basedn), newUser, function (err) {
               if (err) {
+                console.log(err)
+                console.log('y4')
+
                 reject(new ApplicationErrorClass('addUser', null, 83, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
               } else {
+                console.log('y5')
+
                 resolve()
               }
             })
@@ -58,112 +76,7 @@ function createUser (ldapBinded, newUser) {
         } else {
           reject(new ApplicationErrorClass('addUser', null, 103, err, 'Ο χρήστης υπάρχει ήδη', null, 500))
         }
-        // else if (matchedStatus) { //it exists and has same status as before
-        //   ldapBinded.compare(ldapBaseDN(newUser.uid, basedn), 'sem', '' + newUser.sem, function (err, matchedSem) {
-        //     if (matchedSem) {
-        //       resolve() //no change
-        //     } else {
-        //       updateUserSem(ldapBinded, newUser, basedn).then(() => {
-        //         resolve()
-        //       })
-        //     }
-        //   })
-        // } else if (newUser.status != 1) {
-        //   ldapBinded.compare(ldapBaseDN(newUser.uid, basedn), 'am', newUser.am + '', function (err, matchedStatus) {
-        //     if (err) { //it does not exist on ldap
-        //
-        //     } else {
-        //       updatePassword(ldapBinded, newUser, basedn).then(() => {
-        //         updateStatus(ldapBinded, newUser, basedn).then(() => {
-        //           //removeDisabledFromDatabase
-        //           resolve()
-        //         })
-        //       })
-        //     }
-        //   })
-        // } else { //he was deactivated and became activated
-        //   updateScope(ldapBinded, newUser, basedn).then(() => {
-        //     updateStatus(ldapBinded, newUser, basedn).then(() => {
-        //       resolve()
-        //     })
-        //   })
-        // }
-      })
-    })
-}
 
-function updateScope (ldapBinded, newUser, basedn) {
-  return new Promise(
-    function (resolve, reject) {
-      let updateScope = new ldap.Change({ //to give user access into activate page
-        operation: 'replace',
-        modification: {
-          eduPersonScopedAffiliation: 0
-        }
-      })
-      ldapBinded.modify(ldapBaseDN(newUser.uid, basedn), updateScope, function (err) {
-        if (err) {
-          reject(new ApplicationErrorClass('addUser', null, 80, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
-        } else {
-          resolve()
-        }
-      })
-    })
-}
-
-function updateStatus (ldapBinded, newUser, basedn) {
-  return new Promise(
-    function (resolve, reject) {
-      let updateStatus = new ldap.Change({
-        operation: 'replace',
-        modification: {
-          status: newUser.status
-        }
-      })
-      ldapBinded.modify(ldapBaseDN(newUser.uid, basedn), updateStatus, function (err) {
-        if (err) {
-          reject(new ApplicationErrorClass('addUser', null, 81, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
-        } else {
-          resolve()
-        }
-      })
-    })
-}
-
-function updatePassword (ldapBinded, newUser, basedn) {
-  return new Promise(
-    function (resolve, reject) {
-      let updatePassword = new ldap.Change({
-        operation: 'replace',
-        modification: {
-          userPassword: newUser.userPassword
-        }
-      })
-      ldapBinded.modify(ldapBaseDN(newUser.uid, basedn), updatePassword, function (err) {
-        if (err) {
-          reject(new ApplicationErrorClass('addUser', null, 81, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
-        } else {
-          resolve()
-        }
-      })
-    })
-}
-
-function updateUserSem (ldapBinded, newUser, basedn) {
-  return new Promise(
-    function (resolve, reject) {
-      let updateSem = new ldap.Change({
-        operation: 'replace',
-        modification: {
-          sem: newUser.sem
-        }
-      })
-      ldapBinded.modify(ldapBaseDN(newUser.uid, basedn), updateSem, function (err) {
-        if (err) {
-          reject(new ApplicationErrorClass('addUser', null, 82, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
-        } else {
-          resolve()
-        }
       })
     })
 }
@@ -178,7 +91,7 @@ function checkIfUserExists (ldapBinded, newUser, basedn) {
 }
 
 function doesNotExist (err, status) {
-  return (err && status === 1)
+  return (err && status == 1)
 }
 
 function getNextUidNumber () {
@@ -278,10 +191,25 @@ function removeUserFromLdap (ldabBinded, userDN) {
     })
 }
 
+function fieldsQuery (user, query) {
+  let attributesPermitted = functionsUser.buildFieldsQueryLdap([],query)
+  let filteredUser = Object.keys(user)
+    .filter(key => attributesPermitted.includes(key))
+    .reduce((obj, key) => {
+      obj[key] = user[key]
+      return obj
+    }, {})
+  return filteredUser
+}
+
 module.exports = {
   createUser,
   buildUser,
   removeUserFromLdap,
   removeProfileUser,
-  modifyAttributeOnLdapbyAdmin
+  modifyAttributeOnLdapbyAdmin,
+  checkIfUserExists,
+  doesNotExist,
+  ldapBaseDN,
+  fieldsQuery
 }
