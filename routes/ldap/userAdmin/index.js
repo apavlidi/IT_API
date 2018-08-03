@@ -9,7 +9,6 @@ const apiFunctions = require('../../apiFunctions')
 const ApplicationErrorClass = require('../../applicationErrorClass')
 const ldapFunctions = require('../../ldapFunctions')
 const validSchemas = require('./joi')
-const _ = require('lodash')
 const ldapConfig = require('../../../configs/ldap')
 
 let ldapMain = config.LDAP_CLIENT
@@ -51,12 +50,19 @@ function getUser (req, res, next) {
   let userId = req.params.id
   let options = ldapFunctions.buildOptions('(id=' + userId + ')', 'sub', [])
   ldapFunctions.searchUserOnLDAP(ldapMain, options).then(user => {
-    if (user.userPassword === ldapConfig.DEFAULT_PASSWORD) {
-      user.accountStatus = 0
+    if (user) {
+      if (user.userPassword === ldapConfig.DEFAULT_PASSWORD) {
+        user.accountStatus = 0
+      } else {
+        user.accountStatus = 1
+      }
+      if (req.query.fields) {
+        user = functions.fieldsQuery(user, req.query)
+      }
+      res.send(user)
     } else {
-      user.accountStatus = 1
+      next(new ApplicationErrorClass('getUser', null, 105, null, 'Συνεβη καποιο λάθος κατα την λήψη χρήστη', apiFunctions.getClientIp(req), 500))
     }
-    res.send(user)
   }).catch(function (applicationError) {
     applicationError.type = 'getUser'
     applicationError.user = req.user.id

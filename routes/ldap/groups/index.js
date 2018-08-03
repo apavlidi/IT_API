@@ -20,7 +20,6 @@ function getGroups (req, res, next) {
   let gid = parseInt(req.params.id)
   let options
   if (gid && Number.isInteger(gid)) {
-    console.log(gid)
     options = ldapFunctions.buildOptions('(gidNumber=' + gid + ')', 'sub', [])
   } else {
     options = ldapFunctions.buildOptions('(cn=*)', 'sub', [])
@@ -38,7 +37,7 @@ function addGroup (req, res, next) {
     entry.objectClass[1] = 'top'
     entry.cn = req.body.cn
 
-    functions.checkIfGroupExists(ldapBinded,entry.cn).then(() => {
+    functions.checkIfGroupExists(ldapBinded, entry.cn).then(() => {
       return functions.getNextGidNumber()
     }).then(gid => {
       entry.gidNumber = gid
