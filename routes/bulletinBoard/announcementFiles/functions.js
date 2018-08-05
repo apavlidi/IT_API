@@ -2,6 +2,7 @@ const async = require('async')
 const database = require('../../../configs/database')
 const JSZip = require('jszip')
 const ApplicationErrorClass = require('../../applicationErrorClass')
+const mongoose = require('mongoose')
 
 function addToZip (files) {
   return new Promise(
@@ -43,7 +44,7 @@ function getFile (fileId, userLogged) {
         populate: {path: '_about', select: 'public'}
       }).exec(function (err, file) {
         if (err || !file) {
-          reject(new ApplicationErrorClass('viewFile', null, 165, err, 'Συνέβη κάποιο σφάλμα κατα την προβολή αρχείου', apiFunctions.getClientIp(req), 500))
+          reject(new ApplicationErrorClass('viewFile', null, 165, null, 'Συνέβη κάποιο σφάλμα κατα την προβολή αρχείου', null, 500))
         } else {
           if (file._announcement && file._announcement._about) {
             if ((file._announcement._about.public || userLogged)) {
