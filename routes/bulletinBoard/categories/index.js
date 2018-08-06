@@ -14,9 +14,9 @@ router.get('/public', apiFunctions.formatQuery, getAnnouncementsCategoriesPublic
 router.put('/register', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.registerCategoriesSchema), updateRegistrationToCategories)
 router.get('/isRegistered', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getIsRegisteredToCategories)
 
-router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.newCategorySchema), newCategory)
-router.put('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.editCategorySchemaBody), editCategory)
-router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), deleteCategory)
+router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.staff), apiFunctions.validateInput('body', validSchemas.newCategorySchema), newCategory)
+router.put('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.staff), apiFunctions.validateInput('body', validSchemas.editCategorySchemaBody), editCategory)
+router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.staff), deleteCategory)
 
 function getAnnouncementsCategories (req, res, next) {
   if (!req.query.fields) {
@@ -100,9 +100,6 @@ function newCategory (req, res, next) {
         if (err) {
           next(new ApplicationErrorClass('newCategory', req.user.id, 155, err, 'Συνέβη σφάλμα κατα την προσθήκη της κατηγορίας', apiFunctions.getClientIp(req), 500))
         } else {
-          //logging
-          // next(new ApplicationErrorClass('info', 'unknown', 'New', 'success', 'announcements', err, 'newCategory',
-          //   'Η κατηγοριά προστέθηκε επιτυχώς με όνομα ' + category.name, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
           res.status(201).json({message: 'Η κατηγορία προστέθηκε επιτυχώς'})
         }
       })
@@ -113,30 +110,25 @@ function newCategory (req, res, next) {
 }
 
 function editCategory (req, res, next) {
-  let editedCategory = req.body
   let categoryId = req.params.id
-  if (editedCategory.publicCategory === 'true') {
+  let editedCategory = {
+    name: req.body.name,
+    public: req.body.publicCategory,
+    value: req.body.name.replace(/ /g, '')
+  }
+  if (editedCategory.public === 'true') {
     if (editedCategory.wid != 5 && editedCategory.wid != 31) {
       editedCategory.wid = 5
+    } else {
+      editedCategory.wid = req.body.wid
     }
-  } else {
-    editedCategory.wid = null
   }
-  let editedValue = editedCategory.name.replace(/ /g, '')
   database.AnnouncementsCategories.findOneAndUpdate({_id: categoryId}, {
-    $set: {
-      name: editedCategory.name,
-      value: editedValue,
-      wid: editedCategory.wid,
-      public: editedCategory.publicCategory
-    }
+    $set: editedCategory
   }, function (err, categoryUpdated) {
     if (err) {
       next(new ApplicationErrorClass('editCategory', req.user.id, 156, err, 'Σφάλμα κατα την ενημέρωση της κατηγορίας.', apiFunctions.getClientIp(req), 500))
     } else {
-      //logging
-      // next(new ApplicationErrorClass('info', 'unknown', 'EDIT', 'fail', 'announcements', err, 'editCategory',
-      //   'Η κατηγορία ενημερώθηκε επιτυχώς με id: ' + categoryId, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
       res.status(201).json({
         message: 'Η κατηγορία ενημερώθηκε επιτυχώς',
         categoryUpdated
@@ -155,9 +147,6 @@ function deleteCategory (req, res, next) {
         if (err) {
           next(new ApplicationErrorClass('deleteCategory', req.user.id, 158, err, 'Συνέβει κάποιο σφάλμα κατα την διαγραφή της κατηγορίας', apiFunctions.getClientIp(req), 500))
         } else {
-          //logging
-          // next(new ApplicationErrorClass('info', 'unknown', 'DELETE', 'success', 'announcements', err, 'deleteCategory',
-          //   'Η κατηγορία διαγράφτηκε επιτυχώς με id: ' + category._id, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
           res.status(200).json({
             message: 'Η κατηγορία διαγράφτηκε επιτυχώς',
             categoryDeleted

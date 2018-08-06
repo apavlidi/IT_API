@@ -21,27 +21,29 @@ router.post('/chmail', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student),
 router.post('/reset', apiFunctions.validateInput('body', validSchemas.resetPassword), resetPassword)
 router.post('/reset/token', apiFunctions.validateInput('body', validSchemas.resetPasswordToken), resetPasswordToken)
 
-router.get('/vcard/:id', getUserVCard)
+router.get('/vcard/:uid', getUserVCard)
 router.get('/', getUsers)
 
 function getUserVCard (req, res, next) {
-  let userId = req.params.id
-  let options = ldapFunctions.buildOptions('(id=' + userId + ')', 'sub', ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI']) //check if this is the correct id
+  let userUid = req.params.uid
+  let options = ldapFunctions.buildOptions('(uid=' + userUid + ')', 'sub', ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI']) //check if this is the correct id
   ldapFunctions.searchUserOnLDAP(ldapMain, options).then(user => {
-    delete user.controls
-    delete user.dn
-    if (Object.keys(user).length !== 0) {
-      let vCard = vCardT()
-      vCard.firstName = user['displayName;lang-el']
-      vCard.organization = 'Τμήμα Πληροφορικής ΑΤΕΙΘ'
-      vCard.workPhone = user['telephoneNumber']
-      vCard.title = user['title;lang-el']
-      vCard.workUrl = user['labeledURI']
-      vCard.note = user['description;lang-el']
-      vCard.email = user['secondarymail']
-      res.set('Content-Type', 'text/vcard; name="user.vcf"')
-      res.set('Content-Disposition', 'inline; filename="user.vcf"')
-      res.send(vCard.getFormattedString())
+    if (user) {
+      if (Object.keys(user).length !== 0) {
+        delete user.controls
+        delete user.dn
+        let vCard = vCardT()
+        vCard.firstName = user['displayName;lang-el']
+        vCard.organization = 'Τμήμα Πληροφορικής ΑΤΕΙΘ'
+        vCard.workPhone = user['telephoneNumber']
+        vCard.title = user['title;lang-el']
+        vCard.workUrl = user['labeledURI']
+        vCard.note = user['description;lang-el']
+        vCard.email = user['secondarymail']
+        res.set('Content-Type', 'text/vcard; name="user.vcf"')
+        res.set('Content-Disposition', 'inline; filename="user.vcf"')
+        res.send(vCard.getFormattedString())
+      }
     } else {
       next(new ApplicationErrorClass('getUserVCard', null, 80, null, 'Κάτι πήγε στραβά.', apiFunctions.getClientIp(req), 500))
     }

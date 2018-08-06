@@ -35,8 +35,7 @@ const editAnnouncementsQuerySchema = Joi.object().keys({
   titleEn: Joi.string().trim().min(1).max(250).allow(''),
   text: Joi.string().max(9000).allow(''),
   textEn: Joi.string().max(9000).allow(''),
-  about: Joi.allow(),
-  publisher: Joi.string()
+  about: Joi.allow()
 })
 
 const newCategorySchema = Joi.object().keys({

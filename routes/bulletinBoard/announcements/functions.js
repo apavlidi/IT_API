@@ -13,6 +13,10 @@ const filter = require('ldap-filters')
 const sendPush = require('./sendPush')
 const ApplicationErrorClass = require('../../applicationErrorClass')
 const apiFunctions = require('../../apiFunctions')
+const functions = require('./../../user/user/function')
+const ldapFunctions = require('./../../ldapFunctions')
+const config = require('../../../configs/config')
+let ldapMain = config.LDAP_CLIENT
 
 const clientWordpress = wordpress.createClient(WORDPRESS_CREDENTIALS)
 const client = ldap.createClient({
@@ -106,68 +110,31 @@ function getAnnouncementsRSSPromise (announcements, rssCategories, categoryValue
         }
         resolve(response)
       })
-
-      // announcements.forEach(function (announcement) {
-      //   calls.push(function (callback) {
-      //     feed.addItem({
-      //       title: announcement.title,
-      //       description: announcement._about.name,
-      //       link: 'https://apps.it.teithe.gr/announcements/announcement/' + announcement._id,
-      //       id: 'https://apps.it.teithe.gr/announcements/announcement/' + announcement._id,
-      //       content: announcement.text,
-      //       author: [{
-      //         name: announcement.publisher.name
-      //       }],
-      //       contributor: [],
-      //       date: announcement.date
-      //     })
-      //     callback(null)
-      //   })
-      // })
-      //
-      // async.parallel(calls, function (err) {
-      //   if (err) {
-      //     reject(err)
-      //   }
-      //   let response
-      //   switch (feedType) {
-      //     case 'rss':
-      //       res.set('Content-Type', 'text/xml')
-      //       response = feed.rss2()
-      //       break
-      //     case 'json' :
-      //       res.setHeader('Content-Type', 'application/json')
-      //       response = feed.json1()
-      //       break
-      //     default:
-      //       res.set('Content-Type', 'text/plain')
-      //       response = feed.atom1()
-      //   }
-      //   resolve(response)
-      // })
     })
 }
+
+
 
 function validatePublisher (publisherId) {
   return new Promise(
     function (resolve, reject) {
-      // request.get({
-      //   url: WEB_BASE_URL.url + '/api/user/all/' + publisherId,
-      //   agentOptions: {rejectUnauthorized: false}
-      // }, function (error, response, body) {
-      //   if (error) {
-      //     resolve(false);
-      //   }
-      //   else {
-      //     let parsed = JSON.parse(body);
-      //     if (parsed && parsed.length === 0) {
-      //       resolve(false);
-      //     } else {
-      //       resolve(true);
-      //     }
-      //   }
-      // });
-      resolve(true)
+      let query = {}
+      query.q = JSON.stringify({'id': publisherId})
+
+      functions.ldapSearchQueryFormat(query, true)
+        .then(function (options) {
+          console.log(options)
+          return ldapFunctions.searchUsersOnLDAP(ldapMain, options)
+        }).then(users => {
+        if (users.length === 1) {
+          console.log('---')
+          resolve(true)
+        } else {
+          resolve(false)
+        }
+      }).catch(function (err) {
+        resolve(false)
+      })
     })
 }
 
@@ -258,6 +225,7 @@ function postToTeithe (announcement, action) {
     if (category && category.public) {
       generateWordpressContent(announcement.id, announcement.text, announcement.textEn, announcement.attachments, announcement.date, announcement.publisher.name).then(function (wordpressContent) {
         if (action === 'create') {
+          console.log(category);
           clientWordpress.newPost({
             title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' + announcement.titleEn + '<!--:-->',
             content: wordpressContent,
@@ -273,6 +241,9 @@ function postToTeithe (announcement, action) {
             })
           })
         } else if (action === 'edit') {
+          console.log(category.wid)
+          console.log(announcement)
+
           clientWordpress.editPost(announcement.wordpressId, {
             title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' + announcement.titleEn + '<!--:-->',
             content: wordpressContent,
@@ -377,8 +348,8 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
             'ldapId': {$eq: id, $ne: publisherId}
           }).exec(function (err, profile) {
             if (!err && profile) {
-              //TODO THIS NEEDS TO BE CHECKED WHEN USER IS IMPLEMENTED
-              //sendPush.sendNotification(profile.notySub, announcementEntry, category)
+              //TODO THIS NEEDS TO BE CHECKED
+              sendPush.sendNotification(profile.notySub, announcementEntry, category)
             }
           })
 
