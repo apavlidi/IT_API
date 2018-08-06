@@ -54,7 +54,7 @@ function updateMailReg (req, res, next) {
     ldapFunctions.bindLdap(ldapMain).then(ldapMainBinded => {
       return functionsUser.changeMailLdap(ldapMainBinded, userFromDatabase.dn, newEmail)
     }).then(() => {
-      res.status(200)
+      res.sendStatus(200)
     }).catch(function (err) {
       next(new ApplicationErrorClass('updateMailReg', null, 40, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
     })
