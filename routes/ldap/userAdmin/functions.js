@@ -4,6 +4,7 @@ const database = require('../../../configs/database')
 const ldap = require('ldapjs')
 const ldapConfig = require('../../../configs/ldap')
 const functionsUser = require('../../user/functionsUser')
+const _ = require('lodash')
 
 const ldapBaseDN = (uid, basedn) => {
   return 'uid=' + uid + ',' + basedn
@@ -31,7 +32,6 @@ function buildUser (reqBody) {
 function createUser (ldapBinded, newUser) {
   return new Promise(
     function (resolve, reject) {
-      console.log(newUser)
       let basedn = newUser.basedn
       if (newUser.eduPersonScopedAffiliation > config.PERMISSIONS.student) {
         newUser.displayName = newUser.cn
@@ -40,35 +40,18 @@ function createUser (ldapBinded, newUser) {
       delete newUser.basedn //It must be deleted!
 
       checkIfUserExists(ldapBinded, newUser, basedn).then(result => {
-        console.log('y')
-
         let err = result[0]
         let matchedStatus = result[1]
-
         if (doesNotExist(err, newUser.status)) {
-          console.log('y2')
-
           getNextUidNumber().then(uid => {
             newUser.uidNumber = uid
             return getNextIdNumber()
           }).then(id => {
-            console.log('y3')
-
             newUser.id = id
-            console.log(newUser)
-
-            console.log(newUser.uid)
-            console.log(basedn)
-
             ldapBinded.add(ldapBaseDN(newUser.uid, basedn), newUser, function (err) {
               if (err) {
-                console.log(err)
-                console.log('y4')
-
                 reject(new ApplicationErrorClass('addUser', null, 83, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
               } else {
-                console.log('y5')
-
                 resolve()
               }
             })
