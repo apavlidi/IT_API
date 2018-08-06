@@ -10,13 +10,13 @@ const ApplicationErrorClass = require('../../applicationErrorClass')
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
 
-router.get('/:fileId', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), downloadFile)
+router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), downloadFile)
 router.get('/:announcementId/downloadAll', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), downloadFiles)
-router.get('/:fileId/view', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), viewFile)
-router.delete('/:fileId', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), deleteFile)
+router.get('/:id/view', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), viewFile)
+router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.staff), deleteFile)
 
 function downloadFile (req, res, next) {
-  filesFunc.getFile(req.params.fileId, req.user).then(file => {
+  filesFunc.getFile(req.params.id, req.user).then(file => {
     let name = encodeURIComponent(file.name)
     res.writeHead(200, {
       'Content-Length': Buffer.byteLength(file.data),
@@ -42,15 +42,14 @@ function downloadFiles (req, res, next) {
             .generateNodeStream({type: 'nodebuffer', streamFiles: true})
             .pipe(fs.createWriteStream('files.zip'))
             .on('finish', function () {
-              finalZip.generateAsync({type: 'uint8array'}) //auto xriazetai giati an dn iparxi to file vgainei damaged/corrupted
+              finalZip.generateAsync({type: 'uint8array'})
                 .then(function (content) {
-                  saveAs(content, 'files.zip')
+                  res.status(200).download('files.zip', function (err) {
+                    if (!err) {
+                      fs.unlink('files.zip')
+                    }
+                  })
                 })
-              res.status(200).download('files.zip', function (err) {
-                if (!err) {
-                  fs.unlink('files.zip') //svisto afou to stilis edw isos to stelnoume sto /tmp
-                }
-              })
             })
         }).catch(function (err) {
           next(new ApplicationErrorClass('downloadFiles', null, 162, err, 'Σφάλμα κατα την συμπίεση αρχείων', apiFunctions.getClientIp(req), 500))
@@ -65,7 +64,7 @@ function downloadFiles (req, res, next) {
 }
 
 function viewFile (req, res, next) {
-  filesFunc.getFile(req.params.fileId, req.user).then(file => {
+  filesFunc.getFile(req.params.id, req.user).then(file => {
     let type = fileType(file.data)
     if (type != null && filesFunc.browserMimeTypesSupported(type.mime)) { //here we can check what types we want to send depending if the browser supports it (eg pdf is supported)
       res.contentType(type.mime)
@@ -86,7 +85,7 @@ function viewFile (req, res, next) {
 }
 
 function deleteFile (req, res, next) {
-  let fileId = req.params.fileId
+  let fileId = req.params.id
   database.Announcements.findOne({'attachments': fileId}, function (err, announcement) {
     if (err || !announcement) {
       next(new ApplicationErrorClass('deleteFile', req.user.id, 169, null, 'Σφάλμα κατα την εύρεση αρχείου', apiFunctions.getClientIp(req), 500))

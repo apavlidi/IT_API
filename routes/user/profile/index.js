@@ -51,7 +51,7 @@ function updatePublicProfile (req, res, next) {
 }
 
 function getUserProfile (req, res, next) {
-  let opts = ldapFunctions.buildOptions('(id=' + req.user.id + ')', 'sub', functionsUser.buildFieldsQueryLdap(['am', 'description', 'eduPersonEntitlement', 'pwdChangedTime', 'displayName', 'regyear', 'regsem', 'sem', 'givenName', 'sn', 'fathersname', 'cn', 'secondarymail', 'mail', 'eduPersonAffiliation', 'eduPersonPrimaryAffiliation', 'title', 'telephoneNumber', 'labeledURI'], req.query))
+  let opts = ldapFunctions.buildOptions('(id=' + req.user.id + ')', 'sub', functionsUser.buildFieldsQueryLdap(['am', 'id','description', 'eduPersonEntitlement', 'pwdChangedTime', 'displayName', 'regyear', 'regsem', 'sem', 'givenName', 'sn', 'fathersname', 'cn', 'secondarymail', 'mail', 'eduPersonAffiliation', 'eduPersonPrimaryAffiliation', 'title', 'telephoneNumber', 'labeledURI'], req.query))
   ldapFunctions.searchUserOnLDAP(ldapMain, opts).then(user => {
     delete user.controls
     delete user.dn
