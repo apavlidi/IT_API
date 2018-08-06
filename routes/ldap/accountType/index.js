@@ -65,7 +65,9 @@ function addAccountType (req, res, next) {
     value: req.body.value_main,
     basedn: req.body.basedn
   })
-
+  if (req.body.dec_main) {
+    newType.dec = req.body.dec_main
+  }
   ldapFunctions.bindLdap(ldapMain).then(ldapBinded => {
     ldapMainBinded = ldapBinded
     return functions.addAccountTypeToLDAP(ldapMainBinded, newType.basedn, newType.value)
