@@ -17,9 +17,9 @@ router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFun
 router.get('/public', apiFunctions.formatQuery, getAnnouncementsPublic)
 router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.formatQuery, getAnnouncement)
 router.get('/feed/:type/:categoryIds?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
-router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.newAnnouncementsQuerySchema), insertNewAnnouncement)
-router.patch('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.editAnnouncementsQuerySchema), editAnnouncement)
-router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), deleteAnnouncement)
+router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.staff), apiFunctions.validateInput('body', validSchemas.newAnnouncementsQuerySchema), insertNewAnnouncement)
+router.patch('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.staff), apiFunctions.validateInput('body', validSchemas.editAnnouncementsQuerySchema), editAnnouncement)
+router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.staff), deleteAnnouncement)
 
 function getAnnouncements (req, res, next) {
   database.Announcements.find(req.query.filters).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, announcements) {
@@ -87,6 +87,7 @@ function getAnnouncementsFeed (req, res, next) {
 
 function getAnnouncementsPublic (req, res, next) {
   database.AnnouncementsCategories.find({public: true}).select('_id').exec(function (err, publicCategories) {
+    console.log(publicCategories)
     if (err) {
       next(new ApplicationErrorClass('getAnnouncementsPublic', null, 105, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', apiFunctions.getClientIp(req), 500))
     } else {
@@ -101,12 +102,12 @@ function getAnnouncementsPublic (req, res, next) {
   })
 }
 
-//TODO CHECK WHEN SENDING OTHER PUBLISHER
 function insertNewAnnouncement (req, res, next) {
   let files
   let filesInput
   let announcementId = mongoose.Types.ObjectId()
   let publisher = {name: req.user.displayName, id: req.user.id}
+
   let announcementEntry = new database.Announcements({
     _id: announcementId,
     title: req.body.title,
@@ -116,8 +117,10 @@ function insertNewAnnouncement (req, res, next) {
     publisher: publisher
   })
   let validatePublisherPromise = Promise.resolve(false) // initialize a promise as false
-  if (req.body.publisher && req.user.scope >= config.PERMISSIONS.futureUseSix) {
-    validatePublisherPromise = announcementsFunc.validatePublisher(req.body.publisher.publisherId)
+
+  if (req.body.publisher && req.user.eduPersonScopedAffiliation >= config.PERMISSIONS.student) {
+    publisher = JSON.parse(req.body.publisher)
+    validatePublisherPromise = announcementsFunc.validatePublisher(publisher.publisherId)
   }
 
   req.files != null ? filesInput = req.files['uploads'] : null
@@ -132,12 +135,8 @@ function insertNewAnnouncement (req, res, next) {
     return validatePublisherPromise
   }).then(validationResult => {
     if (validationResult) {
-      publisher = {
-        name: req.body.publisher.publisherName,
-        id: req.body.publisher.publisherId
-      }
-      announcementEntry.publisher.name = publisher.nameEn
-      announcementEntry.publisher.id = publisher.id
+      announcementEntry.publisher.name = publisher.publisherName
+      announcementEntry.publisher.id = publisher.publisherId
     }
     return announcementEntry.save()
   }).then(newAnnouncement => {
@@ -146,8 +145,7 @@ function insertNewAnnouncement (req, res, next) {
     return announcementsFunc.sendNotifications(announcementEntry, newNotification.id, publisher.id)
   }).then(newNotification => {
     announcementsFunc.postToTeithe(announcementEntry, 'create')
-    //TODO ENABLE SEND EMAILS
-    //announcementsFunc.sendEmails(announcementEntry);
+    announcementsFunc.sendEmails(announcementEntry);
     req.app.io.emit('new announcement', newNotification)
     res.status(201).json({
       message: 'Η ανακοίνωση προστέθηκε επιτυχώς',
@@ -173,9 +171,6 @@ function deleteAnnouncement (req, res, next) {
           if (err) {
             next(new ApplicationErrorClass('deleteAnnouncement', req.user.id, 114, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή ανακοίνωσης', apiFunctions.getClientIp(req), 500))
           } else {
-            //logging
-            // next(new ApplicationErrorClass('info', 'unknown', 'DELETE', 'success', 'announcements', err, 'deleteAnnouncement',
-            //   'H ανακοίνωση διαγράφηκε επιτυχώς με id: ' + announcementId, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
             clientWordpress.deletePost(announcement.wordpressId, function (error, data) {})
             res.status(200).json({
               message: 'H ανακοίνωση διαγράφηκε επιτυχώς',
@@ -185,11 +180,6 @@ function deleteAnnouncement (req, res, next) {
         })
       } else {
         next(new ApplicationErrorClass('deleteAnnouncement', null, 115, err, 'Δεν έχεις δικάιωμα για αυτήν την ενέργεια!', apiFunctions.getClientIp(req), 401))
-        // let logEntry = logging(req.session.user.id, 'DELETE', 'fail', 'announcements', {
-        //   track: 'deleteAnnouncement',
-        //   text: 'Μη εξουσιοδοτημένος χρήστης'
-        // }, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress)
-        // log.error(logEntry)
       }
     }
   })
@@ -209,7 +199,7 @@ function editAnnouncement (req, res, next) {
   }).then(announcement => {
     announcementToBeEdited = announcement
     if (!(announcement.publisher.id === req.user.id || req.user.eduPersonScopedAffiliation === config.PERMISSIONS.admin)) {
-      next(new ApplicationErrorClass('editAnnouncement', req.user.id, 111, null, 'Δεν εχετε δικαίωμα επεξεργασίας.', apiFunctions.getClientIp(req), 401))
+      throw new ApplicationErrorClass('editAnnouncement', req.user.id, 111, null, 'Δεν εχετε δικαίωμα επεξεργασίας.', apiFunctions.getClientIp(req), 401)
     }
     return announcementsFunc.createFileEntries(files, announcementToBeEdited._id)
   }).then(fileIds => {
@@ -224,8 +214,9 @@ function editAnnouncement (req, res, next) {
     updatedAnnouncement.attachments = announcementToBeEdited.attachments
     updatedAnnouncement.text = req.body.text
     updatedAnnouncement.title = req.body.title
-    updatedAnnouncement.titleEn = req.body.titleEn || updatedAnnouncement.titleEn
+    updatedAnnouncement.titleEn = req.body.titleEn || announcementToBeEdited.titleEn
     updatedAnnouncement.textEn = req.body.textEn || announcementToBeEdited.textEn
+    updatedAnnouncement.wordpressId = announcementToBeEdited.wordpressId
     mongoose.Types.ObjectId.isValid(req.body.about) ? about = req.body.about : about = announcementToBeEdited._about
     return announcementsFunc.checkIfEntryExists(about, database.AnnouncementsCategories)
   }).then(category => {
