@@ -43,7 +43,7 @@ function enableNotySub (req, res, next) {
           return functions.createNewNotySubscription(profile, req.body)
         }
       }).then(() => {
-        res.status(200).json()
+        res.sendStatus(200)
       })
     } else {
       next(new ApplicationErrorClass('updateNotySub', req.user, 77, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
