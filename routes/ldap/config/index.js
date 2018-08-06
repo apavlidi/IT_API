@@ -12,8 +12,6 @@ router.patch('/:conf', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student),
 function updateConfig (req, res, next) {
   let conf = req.params.conf
   let data = req.body.data
-  console.log(req.body)
-  console.log(req.params)
 
   database.LDAPConfigs.findOneAndUpdate({conf: conf}, {value: data}).exec(function (err, entry) {
     if (err || !entry) {
