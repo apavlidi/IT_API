@@ -13,7 +13,7 @@ function addAccountTypeToDB (newType, reqBody) {
       }
       newType.save(function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('addAccountType', null, 105, err, 'Συνεβη καποιο λάθος κατα την δημιουργία τύπου', null, 500))
+          reject(new ApplicationErrorClass('addAccountType', null, 3012, err, 'Συνεβη καποιο λάθος κατα την δημιουργία τύπου', null, 500))
         } else {
           resolve()
         }
@@ -33,7 +33,7 @@ function addAccountTypeToLDAP (ldabBinded, basedn, value) {
 
       ldabBinded.add(basedn, entry, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('addAccountType', null, 104, err, 'Συνεβη καποιο λάθος κατα την δημιουργία τύπου,ενδεχομένως υπάρχει ήδη.', null, 500))
+          reject(new ApplicationErrorClass('addAccountType', null, 3011, err, 'Συνεβη καποιο λάθος κατα την δημιουργία τύπου,ενδεχομένως υπάρχει ήδη.', null, 500))
         } else {
           resolve()
         }
@@ -46,7 +46,7 @@ function editAccountType (reqBody, basedn) {
     function (resolve, reject) {
       database.AccountType.findOne({basedn: basedn}, function (err, accountType) {
         if (!accountType || err) {
-          reject(new ApplicationErrorClass('editAccountType', null, 106, err, 'Ο τύπος δεν βρέθηκε', null, 500))
+          reject(new ApplicationErrorClass('editAccountType', null, 3031, err, 'Ο τύπος δεν βρέθηκε', null, 500))
         } else {
           console.log(accountType)
           if (reqBody.value_main) {
@@ -63,7 +63,7 @@ function editAccountType (reqBody, basedn) {
           }
           accountType.save(function (err) {
             if (err) {
-              reject(new ApplicationErrorClass('editAccountType', null, 106, err, 'Συνεβη καποιο λάθος κατα την επεξεργασία τύπου', null, 500))
+              reject(new ApplicationErrorClass('editAccountType', null, 3032, err, 'Συνεβη καποιο λάθος κατα την επεξεργασία τύπου', null, 500))
             } else {
               resolve()
             }

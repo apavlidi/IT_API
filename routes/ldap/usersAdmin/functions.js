@@ -28,7 +28,7 @@ function buildTokenAndMakeEntryForActivation (user) {
       })
       tmpUser.save(function (err, user) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 58, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία token', null, 500))
+          reject(new ApplicationErrorClass(null, null, 3411, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία token', null, 500))
         } else {
           resolve(user)
         }
@@ -56,14 +56,14 @@ function sendActivationMailToAllUsers (userIDs) {
           }).then(() => {
             callback(null)
           }).catch(function (error) {
-            reject(new ApplicationErrorClass('sendActivationMail', null, 98, error, 'Συνέβη κάποιο σφάλμα κατά την αποστολή mail', null, 500))
+            reject(new ApplicationErrorClass('sendActivationMail', null, 3412, error, 'Συνέβη κάποιο σφάλμα κατά την αποστολή mail', null, 500))
           })
         })
       })
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('sendActivationMail', null, 99, err, 'Συνέβη κάποιο σφάλμα κατά την αποστολή mail', null, 500))
+          reject(new ApplicationErrorClass('sendActivationMail', null, 3413, err, 'Συνέβη κάποιο σφάλμα κατά την αποστολή mail', null, 500))
         } else {
           resolve()
         }
@@ -85,7 +85,7 @@ function saveFileToPath (file) {
       let fileFullPath = path.join(uploadDir, fileName)
       file.mv(fileFullPath, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 106, err, 'Συνέβη κάποιο σφάλμα κατα την αποθήκευση αρχείου', null, 500))
+          reject(new ApplicationErrorClass(null, null, 3421, err, 'Συνέβη κάποιο σφάλμα κατα την αποθήκευση αρχείου', null, 500))
         } else {
           resolve(fileFullPath)
         }
@@ -112,13 +112,13 @@ function createUserByLines (fileFullPath, reqBody) {
             })
           }
         } else {
-          reject(new ApplicationErrorClass('importUpdateUsers', null, 106, null, 'Σφάλμα κατα την ανάγνωση του αρχείου', null, 500))
+          reject(new ApplicationErrorClass('importUpdateUsers', null, 3423, null, 'Σφάλμα κατα την ανάγνωση του αρχείου', null, 500))
         }
       })
 
       lineReader.on('close', function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('importUpdateUsers', null, 107, null, 'Σφάλμα κατα την ανάγνωση του αρχείου', null, 500))
+          reject(new ApplicationErrorClass('importUpdateUsers', null, 3424, null, 'Σφάλμα κατα την ανάγνωση του αρχείου', null, 500))
         } else {
           resolve(users)
         }
@@ -126,6 +126,7 @@ function createUserByLines (fileFullPath, reqBody) {
     })
 }
 
+//TODO ERROR APPLICATION
 function importUsers (users) {
   return new Promise(
     function (resolve, reject) {
@@ -154,6 +155,7 @@ function importUsers (users) {
 
 }
 
+//TODO THERE IS A COMMENT THAT NEEDS TO BE IMPLEMENTED ABOUT REMOVING PROFILE
 function importUser (user, ldapBinded) {
   return new Promise(
     function (resolve, reject) {

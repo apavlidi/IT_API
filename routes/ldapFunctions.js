@@ -7,7 +7,7 @@ function bindLdap (ldapMain) {
     function (resolve, reject) {
       ldapMain.bind(config.LDAP[process.env.NODE_ENV].user, config.LDAP[process.env.NODE_ENV].password, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 38, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+          reject(new ApplicationErrorClass(null, null, 2017, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
         } else {
           resolve(ldapMain)
         }
@@ -32,7 +32,7 @@ function searchUserOnLDAP (ldap, options) {
           user = entry.object
         })
         results.on('error', function (err) {
-          reject(new ApplicationErrorClass(null, null, 32, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+          reject(new ApplicationErrorClass(null, null, 2000, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
         })
         results.on('end', function (result) {
           resolve(user)
