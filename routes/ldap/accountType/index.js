@@ -34,11 +34,11 @@ function deleteAccountType (req, res, next) {
   ldapFunctions.bindLdap(ldapMain).then(ldapBinded => {
     ldapBinded.del(basedn, function (err) {
       if (err) {
-        next(new ApplicationErrorClass('deleteAccountType', req.user.id, 105, err, 'Συνεβη καποιο λάθος κατα την διαγραφή τύπου.', apiFunctions.getClientIp(req), 500))
+        next(new ApplicationErrorClass('deleteAccountType', req.user.id, 3021, err, 'Συνεβη καποιο λάθος κατα την διαγραφή τύπου.', apiFunctions.getClientIp(req), 500))
       } else {
         database.AccountType.remove({basedn: basedn}, function (err) {
           if (err) {
-            next(new ApplicationErrorClass('deleteAccountType', req.user.id, 106, err, 'Συνεβη καποιο λάθος κατα την διαγραφή τύπου.', apiFunctions.getClientIp(req), 500))
+            next(new ApplicationErrorClass('deleteAccountType', req.user.id, 3022, err, 'Συνεβη καποιο λάθος κατα την διαγραφή τύπου.', apiFunctions.getClientIp(req), 500))
           } else {
             res.sendStatus(200)
           }
@@ -51,7 +51,7 @@ function deleteAccountType (req, res, next) {
 function getAccountTypes (req, res, next) {
   database.AccountType.find(req.query.filters).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, result) {
     if (err) {
-      next(new ApplicationErrorClass('getConf', req.user.id, 89, err, 'Συνεβη καποιο λάθος κατα την λήψη τύπων.', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('getConf', req.user.id, 3000, err, 'Συνεβη καποιο λάθος κατα την λήψη τύπων.', apiFunctions.getClientIp(req), 500))
     } else {
       res.send(result)
     }

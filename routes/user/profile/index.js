@@ -4,6 +4,7 @@ const apiFunctions = require('./../../apiFunctions')
 const functionsUser = require('../functionsUser')
 const ldapFunctions = require('../../ldapFunctions')
 const functions = require('./function')
+const ApplicationErrorClass = require('./../../applicationErrorClass')
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
 const validSchemas = require('./joi')
@@ -20,7 +21,7 @@ function deleteProfilePhoto (req, res, next) {
     'profilePhoto': {},
   }, function (err, profile) {
     if (err || !profile) {
-      next(new ApplicationErrorClass('deleteProfilePhoto', req.user.id, 78, null, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή φωτογραφίας προφιλ', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('deleteProfilePhoto', req.user.id, 2031, null, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή φωτογραφίας προφιλ', apiFunctions.getClientIp(req), 500))
     } else {
       res.sendStatus(200)
     }

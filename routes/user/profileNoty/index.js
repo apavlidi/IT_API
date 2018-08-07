@@ -28,7 +28,7 @@ function disableNotySub (req, res, next) {
         })
       }
     } else {
-      next(new ApplicationErrorClass('updateNotySub', req.user, 77, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('updateNotySub', req.user, 2062, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
     }
   })
 }
@@ -46,7 +46,7 @@ function enableNotySub (req, res, next) {
         res.sendStatus(200)
       })
     } else {
-      next(new ApplicationErrorClass('updateNotySub', req.user, 77, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('updateNotySub', req.user, 2053, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
     }
   })
 }

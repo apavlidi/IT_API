@@ -34,7 +34,7 @@ function updateUser (req, res, next) {
     if (user) {
       return functions.modifyAttributeOnLdapbyAdmin(ldapMainBinded, attr, newValue, user)
     } else {
-      throw new ApplicationErrorClass('updateUser', req.user.id, 102, null, 'Συνέβη κάποιο σφάλμα κατα την ενημέρωση χρήστη', apiFunctions.getClientIp(req), 500)
+      throw new ApplicationErrorClass('updateUser', req.user.id, 3343, null, 'Συνέβη κάποιο σφάλμα κατα την ενημέρωση χρήστη', apiFunctions.getClientIp(req), 500)
     }
   }).then(() => {
     res.sendStatus(200)
@@ -61,7 +61,7 @@ function getUser (req, res, next) {
       }
       res.send(user)
     } else {
-      next(new ApplicationErrorClass('getUser', null, 105, null, 'Συνεβη καποιο λάθος κατα την λήψη χρήστη', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('getUser', null, 3300, null, 'Συνεβη καποιο λάθος κατα την λήψη χρήστη', apiFunctions.getClientIp(req), 500))
     }
   }).catch(function (applicationError) {
     applicationError.type = 'getUser'
@@ -100,7 +100,7 @@ function deleteUser (req, res, next) {
     if (user) {
       return functions.removeUserFromLdap(ldapMainBinded, user.dn)
     } else {
-      throw new ApplicationErrorClass('deleteUser', null, 88, null, 'Ο χρήστης δεν υπάρχει', null, 500)
+      throw new ApplicationErrorClass('deleteUser', null, 3331, null, 'Ο χρήστης δεν υπάρχει', null, 500)
     }
   }).then(() => {
     return functions.removeProfileUser(userID)

@@ -44,6 +44,8 @@ function sendActivationMail (req, res, next) {
 
 global.importInProgress = false
 
+
+//TODO CHECK CATCH ERROR
 function importUpdateUsers (req, res, next) {
   let fileFullPath
   let fileName
@@ -56,7 +58,7 @@ function importUpdateUsers (req, res, next) {
         fileFullPath = fileFullPathSaved
         let file = fs.readFileSync(fileFullPath)
         if (!isUtf8(file)) {
-          throw new ApplicationErrorClass('importUpdateUsers', req.user.id, 106, null, 'Η κωδικοποίηση του αρχείου πρέπει να ειναι utf8', apiFunctions.getClientIp(req), 500)
+          throw new ApplicationErrorClass('importUpdateUsers', req.user.id, 3422, null, 'Η κωδικοποίηση του αρχείου πρέπει να ειναι utf8', apiFunctions.getClientIp(req), 500)
         }
       }).then(() => {
         return functions.createUserByLines(fileFullPath, req.body)
