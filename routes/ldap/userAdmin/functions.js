@@ -50,14 +50,14 @@ function createUser (ldapBinded, newUser) {
             newUser.id = id
             ldapBinded.add(ldapBaseDN(newUser.uid, basedn), newUser, function (err) {
               if (err) {
-                reject(new ApplicationErrorClass('addUser', null, 83, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
+                reject(new ApplicationErrorClass('addUser', null, 3315, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
               } else {
                 resolve()
               }
             })
           })
         } else {
-          reject(new ApplicationErrorClass('addUser', null, 103, err, 'Ο χρήστης υπάρχει ήδη', null, 500))
+          reject(new ApplicationErrorClass('addUser', null, 3316, err, 'Ο χρήστης υπάρχει ήδη', null, 500))
         }
 
       })
@@ -82,13 +82,13 @@ function getNextUidNumber () {
     function (resolve, reject) {
       database.LDAPConfigs.findOne({conf: 'uidNumber'}).exec(function (err, uid) {
         if (err) {
-          reject(new ApplicationErrorClass('addUser', err, 83, null, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
+          reject(new ApplicationErrorClass('addUser', err, 3311, null, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
         }
         database.LDAPConfigs.findOneAndUpdate({conf: 'uidNumber'}, {
           '$inc': {'value': +1}
         }).exec(function (err, post) {
           if (err) {
-            reject(new ApplicationErrorClass('addUser', err, 82, null, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
+            reject(new ApplicationErrorClass('addUser', err, 3312, null, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
           }
           resolve(uid.value)
         })
@@ -101,13 +101,13 @@ function getNextIdNumber () {
     function (resolve, reject) {
       database.LDAPConfigs.findOne({conf: 'id'}).exec(function (err, id) {
         if (err) {
-          reject(new ApplicationErrorClass('addUser', err, 82, null, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
+          reject(new ApplicationErrorClass('addUser', err, 3313, null, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
         }
         database.LDAPConfigs.findOneAndUpdate({conf: 'id'}, {
           '$inc': {'value': +1}
         }).exec(function (err, post) {
           if (err) {
-            reject(new ApplicationErrorClass('addUser', err, 81, null, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
+            reject(new ApplicationErrorClass('addUser', err, 3314, null, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
           }
           resolve(id.value)
         })
@@ -120,12 +120,12 @@ function removeProfileUser (userID) {
     function (resolve, reject) {
       database.Profile.findOne({'ldapId': userID}, function (err, profile) {
         if (err) {
-          reject(new ApplicationErrorClass('deleteUser', null, 85, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή χρήστη', null, 500))
+          reject(new ApplicationErrorClass('deleteUser', null, 3333, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή χρήστη', null, 500))
         } else {
           if (profile) {
             profile.remove(function (err) {
               if (err) {
-                reject(new ApplicationErrorClass('deleteUser', null, 84, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή χρήστη', null, 500))
+                reject(new ApplicationErrorClass('deleteUser', null, 3334, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή χρήστη', null, 500))
               } else {
                 resolve()
               }
@@ -150,13 +150,13 @@ function modifyAttributeOnLdapbyAdmin (ldapBinded, attribute, value, user) {
         let change = new ldap.Change(tmpMod)
         ldapBinded.modify(user.dn, change, function (err) {
           if (err) {
-            reject(new ApplicationErrorClass('updateUser', null, 101, err, 'Συνέβη κάποιο σφάλμα κατα την ενημέρωση χρήστη', null, 500))
+            reject(new ApplicationErrorClass('updateUser', null, 3341, err, 'Συνέβη κάποιο σφάλμα κατα την ενημέρωση χρήστη', null, 500))
           } else {
             resolve()
           }
         })
       } else {
-        reject(new ApplicationErrorClass('updateUser', null, 101, null, 'Αυτό το πεδίο δεν μπορεί να αλλάξει', null, 500))
+        reject(new ApplicationErrorClass('updateUser', null, 3342, null, 'Αυτό το πεδίο δεν μπορεί να αλλάξει', null, 500))
       }
     })
 }
@@ -166,7 +166,7 @@ function removeUserFromLdap (ldabBinded, userDN) {
     function (resolve, reject) {
       ldabBinded.del(userDN, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('deleteUser', null, 86, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή χρήστη', null, 500))
+          reject(new ApplicationErrorClass('deleteUser', null, 3332, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή χρήστη', null, 500))
         } else {
           resolve()
         }

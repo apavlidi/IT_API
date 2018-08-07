@@ -55,7 +55,7 @@ function deleteGroup (req, res, next) {
   ldapFunctions.bindLdap(ldapMain).then(ldapBinded => {
     ldapBinded.del(req.body.dn, function (err) {
       if (err) {
-        next(new ApplicationErrorClass('deleteGroup', req.user.id, 95, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή ομάδας', apiFunctions.getClientIp(req), 500))
+        next(new ApplicationErrorClass('deleteGroup', req.user.id, 3221, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή ομάδας', apiFunctions.getClientIp(req), 500))
       } else {
         res.sendStatus(200)
       }

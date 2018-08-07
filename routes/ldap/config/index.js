@@ -15,7 +15,7 @@ function updateConfig (req, res, next) {
 
   database.LDAPConfigs.findOneAndUpdate({conf: conf}, {value: data}).exec(function (err, entry) {
     if (err || !entry) {
-      next(new ApplicationErrorClass('updateConfig', req.user.id, 88, err, 'Συνέβη κάποιο σφάλμα κατα την εύρεση', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('updateConfig', req.user.id, 3100, err, 'Συνέβη κάποιο σφάλμα κατα την εύρεση', apiFunctions.getClientIp(req), 500))
     } else {
       res.sendStatus(200)
     }

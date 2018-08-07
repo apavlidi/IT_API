@@ -18,12 +18,12 @@ function updatePhotoProfileIfNecessary (user, files) {
             'profilePhoto.data': new Buffer(profilePhoto.data).toString('base64')
           }, function (err, result) {
             if (err) {
-              reject(new ApplicationErrorClass('updatePublicProfile', null, 68, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
+              reject(new ApplicationErrorClass('updatePublicProfile', null, 2011, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
             }
             resolve()
           })
         } else {
-          reject(new ApplicationErrorClass('updatePublicProfile', null, 68, null, 'Ο τύπος αρχειου δν υποστηρίζεται', null, 500))
+          reject(new ApplicationErrorClass('updatePublicProfile', null, 2012, null, 'Ο τύπος αρχειου δν υποστηρίζεται', null, 500))
         }
       } else {
         resolve()
@@ -69,7 +69,7 @@ function updateCoreSocialMediaIfNecessary (ldapId, reqBody) {
         }
         profile.save(function (err) {
           if (err) {
-            reject(new ApplicationErrorClass('updatePublicProfile', null, 68, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
+            reject(new ApplicationErrorClass('updatePublicProfile', null, 2013, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
           } else {
             resolve()
           }
@@ -85,11 +85,11 @@ function updateExtraSocialMediaIfNecessary (ldapId, socialMediaExtras) {
       try {
         socialMediaExtra = JSON.parse(socialMediaExtras)
       } catch (err) {
-        reject(new ApplicationErrorClass('updatePublicProfile', null, 70, err, 'Λάθος εισαγωγή δεδομένων', null, 500))
+        reject(new ApplicationErrorClass('updatePublicProfile', null, 2014, err, 'Λάθος εισαγωγή δεδομένων', null, 500))
       }
       database.Profile.findOne({ldapId: ldapId}, function (err, profile) {
         if (err || !profile) {
-          reject(new ApplicationErrorClass('updatePublicProfile', null, 69, err, 'Το προφιλ δεν υπάρχει', null, 500))
+          reject(new ApplicationErrorClass('updatePublicProfile', null, 2015, err, 'Το προφιλ δεν υπάρχει', null, 500))
         }
 
         socialMediaExtra.forEach(function (value) {
@@ -103,7 +103,7 @@ function updateExtraSocialMediaIfNecessary (ldapId, socialMediaExtras) {
         })
         profile.save(function (err) {
           if (err) {
-            reject(new ApplicationErrorClass('updatePublicProfile', null, 68, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
+            reject(new ApplicationErrorClass('updatePublicProfile', null, 2016, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
           } else {
             resolve()
           }
@@ -142,7 +142,7 @@ function modifyAttributesOnLDAPbyProfile (ldapMain, dataProfile, userDN) {
           let change = new ldap.Change(tmpMod)
           ldapMain.modify(userDN, change, function (err) {
             if (err) {
-              reject(new ApplicationErrorClass('updatePublicProfile', null, 65, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση πεδίων.', null, 500))
+              reject(new ApplicationErrorClass('updatePublicProfile', null, 2018, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση πεδίων.', null, 500))
             }
           })
         }

@@ -56,7 +56,7 @@ function updateMailReg (req, res, next) {
     }).then(() => {
       res.sendStatus(200)
     }).catch(function (err) {
-      next(new ApplicationErrorClass('updateMailReg', null, 40, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('updateMailReg', null, 2132, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
     })
   }).catch(function (applicationError) {
     applicationError.type = 'updateMailReg'
@@ -78,6 +78,7 @@ function getInfoFromLdap (req, res, next) {
   })
 }
 
+//TODO CHECK ERROR AT CATCH
 function checkPithiaUserAndCreateEntryDB (req, res, next) {
   let ldapTei = ldap.createClient({
     url: config.LDAP_TEI.host
@@ -89,14 +90,14 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
 
   ldapTei.search(config.LDAP_TEI.baseUserDN, opts, function (err, results) {
     if (err) {
-      next(new ApplicationErrorClass('pauth', null, 31, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('pauth', null, 2111, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
     } else {
       let user = {}
       results.on('searchEntry', function (entry) {
         user = entry.object
       })
       results.on('error', function (err) {
-        next(new ApplicationErrorClass(null, null, 32, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+        next(new ApplicationErrorClass(null, null, 2112, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
       })
       results.on('end', function () {
         functions.validateUserAndPassOnPithia(ldapTei, user, password).then(() => {
@@ -130,7 +131,7 @@ function checkTokenUser (req, res, next) {
   let token = req.body.token
   database.UserRegMailToken.findOne({token: token, mail: mail}).exec(function (err, user) {
     if (err || !user) {
-      next(new ApplicationErrorClass('checkTokenUser', null, 34, err, 'Λάθος Mail ή Token.', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('checkTokenUser', null, 2121, err, 'Λάθος Mail ή Token.', apiFunctions.getClientIp(req), 500))
     } else {
       let hash = crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
       let newUser = new database.UserReg({uid: user.uid, dn: user.dn, token: hash})
