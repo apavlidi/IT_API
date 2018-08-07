@@ -45,12 +45,12 @@ function getUserVCard (req, res, next) {
         res.send(vCard.getFormattedString())
       }
     } else {
-      next(new ApplicationErrorClass('getUserVCard', null, 80, null, 'Κάτι πήγε στραβά.', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('getUserVCard', null, 2241, null, 'Κάτι πήγε στραβά.', apiFunctions.getClientIp(req), 500))
     }
   })
 }
 
-//TODO CHECK FOR PAGING IF POSSIBLE
+//TODO CHECK FOR PAGING IF POSSIBLE AND ERROR ON CATCH
 function getUsers (req, res, next) {
   functions.ldapSearchQueryFormat(req.query, true)
     .then(function (options) {
@@ -65,6 +65,7 @@ function getUsers (req, res, next) {
   })
 }
 
+//TODO CHECK ERROR ON CATCH
 function resetPasswordToken (req, res, next) {
   let token = req.body.token
   let newPassword = req.body.newPassword
@@ -86,7 +87,7 @@ function resetPasswordToken (req, res, next) {
       if (!functions.newPasswordExistsInHistory(user, newPassword, next)) {
         return functionsUser.changePasswordLdap(ldapBinded, user.dn, newPassword)
       } else {
-        throw new ApplicationErrorClass('resetPasswordToken', null, 50, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με κάποιον που είχατε στο παρελθόν', apiFunctions.getClientIp(req), 500)
+        throw new ApplicationErrorClass('resetPasswordToken', null, 2231, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με κάποιον που είχατε στο παρελθόν', apiFunctions.getClientIp(req), 500)
       }
     }).then(() => {
       return functions.deleteResetToken(token)
@@ -96,7 +97,7 @@ function resetPasswordToken (req, res, next) {
       next(applicationError)
     })
   } else {
-    next(new ApplicationErrorClass('resetPasswordToken', null, 50, null, 'Οι κωδικοί δεν ταυτίζοντε.', apiFunctions.getClientIp(req), 500))
+    next(new ApplicationErrorClass('resetPasswordToken', null, 2233, null, 'Οι κωδικοί δεν ταυτίζοντε.', apiFunctions.getClientIp(req), 500))
   }
 }
 
@@ -111,7 +112,7 @@ function resetPassword (req, res, next) {
     if (functions.validateIputForReset(user, resetMail)) {
       return functions.buildTokenAndMakeEntryForReset(user)
     } else {
-      throw new ApplicationErrorClass('resetPassword', null, 53, null, 'Τα στοιχεία σας δεν είναι σωστά.', apiFunctions.getClientIp(req), 500)
+      throw new ApplicationErrorClass('resetPassword', null, 2222, null, 'Τα στοιχεία σας δεν είναι σωστά.', apiFunctions.getClientIp(req), 500)
     }
   }).then(token => {
     let mailToken = functions.buildEmailToken(user, token, 'Reset Mail')
@@ -146,10 +147,10 @@ function updatePassword (req, res, next) {
         if (!functions.newPasswordExistsInHistory(user, newPassword)) {
           return functionsUser.changePasswordLdap(ldapBinded, user.dn, newPassword)
         } else {
-          throw new ApplicationErrorClass('updatePassword', req.user.id, 50, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με κάποιον που είχατε στο παρελθόν', apiFunctions.getClientIp(req), 500)
+          throw new ApplicationErrorClass('updatePassword', req.user.id, 2200, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με κάποιον που είχατε στο παρελθόν', apiFunctions.getClientIp(req), 500)
         }
       } else {
-        throw new ApplicationErrorClass('updatePassword', req.user.id, 51, null, 'Ο Τρέχον Κωδικός Πρόσβασης είναι λάθος.', apiFunctions.getClientIp(req), 500)
+        throw new ApplicationErrorClass('updatePassword', req.user.id, 2201, null, 'Ο Τρέχον Κωδικός Πρόσβασης είναι λάθος.', apiFunctions.getClientIp(req), 500)
       }
     }).then(() => {
       res.sendStatus(200)
@@ -160,7 +161,7 @@ function updatePassword (req, res, next) {
       next(applicationError)
     })
   } else {
-    next(new ApplicationErrorClass('updatePassword', req.user, 52, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με τον τρέχον.', apiFunctions.getClientIp(req), 500))
+    next(new ApplicationErrorClass('updatePassword', req.user, 2202, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με τον τρέχον.', apiFunctions.getClientIp(req), 500))
   }
 }
 

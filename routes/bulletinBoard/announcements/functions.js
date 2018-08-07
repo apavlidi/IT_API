@@ -127,7 +127,6 @@ function validatePublisher (publisherId) {
           return ldapFunctions.searchUsersOnLDAP(ldapMain, options)
         }).then(users => {
         if (users.length === 1) {
-          console.log('---')
           resolve(true)
         } else {
           resolve(false)
@@ -156,7 +155,7 @@ function createFileEntries (files, announcementId) {
           })
           newFile.save(function (err, newFile) {
             if (err) {
-              reject(new ApplicationErrorClass(null, null, 105, err, null, null, 500))
+              reject(new ApplicationErrorClass(null, null, 1051, err, null, null, 500))
             } else {
               filesIds.push(newFile._id)
               callback(null)
@@ -167,7 +166,7 @@ function createFileEntries (files, announcementId) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 106, err, null, null, 500))
+          reject(new ApplicationErrorClass(null, null, 1054, err, null, null, 500))
         }
         resolve(filesIds)
       })
@@ -179,7 +178,7 @@ function checkIfEntryExists (entryId, collection) {
     function (resolve, reject) {
       collection.findOne({_id: entryId}, function (err, doc) {
         if (err || !doc) {
-          reject(new ApplicationErrorClass(null, null, 104, err, null, null, 500))
+          reject(new ApplicationErrorClass(null, null, 1023, err, null, null, 500))
         } else {
           resolve(doc)
         }
@@ -298,6 +297,7 @@ function buildEmailBody (publisher, text, title, categoryName, link) {
     ''
 }
 
+//TODO ADD ERRORS
 function findEmailsFromUserIds (registeredIds) {
   return new Promise(
     function (resolve, reject) {
@@ -359,7 +359,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
             }
           }, function (err, updated) {
             if (err) {
-              reject(new ApplicationErrorClass('insertNewAnnouncement', null, 109, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
+              reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1053, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
             }
             callback(null)
           })
@@ -368,7 +368,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('insertNewAnnouncement', null, 110, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
+          reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1054, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
         }
         resolve()
       })
@@ -438,7 +438,7 @@ function createNotification (announcementId, publisher) {
     notification.related.id = announcementId
     notification.save(function (err, newNotification) {
       if (err) {
-        reject(new ApplicationErrorClass(null, null, 108, err, null, null, 500))
+        reject(new ApplicationErrorClass(null, null, 1052, err, null, null, 500))
       } else {
         resolve(newNotification)
       }
