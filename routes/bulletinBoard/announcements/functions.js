@@ -297,7 +297,6 @@ function buildEmailBody (publisher, text, title, categoryName, link) {
     ''
 }
 
-//TODO ADD ERRORS
 function findEmailsFromUserIds (registeredIds) {
   return new Promise(
     function (resolve, reject) {
@@ -318,7 +317,7 @@ function findEmailsFromUserIds (registeredIds) {
       }
       client.search(ldapConfig.LDAP[process.env.NODE_ENV].baseUserDN, opts, function (err, results) {
         if (err) {
-          reject(err)
+          reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1055, err, 'Σφάλμα κατα την εύρεση email χρήστη για την αποστολή ειδοποίησης.', null, 500))
         }
         results.on('searchEntry', function (entry) {
           let tmp = entry.object
@@ -329,7 +328,7 @@ function findEmailsFromUserIds (registeredIds) {
           }
         })
         results.on('error', function (err) {
-          reject(err)
+          reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1056, err, 'Σφάλμα κατα την εύρεση email χρήστη για την αποστολή ειδοποίησης.', null, 500))
         })
         results.on('end', function (result) {
           resolve(emails)

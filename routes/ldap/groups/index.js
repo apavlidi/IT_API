@@ -15,7 +15,6 @@ router.get('/:id?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), ge
 router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.addGroup), addGroup)
 router.delete('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.deleteGroup), deleteGroup)
 
-//TODO QUERY FORMAT
 function getGroups (req, res, next) {
   let gid = parseInt(req.params.id)
   let options
@@ -45,6 +44,8 @@ function addGroup (req, res, next) {
     }).then(() => {
       res.sendStatus(200)
     }).catch(function (applicationError) {
+      applicationError.type = 'addGroup'
+      applicationError.user = req.user.id
       applicationError.ip = apiFunctions.getClientIp(req)
       next(applicationError)
     })

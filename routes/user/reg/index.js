@@ -74,11 +74,12 @@ function getInfoFromLdap (req, res, next) {
   }).then(userFromLdap => {
     res.status(200).send(userFromLdap)
   }).catch(function (applicationError) {
+    applicationError.type = 'getInfoFromLdap'
+    applicationError.ip = apiFunctions.getClientIp(req)
     next(applicationError)
   })
 }
 
-//TODO CHECK ERROR AT CATCH
 function checkPithiaUserAndCreateEntryDB (req, res, next) {
   let ldapTei = ldap.createClient({
     url: config.LDAP_TEI.host
@@ -115,6 +116,8 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
             res.status(200).send({token: hash})
           })
         }).catch(function (applicationError) {
+          applicationError.type = 'checkPithiaUserAndCreateEntryDB'
+          applicationError.ip = apiFunctions.getClientIp(req)
           next(applicationError)
         })
       })
