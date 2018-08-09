@@ -50,7 +50,7 @@ function getUserVCard (req, res, next) {
   })
 }
 
-//TODO CHECK FOR PAGING IF POSSIBLE AND ERROR ON CATCH
+//TODO CHECK FOR PAGING IF POSSIBLE
 function getUsers (req, res, next) {
   functions.ldapSearchQueryFormat(req.query, true)
     .then(function (options) {
@@ -61,11 +61,12 @@ function getUsers (req, res, next) {
     let usersSorted = functions.checkForSorting(users, req.query)
     res.status(200).json(usersSorted)
   }).catch(function (applicationError) {
+    applicationError.type = 'getUsers'
+    applicationError.ip = apiFunctions.getClientIp(req)
     next(applicationError)
   })
 }
 
-//TODO CHECK ERROR ON CATCH
 function resetPasswordToken (req, res, next) {
   let token = req.body.token
   let newPassword = req.body.newPassword
@@ -94,6 +95,8 @@ function resetPasswordToken (req, res, next) {
     }).then(() => {
       res.sendStatus(200)
     }).catch(function (applicationError) {
+      applicationError.type = 'resetPasswordToken'
+      applicationError.ip = apiFunctions.getClientIp(req)
       next(applicationError)
     })
   } else {
@@ -178,7 +181,7 @@ function updateMail (req, res, next) {
     res.sendStatus(200)
   }).catch(function (applicationError) {
     applicationError.type = 'updatePassword'
-    applicationError.user = req.user
+    applicationError.user = req.user.id
     applicationError.ip = apiFunctions.getClientIp(req)
     next(applicationError)
   })

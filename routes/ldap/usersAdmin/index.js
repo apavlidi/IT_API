@@ -26,6 +26,9 @@ function getAllUsers (req, res, next) {
     let usersSorted = functionsUser.checkForSorting(users, req.query)
     res.status(200).json(usersSorted)
   }).catch(function (applicationError) {
+    applicationError.type = 'getAllUsers'
+    applicationError.user = req.user.id
+    applicationError.ip = apiFunctions.getClientIp(req)
     next(applicationError)
   })
 }
@@ -37,6 +40,9 @@ function sendActivationMail (req, res, next) {
     functions.sendActivationMailToAllUsers(userIDs).then(() => {
       res.sendStatus(200)
     }).catch(function (applicationError) {
+      applicationError.type = 'sendActivationMail'
+      applicationError.user = req.user.id
+      applicationError.ip = apiFunctions.getClientIp(req)
       next(applicationError)
     })
   }
@@ -45,7 +51,6 @@ function sendActivationMail (req, res, next) {
 global.importInProgress = false
 
 
-//TODO CHECK CATCH ERROR
 function importUpdateUsers (req, res, next) {
   let fileFullPath
   let fileName
@@ -73,6 +78,9 @@ function importUpdateUsers (req, res, next) {
         global.importInProgress=false
         res.json(resultsFinal)
       }).catch(function (applicationError) {
+        applicationError.type = 'importUpdateUsers'
+        applicationError.user = req.user.id
+        applicationError.ip = apiFunctions.getClientIp(req)
         next(applicationError)
       })
     }
