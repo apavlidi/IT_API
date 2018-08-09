@@ -46,6 +46,7 @@ function updatePublicProfile (req, res, next) {
     res.sendStatus(200)
   }).catch(function (applicationError) {
     applicationError.type = 'updatePublicProfile'
+    applicationError.user = req.user.id
     applicationError.ip = apiFunctions.getClientIp(req)
     next(applicationError)
   })
@@ -61,6 +62,7 @@ function getUserProfile (req, res, next) {
     res.status(200).json(user[0])
   }).catch(function (applicationError) {
     applicationError.type = 'getUserProfile'
+    applicationError.user = req.user.id
     applicationError.ip = apiFunctions.getClientIp(req)
     next(applicationError)
   })

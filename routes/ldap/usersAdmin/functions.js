@@ -126,7 +126,6 @@ function createUserByLines (fileFullPath, reqBody) {
     })
 }
 
-//TODO ERROR APPLICATION
 function importUsers (users) {
   return new Promise(
     function (resolve, reject) {
@@ -146,7 +145,7 @@ function importUsers (users) {
 
         async.parallel(calls, function (err) {
           if (err) {
-            reject(err)
+            reject(new ApplicationErrorClass('importUpdateUsers', null, 3421, null, 'Σφάλμα κατα την εισαγωγή χρηστών', null, 500))
           }
           resolve(results)
         })
@@ -155,7 +154,6 @@ function importUsers (users) {
 
 }
 
-//TODO THERE IS A COMMENT THAT NEEDS TO BE IMPLEMENTED ABOUT REMOVING PROFILE
 function importUser (user, ldapBinded) {
   return new Promise(
     function (resolve, reject) {
@@ -189,7 +187,7 @@ function importUser (user, ldapBinded) {
               updatePassword(ldapBinded, user, user.basedn).then(() => {
                 return updateStatus(ldapBinded, user, user.basedn)
               }).then(() => {
-                //removeDisabledFromDatabase
+                removeDisabledFromDatabase(ldapBinded, user)
                 resolve('Blocked')
               }).catch(function (err) {
                 resolve(['Error', user.am])
@@ -207,7 +205,17 @@ function importUser (user, ldapBinded) {
         }
       })
     })
+}
 
+function removeDisabledFromDatabase (ldapBinded, user) {
+  database.Profile.findOne({'ldapId': user.id}, (err, profile) => {
+    if (err) {}
+    if (profile) {
+      profile.remove(function (err) {
+        if (err) {}
+      })
+    }
+  })
 }
 
 function updateScope (ldapBinded, newUser, basedn) {
