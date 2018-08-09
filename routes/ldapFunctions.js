@@ -46,15 +46,17 @@ function searchUsersOnLDAP (ldapMain, opts) {
     function (resolve, reject) {
       ldapMain.search(config.LDAP[process.env.NODE_ENV].baseUserDN, opts, function (err, results) {
         if (err) {
-          reject(err)
+          reject(new ApplicationErrorClass(null, null, 3400, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
         } else {
           let usersArray = []
           let userCounter = 0
           results.on('searchEntry', function (user) {
             addUserToArray(user.object, userCounter++, usersArray)
           })
+
           results.on('error', function (err) {
-            (err.code === 4) ? resolve(usersArray) : reject()
+            (err.code === 4) ? resolve(usersArray) :
+              reject(new ApplicationErrorClass(null, null, 3400, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
           })
           results.on('end', function (result) {
             resolve(usersArray)
