@@ -10,7 +10,7 @@ function formatQuery (req, res, next) {
   let formatedSort = [['date', 'descending']]
   let formatedPage = 0
   let formatedLimit = 0
-  let formatedQ = null
+  let formatedQ = {}
 
   if (Object.prototype.hasOwnProperty.call(query, 'q')) {
     formatedQ = JSON.parse(query.q)

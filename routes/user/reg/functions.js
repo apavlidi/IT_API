@@ -1,7 +1,6 @@
 const ApplicationErrorClass = require('../../applicationErrorClass')
 const config = require('../../../configs/config')
 const database = require('../../../configs/database')
-const crypt = require('crypt3/sync')
 const ldap = require('ldapjs')
 
 function validateUserAndPassOnPithia (ldapBind, user, password) {
@@ -10,14 +9,14 @@ function validateUserAndPassOnPithia (ldapBind, user, password) {
       if (user.dn) {
         ldapBind.bind(user.dn, password, function (err) {
           if (err) {
-            reject(new ApplicationErrorClass('pauth', null, 33, null, 'Λάθος όνομα χρήστη η κωδικός.(Παρακαλώ δοκιμάστε και με τα στοιχεία του moodle)', null, 500))
+            reject(new ApplicationErrorClass('pauth', null, 2113, null, 'Λάθος όνομα χρήστη η κωδικός.(Παρακαλώ δοκιμάστε και με τα στοιχεία του moodle)', null, 500))
           }
           else {
             resolve()
           }
         })
       } else {
-        reject(new ApplicationErrorClass('pauth', null, 34, null, 'Λάθος όνομα χρήστη η κωδικός.(Παρακαλώ δοκιμάστε και με τα στοιχεία του moodle)', null, 500))
+        reject(new ApplicationErrorClass('pauth', null, 2114, null, 'Λάθος όνομα χρήστη η κωδικός.(Παρακαλώ δοκιμάστε και με τα στοιχεία του moodle)', null, 500))
       }
     })
 }
@@ -35,7 +34,7 @@ function changeScopeLdap (ldapMainBinded, userDN, userScope) {
       })
       ldapMainBinded.modify(userDN, changeScope, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 42, err, 'Υπήρχε σφάλμα κατα την ενεργοποίηση λογαριασμού', null, 500))
+          reject(new ApplicationErrorClass(null, null, 2142, err, 'Υπήρχε σφάλμα κατα την ενεργοποίηση λογαριασμού', null, 500))
         } else {
           resolve()
         }
@@ -48,7 +47,7 @@ function deleteRegToken (token) {
     function (resolve, reject) {
       database.UserReg.findOneAndRemove({token: token}).exec(function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 44, err, 'Υπήρχε σφάλμα κατα την εύρεση token.', null, 500))
+          reject(new ApplicationErrorClass(null, null, 2144, err, 'Υπήρχε σφάλμα κατα την εύρεση token.', null, 500))
         } else {
           resolve()
         }

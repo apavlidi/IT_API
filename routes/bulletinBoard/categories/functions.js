@@ -13,7 +13,7 @@ function updateRegistrationToCategories (categories, userId, action) {
           (action === '$addToSet') ? query = {'$addToSet': {'registered': userId}} : query = {'$pull': {'registered': userId}}
           database.AnnouncementsCategories.update({'_id': id}, query, function (err) {
             if (err) {
-              reject(new ApplicationErrorClass(null, null, 152, err, null, null, 500))
+              reject(new ApplicationErrorClass(null, null, 1221, err, null, null, 500))
             }
             callback(null)
           })
@@ -22,7 +22,7 @@ function updateRegistrationToCategories (categories, userId, action) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 153, err, null, null, 500))
+          reject(new ApplicationErrorClass(null, null, 1222, err, null, null, 500))
         }
         resolve()
       })
