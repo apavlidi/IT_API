@@ -1,7 +1,7 @@
-var express = require('express')
-var router = express.Router()
+const express = require('express')
+const router = express.Router()
 const ldap = require('ldapjs')
-var crypto = require('crypto')
+const crypto = require('crypto')
 
 const ApplicationErrorClass = require('./../../applicationErrorClass')
 const apiFunctions = require('./../../apiFunctions')
@@ -11,6 +11,7 @@ const functions = require('./functions')
 const functionsUser = require('../functionsUser')
 const database = require('../../../configs/database')
 const owasp = require('owasp-password-strength-test')
+const ldapFunctions = require('../../ldapFunctions')
 
 let ldapMain = config.LDAP_CLIENT
 owasp.config(config.OWASP_CONFIG)
@@ -30,7 +31,7 @@ function updatePassReg (req, res, next) {
     user = userFromDatabase
     return functionsUser.checkPassword(owasp, password)
   }).then(() => {
-    return functionsUser.bindLdap(ldapMain)
+    return ldapFunctions.bindLdap(ldapMain)
   }).then(ldapMainBinded => {
     ldapBinded = ldapMainBinded
     return functions.changeScopeLdap(ldapBinded, user.dn, user.scope)
@@ -50,12 +51,12 @@ function updatePassReg (req, res, next) {
 function updateMailReg (req, res, next) {
   let newEmail = req.body.newMail
   functionsUser.checkIfTokenExistsAndRetrieveUser(req.params.token, database.UserReg).then(userFromDatabase => {
-    functionsUser.bindLdap(ldapMain).then(ldapMainBinded => {
+    ldapFunctions.bindLdap(ldapMain).then(ldapMainBinded => {
       return functionsUser.changeMailLdap(ldapMainBinded, userFromDatabase.dn, newEmail)
     }).then(() => {
-      res.status(200)
+      res.sendStatus(200)
     }).catch(function (err) {
-      next(new ApplicationErrorClass('updateMailReg', null, 40, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('updateMailReg', null, 2132, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
     })
   }).catch(function (applicationError) {
     applicationError.type = 'updateMailReg'
@@ -68,11 +69,13 @@ function getInfoFromLdap (req, res, next) {
   let token = req.params.token
 
   functionsUser.checkIfTokenExistsAndRetrieveUser(token, database.UserReg).then(userFromDatabase => {
-    let opts = functionsUser.buildOptions('(uid=' + userFromDatabase.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
-    return functionsUser.searchUserOnLDAP(ldapMain, opts)
+    let opts = ldapFunctions.buildOptions('(uid=' + userFromDatabase.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
+    return ldapFunctions.searchUserOnLDAP(ldapMain, opts)
   }).then(userFromLdap => {
     res.status(200).send(userFromLdap)
   }).catch(function (applicationError) {
+    applicationError.type = 'getInfoFromLdap'
+    applicationError.ip = apiFunctions.getClientIp(req)
     next(applicationError)
   })
 }
@@ -84,23 +87,23 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
 
   let username = req.body.usernamePithia
   let password = req.body.passwordPithia
-  let opts = functionsUser.buildOptions('(uid=' + username + ')', 'sub', 'uid')
+  let opts = ldapFunctions.buildOptions('(uid=' + username + ')', 'sub', 'uid')
 
   ldapTei.search(config.LDAP_TEI.baseUserDN, opts, function (err, results) {
     if (err) {
-      next(new ApplicationErrorClass('pauth', null, 31, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('pauth', null, 2111, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
     } else {
       let user = {}
       results.on('searchEntry', function (entry) {
         user = entry.object
       })
       results.on('error', function (err) {
-        next(new ApplicationErrorClass(null, null, 32, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+        next(new ApplicationErrorClass(null, null, 2112, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
       })
       results.on('end', function () {
         functions.validateUserAndPassOnPithia(ldapTei, user, password).then(() => {
-          let opts = functionsUser.buildOptions('(uid=' + user.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
-          return functionsUser.searchUserOnLDAP(ldapMain, opts)
+          let opts = ldapFunctions.buildOptions('(uid=' + user.uid + ')', 'sub', ['uid', 'cn', 'regyear', 'fathersname', 'eduPersonScopedAffiliation'])
+          return ldapFunctions.searchUserOnLDAP(ldapMain, opts)
         }).then(userFromLdap => {
           let hash = crypto.randomBytes(45).toString('hex')
           let newUser = new database.UserReg({
@@ -113,6 +116,8 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
             res.status(200).send({token: hash})
           })
         }).catch(function (applicationError) {
+          applicationError.type = 'checkPithiaUserAndCreateEntryDB'
+          applicationError.ip = apiFunctions.getClientIp(req)
           next(applicationError)
         })
       })
@@ -129,7 +134,7 @@ function checkTokenUser (req, res, next) {
   let token = req.body.token
   database.UserRegMailToken.findOne({token: token, mail: mail}).exec(function (err, user) {
     if (err || !user) {
-      next(new ApplicationErrorClass('checkTokenUser', null, 34, err, 'Λάθος Mail ή Token.', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('checkTokenUser', null, 2121, err, 'Λάθος Mail ή Token.', apiFunctions.getClientIp(req), 500))
     } else {
       let hash = crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
       let newUser = new database.UserReg({uid: user.uid, dn: user.dn, token: hash})

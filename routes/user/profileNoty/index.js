@@ -1,5 +1,5 @@
-var express = require('express')
-var router = express.Router()
+const express = require('express')
+const router = express.Router()
 
 const database = require('../../../configs/database')
 const functions = require('./function')
@@ -28,7 +28,7 @@ function disableNotySub (req, res, next) {
         })
       }
     } else {
-      next(new ApplicationErrorClass('updateNotySub', req.user, 77, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('updateNotySub', req.user, 2062, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
     }
   })
 }
@@ -43,10 +43,10 @@ function enableNotySub (req, res, next) {
           return functions.createNewNotySubscription(profile, req.body)
         }
       }).then(() => {
-        res.status(200).json()
+        res.sendStatus(200)
       })
     } else {
-      next(new ApplicationErrorClass('updateNotySub', req.user, 77, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('updateNotySub', req.user, 2053, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
     }
   })
 }
