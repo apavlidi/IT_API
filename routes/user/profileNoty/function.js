@@ -26,7 +26,7 @@ function disableAllNotiesSub (profile) {
       })
       profile.save(function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 72, err, 'Υπήρχε σφάλμα κατα την ενημέρωση εγγραφης', null, 500))
+          reject(new ApplicationErrorClass(null, null, 2061, err, 'Υπήρχε σφάλμα κατα την ενημέρωση εγγραφης', null, 500))
         } else {
           resolve()
         }
@@ -41,7 +41,7 @@ function modifyNotySub (profile, reqBody, action) {
       profile.notySub[notySubPos].enabled = action
       profile.save(function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 71, err, 'Υπήρχε σφάλμα κατα την απενεργοποίηση', null, 500))
+          reject(new ApplicationErrorClass(null, null, 2051, err, 'Υπήρχε σφάλμα κατα την απενεργοποίηση', null, 500))
         } else {
           resolve()
         }
@@ -67,7 +67,7 @@ function createNewNotySubscription (profile, reqBody) {
       }
       profile.save(function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 72, err, 'Υπήρχε σφάλμα κατα την εγγραφή', null, 500))
+          reject(new ApplicationErrorClass(null, null, 2052, err, 'Υπήρχε σφάλμα κατα την εγγραφή', null, 500))
         } else {
           resolve()
         }
