@@ -24,7 +24,7 @@ function getAnnouncementsCategories (req, res, next) {
   }
   database.AnnouncementsCategories.find(req.query.filters).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, categories) {
     if (err) {
-      next(new ApplicationErrorClass('getAnnouncementsCategories', req.user.id, 150, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('getAnnouncementsCategories', req.user.id, 1201, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
     } else {
       res.status(200).json(categories)
     }
@@ -37,7 +37,7 @@ function getAnnouncementsCategoriesPublic (req, res, next) {
   }
   database.AnnouncementsCategories.find({public: true}).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, categories) {
     if (err) {
-      next(new ApplicationErrorClass('getAnnouncementsCategoriesPublic', null, 151, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('getAnnouncementsCategoriesPublic', null, 1211, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
     } else {
       res.status(200).json(categories)
     }
@@ -65,7 +65,7 @@ function updateRegistrationToCategories (req, res, next) {
 function getIsRegisteredToCategories (req, res, next) {
   database.AnnouncementsCategories.find({}).select('id registered').sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, categories) {
     if (err) {
-      next(new ApplicationErrorClass('getIsRegisteredCategories', null, 154, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('getIsRegisteredCategories', null, 1231, err, 'Συνέβη σφάλμα κατα την λήψη κατηγοριών', apiFunctions.getClientIp(req), 500))
     } else {
       categories.forEach(category => {
         category.registered.includes(req.user.id) ? category.registered = true : category.registered = false
@@ -98,45 +98,37 @@ function newCategory (req, res, next) {
       category.value = translatedValue.toLowerCase().replace(/\s/g, '')
       category.save((err) => {
         if (err) {
-          next(new ApplicationErrorClass('newCategory', req.user.id, 155, err, 'Συνέβη σφάλμα κατα την προσθήκη της κατηγορίας', apiFunctions.getClientIp(req), 500))
+          next(new ApplicationErrorClass('newCategory', req.user.id, 1241, err, 'Συνέβη σφάλμα κατα την προσθήκη της κατηγορίας', apiFunctions.getClientIp(req), 500))
         } else {
-          //logging
-          // next(new ApplicationErrorClass('info', 'unknown', 'New', 'success', 'announcements', err, 'newCategory',
-          //   'Η κατηγοριά προστέθηκε επιτυχώς με όνομα ' + category.name, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
           res.status(201).json({message: 'Η κατηγορία προστέθηκε επιτυχώς'})
         }
       })
     } else {
-      next(new ApplicationErrorClass('newCategory', req.user.id, 156, err, 'Ο τίτλος υπάρχει ήδη.', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('newCategory', req.user.id, 1242, err, 'Ο τίτλος υπάρχει ήδη.', apiFunctions.getClientIp(req), 500))
     }
   })
 }
 
 function editCategory (req, res, next) {
-  let editedCategory = req.body
   let categoryId = req.params.id
-  if (editedCategory.publicCategory === 'true') {
+  let editedCategory = {
+    name: req.body.name,
+    public: req.body.publicCategory,
+    value: req.body.name.replace(/ /g, '')
+  }
+  if (editedCategory.public === 'true') {
     if (editedCategory.wid != 5 && editedCategory.wid != 31) {
       editedCategory.wid = 5
+    } else {
+      editedCategory.wid = req.body.wid
     }
-  } else {
-    editedCategory.wid = null
   }
-  let editedValue = editedCategory.name.replace(/ /g, '')
   database.AnnouncementsCategories.findOneAndUpdate({_id: categoryId}, {
-    $set: {
-      name: editedCategory.name,
-      value: editedValue,
-      wid: editedCategory.wid,
-      public: editedCategory.publicCategory
-    }
+    $set: editedCategory
   }, function (err, categoryUpdated) {
     if (err) {
-      next(new ApplicationErrorClass('editCategory', req.user.id, 156, err, 'Σφάλμα κατα την ενημέρωση της κατηγορίας.', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('editCategory', req.user.id, 1251, err, 'Σφάλμα κατα την ενημέρωση της κατηγορίας.', apiFunctions.getClientIp(req), 500))
     } else {
-      //logging
-      // next(new ApplicationErrorClass('info', 'unknown', 'EDIT', 'fail', 'announcements', err, 'editCategory',
-      //   'Η κατηγορία ενημερώθηκε επιτυχώς με id: ' + categoryId, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
       res.status(201).json({
         message: 'Η κατηγορία ενημερώθηκε επιτυχώς',
         categoryUpdated
@@ -149,15 +141,12 @@ function deleteCategory (req, res, next) {
   let category = req.params.id
   database.AnnouncementsCategories.findOne({_id: category}, function (err, category) {
     if (!category || err) {
-      next(new ApplicationErrorClass('deleteCategory', req.user.id, 157, err, 'Δεν βρέθηκε η κατηγορία ανακοινώσεων για να διαγραφεί', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('deleteCategory', req.user.id, 1261, err, 'Δεν βρέθηκε η κατηγορία ανακοινώσεων για να διαγραφεί', apiFunctions.getClientIp(req), 500))
     } else {
       category.remove(function (err, categoryDeleted) {
         if (err) {
-          next(new ApplicationErrorClass('deleteCategory', req.user.id, 158, err, 'Συνέβει κάποιο σφάλμα κατα την διαγραφή της κατηγορίας', apiFunctions.getClientIp(req), 500))
+          next(new ApplicationErrorClass('deleteCategory', req.user.id, 1262, err, 'Συνέβει κάποιο σφάλμα κατα την διαγραφή της κατηγορίας', apiFunctions.getClientIp(req), 500))
         } else {
-          //logging
-          // next(new ApplicationErrorClass('info', 'unknown', 'DELETE', 'success', 'announcements', err, 'deleteCategory',
-          //   'Η κατηγορία διαγράφτηκε επιτυχώς με id: ' + category._id, req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress))
           res.status(200).json({
             message: 'Η κατηγορία διαγράφτηκε επιτυχώς',
             categoryDeleted
