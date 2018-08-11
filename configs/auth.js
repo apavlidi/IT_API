@@ -2,8 +2,10 @@ const jwt = require('jsonwebtoken')
 const fs = require('fs')
 const Promise = require('promise')
 const ldap = require('ldapjs')
-
-const audience = '59a99d5989ef64657780879c'
+const audience = {
+  production:'59a99d5989ef64657780879c',
+  development:'59a99d5989ef64657780879c'
+}
 
 const cert = fs.readFileSync('./public.pem')  // get public key
 const config = require('./config')
@@ -59,7 +61,7 @@ function getUser (userID) {
 function checkToken (token, scopeRequired, userScopeRequired) {
   return new Promise(
     function (resolve, reject) {
-      jwt.verify(token, cert, {audience: audience}, function (err, tokenInfo) {
+      jwt.verify(token, cert, {audience:  audience[process.env.NODE_ENV]}, function (err, tokenInfo) {
         if (err) {
           if (err.name == 'TokenExpiredError')
             reject({
