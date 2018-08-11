@@ -144,7 +144,7 @@ function insertNewAnnouncement (req, res, next) {
   }).then(newNotification => {
     return announcementsFunc.sendNotifications(announcementEntry, newNotification.id, publisher.id)
   }).then(newNotification => {
-    announcementsFunc.postToTeithe(announcementEntry, 'create')
+    // announcementsFunc.postToTeithe(announcementEntry, 'create')
     announcementsFunc.sendEmails(announcementEntry);
     req.app.io.emit('new announcement', newNotification)
     res.status(201).json({
