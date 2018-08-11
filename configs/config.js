@@ -2,19 +2,19 @@ const LDAP = {
   development: {
     host: 'ldap://192.168.6.89:389',
     user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: 'cU!22145',
+    password: '8=PmDVw4',
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   test: {
     host: 'ldap://192.168.6.30:389',
     user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: 'cU!22145',
+    password: 'fakePassword',
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   production: {
     host: 'ldaps://ldap.it.teithe.gr:636',
     user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: 'cU!22145',
+    password: 'fakePassword',
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   }
 }
