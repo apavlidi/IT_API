@@ -80,8 +80,6 @@ function sanitizeObject (obj) {
 
 function validateInput (objectToBeValidateStr, schema) {
   return function (req, res, next) {
-    console.log('h')
-    console.log(req.params)
     let objectToBeValidate = objectToBeValidateStr === 'params' ? req.params : req.body
     Joi.validate(objectToBeValidate, schema, function (err) {
       if (!err) {
