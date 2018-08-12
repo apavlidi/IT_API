@@ -2,19 +2,19 @@ const LDAP = {
   development: {
     host: 'ldap://192.168.6.89:389',
     user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: '***REMOVED***',
+    password: '8=PmDVw4',
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   test: {
     host: 'ldap://192.168.6.30:389',
     user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: '***REMOVED***',
+    password: 'fakePassword',
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   production: {
     host: 'ldaps://ldap.it.teithe.gr:636',
     user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: '***REMOVED***',
+    password: 'fakePassword',
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   }
 }
@@ -30,8 +30,8 @@ const LDAP_CLIENT = ldap.createClient({
 })
 
 const MONGO = {
-  development: 'mongodb://192.168.6.85/myapptest',
-  test: 'mongodb://192.168.6.85/myapptest',
+  development: 'mongodb://admin:Password@192.168.6.94/myappdev',
+  test: 'mongodb://192.168.6.94/myapptest',
   production: 'mongodb://192.168.6.85/myapp'
 }
 
@@ -49,8 +49,8 @@ const OWASP_CONFIG={
 
 const WORDPRESS_CREDENTIALS = {
   url: 'https://www.it.teithe.gr',
-  username: 'it_apps',
-  password: '***REMOVED***',
+  username: 'fakeusername',
+  password: 'fakepassword',
   rejectUnauthorized: false
 }
 

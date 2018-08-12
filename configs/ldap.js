@@ -2,6 +2,14 @@ const INTEGER_FIELDS = ['id', 'regyear', 'regsem', 'uidNumber', 'gidNumber', 'st
 
 const PERMITTED_FIELDS_TO_MODIFY_IN_PROFILE = ['displayName;lang-el', 'displayName', 'labeledURI', 'telephoneNumber', 'secondarymail', 'description', 'description;lang-el', 'eduPersonEntitlement']
 
+const PERMITTED_FIELDS_TO_MODIFY_IN_ADMIN = ['cn', 'cn;lang-el', 'gidNumber', 'homeDirectory', 'sn', 'sn;lang-el', 'uid', 'uidNumber', 'userPassword', 'am', 'eduPersonAffiliation',
+  'eduPersonPrimaryAffiliation', 'eduPersonScopedAffiliation'
+  , 'fathersname', 'fathersname;lang-el', 'givenName', 'givenName;lang-el', 'id', 'labeledURI', 'loginShell', 'mail', 'regyear', 'regsem', 'secondarymail', 'sem', 'status',
+  'telephoneNumber', 'title', 'title;lang-el', 'displayName;lang-el',
+  'displayName', 'telephoneNumber', 'description', 'description;lang-el', 'eduPersonEntitlement']
+
+const DEFAULT_PASSWORD = '{CRYPT}TSMywqBza/y3A)'
+
 //elot translate
 function translate (text) {
 
@@ -190,5 +198,7 @@ function translate (text) {
 module.exports = {
   INTEGER_FIELDS,
   elotTranslate: translate,
-  PERMITTED_FIELDS_TO_MODIFY_IN_PROFILE
+  PERMITTED_FIELDS_TO_MODIFY_IN_PROFILE,
+  PERMITTED_FIELDS_TO_MODIFY_IN_ADMIN,
+  DEFAULT_PASSWORD
 }
