@@ -1,4 +1,4 @@
-# [IT_API](http://api.it.teithe.gr/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/apavlidi/IT_API/wiki/How-to-contribute)
+# [IT_API](http://api.it.teithe.gr/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/apavlidi/IT_API/wiki/How-to-contribute) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 IT_API is an API that integrates with the Internet services of the department of [Information Technology at Alexander Technological Education Institute of Thessaloniki](https://www.it.teithe.gr/?lang=el)
 
