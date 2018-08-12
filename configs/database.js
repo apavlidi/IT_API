@@ -74,7 +74,7 @@ const notificationSchema = new Schema({
 const announcementsSchema = new Schema({
   _about: {type: Schema.Types.ObjectId, ref: 'AnnouncementsCategories', required: true},
   wordpressId: Number,
-  date: {type: Date, default: Date.now /*, expires: '90d'*/}, //3600(H)*24(D)*7(W)*4(M)*3(3M) = 3months
+  date: {type: Date, default: Date.now},
   title: {type: String, required: true},
   titleEn: {type: String, required: true},
   attachments: [{type: Schema.Types.ObjectId, ref: 'File'}],
@@ -85,8 +85,6 @@ const announcementsSchema = new Schema({
     id: String
   }
 })
-
-announcementsSchema.index({date: 1}, {expireAfterSeconds: 0})
 
 //middlewares
 announcementsCategoriesSchema.pre('remove', function (next) {
@@ -162,8 +160,8 @@ const userRegSchema = Schema({
   uid: String,
   dn: String,
   token: String,
-  scope:Number,
-  createdAt: {type: Date, expires: 60 , default: Date.now}
+  scope: Number,
+  createdAt: {type: Date, expires: 60, default: Date.now}
 })
 
 const userPwdResetSchema = Schema({
