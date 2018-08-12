@@ -1,5 +1,10 @@
 const Joi = require('joi')
 
+const socialMediaExtr = Joi.object().keys({
+  name: Joi.string().required(),
+  url: Joi.string().uri().optional().required()
+})
+
 const profileUpdate = Joi.object().keys({
   'displayName;lang-el': Joi.string().allow(''),
   labeledURI: Joi.string().allow(''),
@@ -13,7 +18,7 @@ const profileUpdate = Joi.object().keys({
   github: Joi.string().uri().optional().allow(''),
   googlePlus: Joi.string().uri().optional().allow(''),
   linkedIn: Joi.string().uri().optional().allow(''),
-  socialMediaExtra: Joi.string().optional()
+  socialMediaExtra:  Joi.array().items(socialMediaExtr)
 })
 
 module.exports = {
