@@ -20,6 +20,8 @@ const ldapGroups = require('./routes/ldap/groups/index').router
 const accountTypes = require('./routes/ldap/accountType/index').router
 const configs = require('./routes/ldap/config/index').router
 const userAdmin = require('./routes/ldap/userAdmin/index').router
+const services = require('./routes/services/index').router
+
 
 const config = require('./configs/config')
 const apiFunctions = require('./routes/apiFunctions')
@@ -59,6 +61,8 @@ app.use('/groups', ldapGroups)
 app.use('/accountTypes', accountTypes)
 app.use('/configs', configs)
 app.use('/userAdmin', userAdmin)
+app.use('/services', services)
+
 
 app.io = require('socket.io')()
 
