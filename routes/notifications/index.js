@@ -36,12 +36,12 @@ function getNotificationsUser (req, res, next) {
           if (profilePopulated && !err) {
             res.status(200).json(profile)
           } else {
-            next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 200, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
+            next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 5000, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
           }
         })
       })
     } else {
-      next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 201, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
+      next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 5001, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
     }
   })
 }
@@ -56,7 +56,7 @@ function readNotificationsUser (req, res, next) {
       profile.save()
       res.status(200).send()
     } else {
-      next(new ApplicationErrorClass('readNotificationsUser', req.user.id, 203, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
+      next(new ApplicationErrorClass('readNotificationsUser', req.user.id, 5011, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
     }
   })
 }
