@@ -83,7 +83,6 @@ mongoose.connect(config.MONGO[process.env.NODE_ENV], {
 app.use(function (err, req, res, next) {
   console.log('EXPRESS ERROR HANDLING')
   console.log('εδώ εμφανίζουμε οτι θέλουμε στον τελικό χρήστη απο το object')
-  console.log(err)
   if (err.text) {
     console.log(err)
     res.status(err.httpCode).json({
