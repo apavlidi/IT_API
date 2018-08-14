@@ -24,10 +24,6 @@ const userAdmin = require('./routes/ldap/userAdmin/index').router
 const config = require('./configs/config')
 const apiFunctions = require('./routes/apiFunctions')
 
-//TODO THIS WILL BE REMOVED
-app.set('views', path.join(__dirname, 'views'))
-app.set('view engine', 'ejs')
-
 app.use(logger('dev'))
 app.use(bodyParser.json())
 app.use(compression())   // Κανει compress ολα τα responses.Διαβασα οτι παντα πρεπει να γινεται compress στο response
