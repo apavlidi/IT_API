@@ -28,7 +28,7 @@ function sshChangeStatusAetos (req, res, next) {
         return functions.enableSshFromVm(ldapBinded, user, 'aetos')
       }
     } else {
-      throw new ApplicationErrorClass('sshChangeStatusAetos', null, 0, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', apiFunctions.getClientIp(req), 500)
+      throw new ApplicationErrorClass('sshChangeStatusAetos', null, 4021, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', apiFunctions.getClientIp(req), 500)
     }
   }).then(() => {
     res.sendStatus(200)
@@ -55,7 +55,7 @@ function sshChangeStatusUsers (req, res, next) {
 
       }
     } else {
-      throw new ApplicationErrorClass('sshChangeStatusUsers', null, 0, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', apiFunctions.getClientIp(req), 500)
+      throw new ApplicationErrorClass('sshChangeStatusUsers', null, 4013, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', apiFunctions.getClientIp(req), 500)
     }
   }).then(() => {
     res.sendStatus(200)
@@ -83,7 +83,7 @@ function getServiceStatus (req, res, next) {
         functions.activateUser(user).then(changes => {
           ldapBinded.modify(req.user.dn, changes, function (err) {
             if (err) {
-              next(new ApplicationErrorClass('getServiceStatus', req.user.id, 0, err, 'Συνέβη κάποιο σφάλμα λήψη στοιχείων', apiFunctions.getClientIp(req), 500))
+              next(new ApplicationErrorClass('getServiceStatus', req.user.id, 4000, err, 'Συνέβη κάποιο σφάλμα λήψη στοιχείων', apiFunctions.getClientIp(req), 500))
             } else {
               res.json({
                 info: ['active']
@@ -93,7 +93,7 @@ function getServiceStatus (req, res, next) {
         })
       }
     } else {
-      next(new ApplicationErrorClass('getServiceStatus', req.user.id, 0, null, 'Ο χρήστης δεν βρέθηκε', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationErrorClass('getServiceStatus', req.user.id, 4001, null, 'Ο χρήστης δεν βρέθηκε', apiFunctions.getClientIp(req), 500))
     }
   }).catch(applicationError => {
     applicationError.type = 'getServiceStatus'
