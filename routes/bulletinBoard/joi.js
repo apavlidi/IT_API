@@ -52,8 +52,8 @@ const editCategorySchemaBody = Joi.object().keys({
 
 
 const registerCategoriesSchema = Joi.object().keys({
-  'categoriesRegistered': Joi.array().required(),
-  'categoriesNotRegistered': Joi.array().required()
+  addCat: Joi.array().allow(),
+  removeCat: Joi.array().allow()
 })
 
 
