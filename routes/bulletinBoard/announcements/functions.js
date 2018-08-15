@@ -80,7 +80,11 @@ function appendPostsToFeed (feed, posts) {
         })
       })
       async.parallel(calls, function (err) {
-        resolve()
+        if (err) {
+          reject(new ApplicationErrorClass(null, null, 1034, err, null, null, 500))
+        } else {
+          resolve()
+        }
       })
 
     })
@@ -112,8 +116,6 @@ function getAnnouncementsRSSPromise (announcements, rssCategories, categoryValue
       })
     })
 }
-
-
 
 function validatePublisher (publisherId) {
   return new Promise(
@@ -224,7 +226,7 @@ function postToTeithe (announcement, action) {
     if (category && category.public) {
       generateWordpressContent(announcement.id, announcement.text, announcement.textEn, announcement.attachments, announcement.date, announcement.publisher.name).then(function (wordpressContent) {
         if (action === 'create') {
-          console.log(category);
+          console.log(category)
           clientWordpress.newPost({
             title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' + announcement.titleEn + '<!--:-->',
             content: wordpressContent,
@@ -434,7 +436,11 @@ function createNotification (announcementId, publisher) {
     notification.userId = publisher.id
     notification.nameEn = publisher.nameEn
     notification.nameEl = publisher.nameEl
-    notification.related.id = announcementId
+    if (mongoose.Types.ObjectId.isValid(announcementId)) {
+      notification.related.id = announcementId
+    } else {
+      reject(new ApplicationErrorClass(null, null, 1057, null, null, null, 500))
+    }
     notification.save(function (err, newNotification) {
       if (err) {
         reject(new ApplicationErrorClass(null, null, 1052, err, null, null, 500))
