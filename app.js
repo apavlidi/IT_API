@@ -47,8 +47,8 @@ app.all('/*', apiFunctions.sanitizeInput, function (req, res, next) {
 
 app.use('/', index)
 app.use('/announcements', announcements)
-app.use('/categories', categories)
-app.use('/files', announcementFiles)
+app.use('/announcements/categories', categories)
+app.use('/announcements/files', announcementFiles)
 app.use('/notifications', notifications)
 app.use('/reg', reg)
 app.use('/user', user)
