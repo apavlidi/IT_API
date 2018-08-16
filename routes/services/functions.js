@@ -20,13 +20,6 @@ function activateUser (user) {
         }
       })
       changes.push(changeInfo)
-      let changeLoginShell = new ldap.Change({
-        operation: 'replace',
-        modification: {
-          loginShell: ['/bin/bash']
-        }
-      })
-      changes.push(changeLoginShell)
       let changeHomeDir
       if (user.eduPersonAffiliation === 'student') {
         let tmpHomeDir = '/home/' + user.eduPersonAffiliation + '/' + user.eduPersonPrimaryAffiliation + '/' + user.regyear + '/' + user.uid
