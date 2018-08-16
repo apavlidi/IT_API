@@ -6,6 +6,7 @@ const wordpress = require('wordpress')
 const database = require('../../../configs/database')
 const apiFunctions = require('../../apiFunctions')
 const announcementsFunc = require('./functions')
+const notificationsFunc = require('../../notifications/functions')
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
 const validSchemas = require('../joi')
@@ -140,9 +141,9 @@ function insertNewAnnouncement (req, res, next) {
     }
     return announcementEntry.save()
   }).then(newAnnouncement => {
-    return announcementsFunc.createNotification(newAnnouncement._id, publisher)
+    return notificationsFunc.createNotification(newAnnouncement._id, publisher)
   }).then(newNotification => {
-    return announcementsFunc.sendNotifications(announcementEntry, newNotification.id, publisher.id)
+    return notificationsFunc.sendNotifications(announcementEntry, newNotification.id, publisher.id)
   }).then(newNotification => {
     // announcementsFunc.postToTeithe(announcementEntry, 'create')
     announcementsFunc.sendEmails(announcementEntry);
