@@ -75,7 +75,9 @@ mongoose.connect(config.MONGO[process.env.NODE_ENV], {
 app.use(function (req, res, next) {
   res.status(404).json({
     error: {
-      message: 'Ο σύνδεσμος δεν βρέθηκε'
+      message: 'Ο σύνδεσμος δεν βρέθηκε',
+      type: 'WrongEndPointError',
+      code: '2000',
     }
   })
 });
