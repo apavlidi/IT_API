@@ -10,6 +10,7 @@ const app = express()
 const announcements = require('./routes/bulletinBoard/announcements/index').router
 const announcementFiles = require('./routes/bulletinBoard/announcementFiles/index').router
 const categories = require('./routes/bulletinBoard/categories/index').router
+const notifications = require('./routes/notifications/index').router
 const index = require('./routes/index')
 const reg = require('./routes/user/reg/index').router
 const user = require('./routes/user/user/index').router
@@ -20,6 +21,8 @@ const ldapGroups = require('./routes/ldap/groups/index').router
 const accountTypes = require('./routes/ldap/accountType/index').router
 const configs = require('./routes/ldap/config/index').router
 const userAdmin = require('./routes/ldap/userAdmin/index').router
+const services = require('./routes/services/index').router
+
 
 const config = require('./configs/config')
 const apiFunctions = require('./routes/apiFunctions')
@@ -46,6 +49,7 @@ app.use('/', index)
 app.use('/announcements', announcements)
 app.use('/announcements/categories', categories)
 app.use('/announcements/files', announcementFiles)
+app.use('/notifications', notifications)
 app.use('/reg', reg)
 app.use('/user', user)
 app.use('/profile', profile)
@@ -55,6 +59,8 @@ app.use('/groups', ldapGroups)
 app.use('/accountTypes', accountTypes)
 app.use('/configs', configs)
 app.use('/userAdmin', userAdmin)
+app.use('/services', services)
+
 
 app.io = require('socket.io')()
 
@@ -71,11 +77,21 @@ mongoose.connect(config.MONGO[process.env.NODE_ENV], {
   socketTimeoutMS: 120000
 })
 
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+  res.status(404).json({
+    error: {
+      message: 'Ο σύνδεσμος δεν βρέθηκε',
+      type: 'WrongEndPointError',
+      code: '2000',
+    }
+  })
+});
+
 // error handler
 app.use(function (err, req, res, next) {
   console.log('EXPRESS ERROR HANDLING')
   console.log('εδώ εμφανίζουμε οτι θέλουμε στον τελικό χρήστη απο το object')
-  console.log(err)
   if (err.text) {
     console.log(err)
     res.status(err.httpCode).json({
