@@ -77,6 +77,17 @@ mongoose.connect(config.MONGO[process.env.NODE_ENV], {
   socketTimeoutMS: 120000
 })
 
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+  res.status(404).json({
+    error: {
+      message: 'Ο σύνδεσμος δεν βρέθηκε',
+      type: 'WrongEndPointError',
+      code: '2000',
+    }
+  })
+});
+
 // error handler
 app.use(function (err, req, res, next) {
   console.log('EXPRESS ERROR HANDLING')
