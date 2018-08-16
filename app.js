@@ -10,6 +10,7 @@ const app = express()
 const announcements = require('./routes/bulletinBoard/announcements/index').router
 const announcementFiles = require('./routes/bulletinBoard/announcementFiles/index').router
 const categories = require('./routes/bulletinBoard/categories/index').router
+const notifications = require('./routes/notifications/index').router
 const index = require('./routes/index')
 const reg = require('./routes/user/reg/index').router
 const user = require('./routes/user/user/index').router
@@ -25,10 +26,6 @@ const services = require('./routes/services/index').router
 
 const config = require('./configs/config')
 const apiFunctions = require('./routes/apiFunctions')
-
-//TODO THIS WILL BE REMOVED
-app.set('views', path.join(__dirname, 'views'))
-app.set('view engine', 'ejs')
 
 app.use(logger('dev'))
 app.use(bodyParser.json())
@@ -52,6 +49,7 @@ app.use('/', index)
 app.use('/announcements', announcements)
 app.use('/categories', categories)
 app.use('/files', announcementFiles)
+app.use('/notifications', notifications)
 app.use('/reg', reg)
 app.use('/user', user)
 app.use('/profile', profile)
