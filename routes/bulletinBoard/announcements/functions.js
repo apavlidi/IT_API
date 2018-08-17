@@ -12,7 +12,6 @@ const ldap = require('ldapjs')
 const filter = require('ldap-filters')
 const sendPush = require('./sendPush')
 const ApplicationErrorClass = require('../../applicationErrorClass')
-const apiFunctions = require('../../apiFunctions')
 const functions = require('./../../user/user/function')
 const ldapFunctions = require('./../../ldapFunctions')
 const config = require('../../../configs/config')
@@ -86,7 +85,6 @@ function appendPostsToFeed (feed, posts) {
           resolve()
         }
       })
-
     })
 }
 
@@ -128,14 +126,14 @@ function validatePublisher (publisherId) {
           console.log(options)
           return ldapFunctions.searchUsersOnLDAP(ldapMain, options)
         }).then(users => {
-        if (users.length === 1) {
-          resolve(true)
-        } else {
+          if (users.length === 1) {
+            resolve(true)
+          } else {
+            resolve(false)
+          }
+        }).catch(function (err) {
           resolve(false)
-        }
-      }).catch(function (err) {
-        resolve(false)
-      })
+        })
     })
 }
 
@@ -349,7 +347,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
             'ldapId': {$eq: id, $ne: publisherId}
           }).exec(function (err, profile) {
             if (!err && profile) {
-              //TODO THIS NEEDS TO BE CHECKED
+              // TODO THIS NEEDS TO BE CHECKED
               sendPush.sendNotification(profile.notySub, announcementEntry, category)
             }
           })

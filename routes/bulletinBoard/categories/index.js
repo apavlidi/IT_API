@@ -57,7 +57,7 @@ function updateRegistrationToCategories (req, res, next) {
   }
   Promise.all([promiseAdd, promiseRemove]).then(() => {
     res.status(200).json({
-      message: 'Η εγγραφή πραγματοποιήθηκε επιτυχώς',
+      message: 'Η εγγραφή πραγματοποιήθηκε επιτυχώς'
     })
   }).catch(function (applicationError) {
     applicationError.user = req.user.id

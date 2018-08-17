@@ -1,3 +1,5 @@
+/* eslint-disable new-cap */
+
 const ApplicationErrorClass = require('../applicationErrorClass')
 const database = require('../../configs/database')
 const crypt = require('crypt3/sync')
@@ -34,7 +36,6 @@ function checkPassword (owasp, password) {
 function changePasswordLdap (ldapBinded, userDN, password) {
   return new Promise(
     function (resolve, reject) {
-
       let hash = crypt(password, crypt.createSalt('sha256'))
       let changePassword = new ldap.Change({
         operation: 'replace',
@@ -47,7 +48,6 @@ function changePasswordLdap (ldapBinded, userDN, password) {
           reject(new ApplicationErrorClass(null, null, 2143, err, 'Υπήρχε σφάλμα κατα την αλλαγή κωδικού', null, 500))
         } else {
           resolve()
-
         }
       })
     })
@@ -108,7 +108,7 @@ function buildDataForUserFromDB (user, profile, query) {
     }
     if (_.includes(query.fields, 'profilePhoto')) {
       if (profile.profilePhoto && profile.profilePhoto.data) {
-        user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer(profile.profilePhoto.data, 'base64').toString('binary')
+        user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer.from(profile.profilePhoto.data, 'base64').toString('binary')
       } else {
         user['profilePhoto'] = ''
       }
@@ -116,7 +116,7 @@ function buildDataForUserFromDB (user, profile, query) {
   } else {
     user['socialMedia'] = profile.socialMedia
     if (profile.profilePhoto && profile.profilePhoto.data) {
-      user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer(profile.profilePhoto.data, 'base64').toString('binary')
+      user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer.from(profile.profilePhoto.data, 'base64').toString('binary')
     } else {
       user['profilePhoto'] = ''
     }
@@ -125,7 +125,7 @@ function buildDataForUserFromDB (user, profile, query) {
 }
 
 function buildFieldsQueryLdap (attributesPermitted, query) {
-  let filterAttr = ['id'] //this needs in order to return always id
+  let filterAttr = ['id'] // this needs in order to return always id
 
   if (Object.prototype.hasOwnProperty.call(query, 'fields')) {
     let fields = query.fields.split(',')

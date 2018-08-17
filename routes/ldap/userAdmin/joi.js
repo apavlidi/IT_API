@@ -1,13 +1,12 @@
 const Joi = require('joi')
 const translate = require('../../../configs/ldap').elotTranslate
-
+const crypto = require('crypto')
 const objectClasses = ['itteithePerson', 'posixAccount', 'eduPerson', 'inetOrgPerson', 'organizationalPerson', 'person', 'top', 'simpleSecurityObject']
 
 const generateCnElot = (context) => {
   try {
     return translate(context['cn;lang-el'].toLowerCase()).toUpperCase()
-  }
-  catch (err) {
+  } catch (err) {
     try {
       return translate(context['cn;lang-el'])
     } catch (err) {
@@ -17,7 +16,6 @@ const generateCnElot = (context) => {
       console.log('ERROR ON TRY CATCH - ' + context['cn;lang-el'])
       return context['cn;lang-el']
     }
-
   }
 }
 generateCnElot.description = 'generated cnElot'
@@ -26,12 +24,10 @@ const generateFathersNameElot = (context) => {
   try {
     if (context['fathersname;lang-el']) {
       return translate(context['fathersname;lang-el'].toLowerCase()).toUpperCase()
-    }
-    else {
+    } else {
       return '-'
     }
-  }
-  catch (err) {
+  } catch (err) {
     try {
       return translate(context['fathersname;lang-el'])
     } catch (err) {
@@ -41,9 +37,7 @@ const generateFathersNameElot = (context) => {
       console.log('ERROR ON TRY CATCH - ' + context['fathersname;lang-el'])
       return context['fathersname;lang-el']
     }
-
   }
-
 }
 generateFathersNameElot.description = 'generated fathersnameElot'
 
@@ -60,7 +54,6 @@ const generateGivenNameElot = (context) => {
       console.log('ERROR ON TRY CATCH - ' + context['givenName;lang-el'])
       return context['givenName;lang-el']
     }
-
   }
 }
 generateGivenNameElot.description = 'generated givenNameElot'
@@ -79,7 +72,6 @@ const generateSnElot = (context) => {
       return context['sn;lang-el']
     }
   }
-
 }
 generateSnElot.description = 'generated snElot'
 
@@ -89,23 +81,21 @@ const generateCnEl = (context) => {
 generateCnEl.description = 'generated El cn'
 
 const generateHomeDir = (context) => {
-  //return next gid
+  // return next gid
   if (context.eduPersonAffiliation == 'student') {
     return '/home/' + context.eduPersonAffiliation + '/' + context.eduPersonPrimaryAffiliation + '/' + context.regyear + '/' + context.uid
   } else {
     return '/home/' + context.eduPersonAffiliation + '/' + context.uid
-
   }
 }
 generateHomeDir.description = 'generated Gid'
 
 const generateGroupID = (context) => {
-  require('crypto').randomBytes(48, function (err, buffer) {
+  crypto.randomBytes(48, function (err, buffer) {
     let value = buffer.toString('hex')
     let hash = crypto.crypt(value, 'AXSGpfWdoLVjne')
     return '{CRYPT}' + hash
   })
-
 }
 generateGroupID.description = 'generated Password'
 
@@ -164,7 +154,7 @@ const initializeUser = Joi.object().keys({
   'title;lang-el': Joi.any(),
   telephoneNumber: Joi.any().default('0'),
   labeledURI: Joi.any().default('-'),
-  loginShell: Joi.any().default('/bin/bash'),
+  loginShell: Joi.any().default('/bin/bash')
 })
 
 module.exports = {

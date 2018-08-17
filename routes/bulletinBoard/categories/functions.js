@@ -22,7 +22,7 @@ function updateDatabaseRegistration (categories, userId, action) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('updateRegistrationToCategories', null, 1222, err, "Σφάλμα κατά την ανανέωση εγγραφής", null, 500))
+          reject(new ApplicationErrorClass('updateRegistrationToCategories', null, 1222, err, 'Σφάλμα κατά την ανανέωση εγγραφής', null, 500))
         }
         resolve()
       })
