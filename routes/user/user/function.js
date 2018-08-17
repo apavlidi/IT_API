@@ -34,7 +34,7 @@ function passwordsAreSame (password1, password2) {
 
 function newPasswordExistsInHistory (user, password) {
   let passwordExistsInHistory = false
-  if (!(user.pwdHistory instanceof Array)) { //make it function
+  if (!(user.pwdHistory instanceof Array)) { // make it function
     let tmphis = user.pwdHistory
     user.pwdHistory = []
     user.pwdHistory.push(tmphis)
@@ -59,10 +59,8 @@ function oldPassIsCorrect (user, oldPassword) {
   try {
     let currentSalt = user.userPassword.match(/\$.\$.+\$/g)[0].slice(0, -1)
     let currentHash = crypt(oldPassword, currentSalt)
-    if ('{CRYPT}' + currentHash === user.userPassword)
-      oldPassVerifies = true
-  }
-  catch (err) {
+    if ('{CRYPT}' + currentHash === user.userPassword) { oldPassVerifies = true }
+  } catch (err) {
     return false
   }
   return oldPassVerifies
@@ -137,8 +135,6 @@ function buildTokenAndMakeEntryForReset (user) {
 function buildToken () {
   return crypto.randomBytes(45).toString('hex')
 }
-
-
 
 function ldapSearchQueryFormat (query, isPublic) {
   return new Promise(
@@ -236,6 +232,5 @@ module.exports = {
   passwordsAreSame,
   ldapSearchQueryFormat,
   checkForSorting,
-  buildToken,
+  buildToken
 }
-

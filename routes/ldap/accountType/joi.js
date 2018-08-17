@@ -25,7 +25,7 @@ const editAccType = Joi.object().keys({
 })
 
 const deleteAccType = Joi.object().keys({
-  basedn: Joi.string().required(),
+  basedn: Joi.string().required()
 })
 
 module.exports = {

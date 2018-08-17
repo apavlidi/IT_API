@@ -2,13 +2,13 @@ const Joi = require('joi')
 
 const pithiaUser = Joi.object().keys({
   usernamePithia: Joi.string().trim().required(),
-  passwordPithia: Joi.string().required(),
+  passwordPithia: Joi.string().required()
 
 })
 
 const tokenUser = Joi.object().keys({
   token: Joi.string().required(),
-  mail: Joi.string().email().required(),
+  mail: Joi.string().email().required()
 
 })
 
@@ -17,7 +17,7 @@ const updateMailReg = Joi.object().keys({
 })
 
 const updatePassReg = Joi.object().keys({
-  password: Joi.string().required(),
+  password: Joi.string().required()
 })
 
 module.exports = {

@@ -26,7 +26,7 @@ router.get('/', getUsers)
 
 function getUserVCard (req, res, next) {
   let userUid = req.params.uid
-  let options = ldapFunctions.buildOptions('(uid=' + userUid + ')', 'sub', ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI']) //check if this is the correct id
+  let options = ldapFunctions.buildOptions('(uid=' + userUid + ')', 'sub', ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI']) // check if this is the correct id
   ldapFunctions.searchUserOnLDAP(ldapMain, options).then(user => {
     if (user) {
       if (Object.keys(user).length !== 0) {
@@ -50,21 +50,21 @@ function getUserVCard (req, res, next) {
   })
 }
 
-//TODO CHECK FOR PAGING IF POSSIBLE
+// TODO CHECK FOR PAGING IF POSSIBLE
 function getUsers (req, res, next) {
   functions.ldapSearchQueryFormat(req.query, true)
     .then(function (options) {
       return ldapFunctions.searchUsersOnLDAP(ldapMain, options)
     }).then(users => {
-    return functionsUser.appendDatabaseInfo(users, req.query)
-  }).then(users => {
-    let usersSorted = functions.checkForSorting(users, req.query)
-    res.status(200).json(usersSorted)
-  }).catch(function (applicationError) {
-    applicationError.type = 'getUsers'
-    applicationError.ip = apiFunctions.getClientIp(req)
-    next(applicationError)
-  })
+      return functionsUser.appendDatabaseInfo(users, req.query)
+    }).then(users => {
+      let usersSorted = functions.checkForSorting(users, req.query)
+      res.status(200).json(usersSorted)
+    }).catch(function (applicationError) {
+      applicationError.type = 'getUsers'
+      applicationError.ip = apiFunctions.getClientIp(req)
+      next(applicationError)
+    })
 }
 
 function resetPasswordToken (req, res, next) {
@@ -82,7 +82,7 @@ function resetPasswordToken (req, res, next) {
       return ldapFunctions.bindLdap(ldapMain)
     }).then(ldapMainBinded => {
       ldapBinded = ldapMainBinded
-      let opts = ldapFunctions.buildOptions('(uid=' + user.uid + ')', 'sub', ['pwdHistory', 'userPassword']) //check if this is the correct id
+      let opts = ldapFunctions.buildOptions('(uid=' + user.uid + ')', 'sub', ['pwdHistory', 'userPassword']) // check if this is the correct id
       return ldapFunctions.searchUserOnLDAP(ldapMainBinded, opts)
     }).then(user => {
       if (!functions.newPasswordExistsInHistory(user, newPassword, next)) {
@@ -108,8 +108,8 @@ function resetPassword (req, res, next) {
   let resetMail = req.body.mail
   let resetUsername = req.body.username
   let user = {}
-  //TODO REQUEST GOOGLE REPATCHA
-  let opts = ldapFunctions.buildOptions('(uid=' + resetUsername + ')', 'sub', ['uid', 'mail']) //check if this is the correct id
+  // TODO REQUEST GOOGLE REPATCHA
+  let opts = ldapFunctions.buildOptions('(uid=' + resetUsername + ')', 'sub', ['uid', 'mail']) // check if this is the correct id
   ldapFunctions.searchUserOnLDAP(ldapMain, opts).then(userFromLdap => {
     user = userFromLdap
     if (functions.validateIputForReset(user, resetMail)) {
@@ -143,7 +143,7 @@ function updatePassword (req, res, next) {
       return ldapFunctions.bindLdap(ldapMain)
     }).then(ldapMainBinded => {
       ldapBinded = ldapMainBinded
-      let opts = ldapFunctions.buildOptions('(uid=' + req.user.uid + ')', 'sub', ['pwdHistory', 'userPassword']) //check if this is the correct id
+      let opts = ldapFunctions.buildOptions('(uid=' + req.user.uid + ')', 'sub', ['pwdHistory', 'userPassword']) // check if this is the correct id
       return ldapFunctions.searchUserOnLDAP(ldapMainBinded, opts)
     }).then(user => {
       if (functions.oldPassIsCorrect(user, oldPassword)) {
@@ -171,7 +171,7 @@ function updatePassword (req, res, next) {
 function updateMail (req, res, next) {
   let newEmail = req.body.newMail
   let ldapBinded = null
-  let opts = ldapFunctions.buildOptions('(uid=' + req.user.uid + ')', 'sub', 'uid') //check if this is the correct id
+  let opts = ldapFunctions.buildOptions('(uid=' + req.user.uid + ')', 'sub', 'uid') // check if this is the correct id
   ldapFunctions.bindLdap(ldapMain).then(ldapMainBinded => {
     ldapBinded = ldapMainBinded
     return ldapFunctions.searchUserOnLDAP(ldapBinded, opts)

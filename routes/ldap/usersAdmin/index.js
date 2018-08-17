@@ -2,6 +2,8 @@ const express = require('express')
 const router = express.Router()
 const fs = require('fs')
 const isUtf8 = require('is-utf8')
+const importInProgress = false
+global.importInProgress = importInProgress
 
 const auth = require('../../../configs/auth')
 const ApplicationErrorClass = require('../../applicationErrorClass')
@@ -23,14 +25,14 @@ function getAllUsers (req, res, next) {
     .then(function (options) {
       return ldapFunctions.searchUsersOnLDAP(ldapMain, options)
     }).then(users => {
-    let usersSorted = functionsUser.checkForSorting(users, req.query)
-    res.status(200).json(usersSorted)
-  }).catch(function (applicationError) {
-    applicationError.type = 'getAllUsers'
-    applicationError.user = req.user.id
-    applicationError.ip = apiFunctions.getClientIp(req)
-    next(applicationError)
-  })
+      let usersSorted = functionsUser.checkForSorting(users, req.query)
+      res.status(200).json(usersSorted)
+    }).catch(function (applicationError) {
+      applicationError.type = 'getAllUsers'
+      applicationError.user = req.user.id
+      applicationError.ip = apiFunctions.getClientIp(req)
+      next(applicationError)
+    })
 }
 
 function sendActivationMail (req, res, next) {
@@ -47,9 +49,6 @@ function sendActivationMail (req, res, next) {
     })
   }
 }
-
-global.importInProgress = false
-
 
 function importUpdateUsers (req, res, next) {
   let fileFullPath
@@ -75,7 +74,7 @@ function importUpdateUsers (req, res, next) {
         statistics.startTime = resultsFinal.startTime
         statistics.endTime = new Date().toISOString()
         resultsFinal = statistics
-        global.importInProgress=false
+        global.importInProgress = false
         res.json(resultsFinal)
       }).catch(function (applicationError) {
         applicationError.type = 'importUpdateUsers'
@@ -88,10 +87,6 @@ function importUpdateUsers (req, res, next) {
     res.sendStatus(400)
   }
 }
-
-
-
-
 
 module.exports = {
   router

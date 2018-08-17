@@ -24,7 +24,7 @@ const LDAP_TEI = {
   baseUserDN: 'ou=people,dc=teithe,dc=gr'
 }
 
-const ldap = require('ldapjs');
+const ldap = require('ldapjs')
 const LDAP_CLIENT = ldap.createClient({
   url: LDAP[process.env.NODE_ENV].host
 })
@@ -39,7 +39,7 @@ const WEB_BASE_URL = {
   url: 'https://apps.it.teithe.gr'
 }
 
-const OWASP_CONFIG={
+const OWASP_CONFIG = {
   allowPassphrases: true,
   maxLength: 128,
   minLength: 8,

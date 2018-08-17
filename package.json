@@ -58,7 +58,10 @@
   "standard": {
     "ignore": [
       "configs/database.js",
-      "test/announcements.js"
+      "test/announcements.js",
+      "routes/translate.js",
+      "configs/ldap.js"
+
     ]
   }
 }

@@ -10,5 +10,5 @@ const importUpdateUsers = Joi.object().keys({
 })
 
 module.exports = {
-  importUpdateUsers,
+  importUpdateUsers
 }

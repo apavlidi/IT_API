@@ -3,8 +3,8 @@ const fs = require('fs')
 const Promise = require('promise')
 const ldap = require('ldapjs')
 const audience = {
-  production:'59a99d5989ef64657780879c',
-  development:'59a99d5989ef64657780879c'
+  production: '59a99d5989ef64657780879c',
+  development: '59a99d5989ef64657780879c'
 }
 
 const cert = fs.readFileSync('./public.pem')  // get public key
@@ -26,32 +26,28 @@ function getUser (userID) {
       ldapClient.search(config.LDAP[process.env.NODE_ENV].baseUserDN, opts, function (err, results) {
         let user = {}
         if (err) {
-          reject({
+          reject(new Error({
             type: 'SearchUserError',
             code: 4004,
             httpCode: 500,
             text: 'Unexpected user search error, please try again later.'
-          })
-        }
-        else {
-          let error = false
+          }))
+        } else {
           results.on('searchEntry', function (entry) {
             let tmp = entry.object
             delete tmp.controls
             user = tmp
           })
-          results.on('error', function (err) {
-            reject({
+          results.on('error', function () {
+            reject(new Error({
               type: 'SearchUserError',
               code: 4005,
               httpCode: 500,
               text: 'Unexpected user search error, please try again later.'
-            })
-            error = true
+            }))
           })
           results.on('end', function (result) {
-            if (!err)
-              resolve(user)
+            if (!err) { resolve(user) }
           })
         }
       })
@@ -61,49 +57,49 @@ function getUser (userID) {
 function checkToken (token, scopeRequired, userScopeRequired) {
   return new Promise(
     function (resolve, reject) {
-      jwt.verify(token, cert, {audience:  audience[process.env.NODE_ENV]}, function (err, tokenInfo) {
+      jwt.verify(token, cert, {audience: audience[process.env.NODE_ENV]}, function (err, tokenInfo) {
         if (err) {
-          if (err.name == 'TokenExpiredError')
-            reject({
+          if (err.name == 'TokenExpiredError') {
+            reject(new Error({
               type: 'TokenExpiredError',
               code: 4001,
               httpCode: 400,
               text: 'Access token has expired.'
-            })
-          else
-            reject({
+            }))
+          } else {
+            reject(new Error({
               type: 'TokenError',
               code: 4002,
               httpCode: 400,
               text: 'An active access token required to complete this action.'
-            })
-        }
-        else {
-          //doulevei den exw idea ti kanei to every
+            }))
+          }
+        } else {
+          // doulevei den exw idea ti kanei to every
           if (scopeRequired.every(val => tokenInfo.scope.includes(val))) {
             getUser(tokenInfo.userId)
               .then(function (user) {
+                console.log(user)
                 if (user.eduPersonScopedAffiliation >= userScopeRequired) {
                   resolve(user)
-                }
-                else {
-                  reject({
+                } else {
+                  reject(new Error({
                     type: 'UserPermissionError',
                     code: 4006,
                     httpCode: 400,
                     text: 'Permission denied. User cannot access this resource.'
-                  })
+                  }))
                 }
               }, function (err) {
                 reject(err)
               })
           } else {
-            reject({
+            reject(new Error({
               type: 'TokenError',
               code: 4003,
               httpCode: 400,
               text: 'Access token doesn\'t have the required scope to complete this action. Scope required : ' + scopeRequired
-            })
+            }))
           }
         }
       })
@@ -127,14 +123,10 @@ function checkAuth (scopeRequired, userScopeRequired, ignoreToken) {
         req.user = user
         next()
       }, function (err) {
-        if (ignoreToken)
-          next()
-        else
-        {
+        if (ignoreToken) { next() } else {
           next(err)
         }
       })
-
   }
 }
 

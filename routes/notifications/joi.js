@@ -5,5 +5,5 @@ const getNotificationsUser = Joi.object().keys({
 })
 
 module.exports = {
-  getNotificationsUser,
+  getNotificationsUser
 }
