@@ -45,17 +45,21 @@ function getAnnouncementsCategoriesPublic (req, res, next) {
 }
 
 function updateRegistrationToCategories (req, res, next) {
-  let arrayRegistered = JSON.parse(req.body.categoriesRegistered)
-  let arrayNotRegistered = JSON.parse(req.body.categoriesNotRegistered)
-  categoriesFunc.updateRegistrationToCategories(arrayRegistered, req.user.id, '$addToSet').then(function () {
-    return categoriesFunc.updateRegistrationToCategories(arrayNotRegistered, req.user.id, '$pull')
-  }).then(function () {
+  let addCat = req.body.addCat
+  let removeCat = req.body.removeCat
+  let promiseAdd
+  let promiseRemove
+  if (addCat) {
+    promiseAdd = categoriesFunc.updateRegistrationToCategories(addCat, req.user.id, '$addToSet')
+  }
+  if (removeCat) {
+    promiseRemove = categoriesFunc.updateRegistrationToCategories(removeCat, req.user.id, '$pull')
+  }
+  Promise.all([promiseAdd, promiseRemove]).then(() => {
     res.status(200).json({
       message: 'Η εγγραφή πραγματοποιήθηκε επιτυχώς',
     })
   }).catch(function (applicationError) {
-    applicationError.type = 'registerCategories'
-    applicationError.text = 'Σφάλμα την ανανέωση εγγραφής'
     applicationError.user = req.user.id
     applicationError.ip = apiFunctions.getClientIp(req)
     next(applicationError)
