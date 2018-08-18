@@ -121,7 +121,7 @@ function editCategory (req, res, next) {
     value: req.body.name.replace(/ /g, '')
   }
   if (editedCategory.public === 'true') {
-    if (editedCategory.wid != 5 && editedCategory.wid != 31) {
+    if (editedCategory.wid !== 5 && editedCategory.wid !== 31) {
       editedCategory.wid = 5
     } else {
       editedCategory.wid = req.body.wid

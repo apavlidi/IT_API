@@ -7,6 +7,9 @@ function searchGroupsOnLDAP (ldap, options) {
     function (resolve, reject) {
       let groups = []
       ldap.search('ou=groups,dc=it,dc=teithe,dc=gr', options, function (err, results) {
+        if (err) {
+          reject(new ApplicationErrorClass(null, null, 3201, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+        }
         results.on('searchEntry', function (entry) {
           delete entry.object.controls
           groups.push(entry.object)

@@ -35,7 +35,7 @@ function downloadFiles (req, res, next) {
   if (mongoose.Types.ObjectId.isValid(req.params.announcementId)) {
     let announcementId = req.params.announcementId
     database.Announcements.findOne({_id: announcementId}).populate('_about', 'public').exec(function (err, announcement) {
-      if (announcement._about.public || req.user) {
+      if ((announcement._about.public || req.user) && !err) {
         let files = announcement.attachments
         filesFunc.addToZip(files).then(function (finalZip) {
           finalZip
