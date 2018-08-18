@@ -72,7 +72,7 @@ function checkIfUserExists (ldapBinded, newUser, basedn) {
 }
 
 function doesNotExist (err, status) {
-  return (err && status == 1)
+  return (err && parseInt(status) === 1)
 }
 
 function getNextUidNumber () {

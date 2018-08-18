@@ -82,7 +82,7 @@ generateCnEl.description = 'generated El cn'
 
 const generateHomeDir = (context) => {
   // return next gid
-  if (context.eduPersonAffiliation == 'student') {
+  if (context.eduPersonAffiliation === 'student') {
     return '/home/' + context.eduPersonAffiliation + '/' + context.eduPersonPrimaryAffiliation + '/' + context.regyear + '/' + context.uid
   } else {
     return '/home/' + context.eduPersonAffiliation + '/' + context.uid
@@ -92,6 +92,7 @@ generateHomeDir.description = 'generated Gid'
 
 const generateGroupID = (context) => {
   crypto.randomBytes(48, function (err, buffer) {
+    if (err) {}
     let value = buffer.toString('hex')
     let hash = crypto.crypt(value, 'AXSGpfWdoLVjne')
     return '{CRYPT}' + hash

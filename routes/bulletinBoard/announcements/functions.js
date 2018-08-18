@@ -4,7 +4,8 @@ const mongoose = require('mongoose')
 const database = require('../../../configs/database')
 const fileChecks = require('./fileChecks')
 const wordpress = require('wordpress')
-const WORDPRESS_CREDENTIALS = require('../../../configs/config').WORDPRESS_CREDENTIALS
+const WORDPRESS_CREDENTIALS = require(
+  '../../../configs/config').WORDPRESS_CREDENTIALS
 const WEB_BASE_URL = require('../../../configs/config').WEB_BASE_URL
 const MAIL = require('../../../configs/config').MAIL
 const ldapConfig = require('../../../configs/config')
@@ -35,7 +36,9 @@ function getDescriptionRSSLogged (rssCategories) {
 }
 
 function getDescriptionRSSDependOnLogged (isAuthenticated) {
-  return isAuthenticated ? 'Όλες οι ανακοινώσεις' : 'Όλες οι δημόσιες ανακοινώσεις'
+  return isAuthenticated
+    ? 'Όλες οι ανακοινώσεις'
+    : 'Όλες οι δημόσιες ανακοινώσεις'
 }
 
 function createFeedObj (description) {
@@ -69,9 +72,10 @@ function appendPostsToFeed (feed, posts) {
             link: 'https://apps.it.teithe.gr/announcements/' + announcement._id,
             id: 'https://apps.it.teithe.gr/announcements/' + announcement._id,
             content: announcement.text,
-            author: [{
-              name: announcement.publisher.name
-            }],
+            author: [
+              {
+                name: announcement.publisher.name
+              }],
             contributor: [],
             date: announcement.date
           })
@@ -80,7 +84,8 @@ function appendPostsToFeed (feed, posts) {
       })
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 1034, err, null, null, 500))
+          reject(
+            new ApplicationErrorClass(null, null, 1034, err, null, null, 500))
         } else {
           resolve()
         }
@@ -88,11 +93,15 @@ function appendPostsToFeed (feed, posts) {
     })
 }
 
-function getAnnouncementsRSSPromise (announcements, rssCategories, categoryValues, feedType, res, isAuthenticated) {
+function getAnnouncementsRSSPromise (
+  announcements, rssCategories, categoryValues, feedType, res,
+  isAuthenticated) {
   return new Promise(
     function (resolve, reject) {
       let descriptionRSS
-      categoryValues ? descriptionRSS = getDescriptionRSSLogged(rssCategories) : descriptionRSS = getDescriptionRSSDependOnLogged(isAuthenticated)
+      categoryValues
+        ? descriptionRSS = getDescriptionRSSLogged(rssCategories)
+        : descriptionRSS = getDescriptionRSSDependOnLogged(isAuthenticated)
       let feed = createFeedObj(descriptionRSS)
 
       appendPostsToFeed(feed, announcements).then(function () {
@@ -121,19 +130,18 @@ function validatePublisher (publisherId) {
       let query = {}
       query.q = JSON.stringify({'id': publisherId})
 
-      functions.ldapSearchQueryFormat(query, true)
-        .then(function (options) {
-          console.log(options)
-          return ldapFunctions.searchUsersOnLDAP(ldapMain, options)
-        }).then(users => {
-          if (users.length === 1) {
-            resolve(true)
-          } else {
-            resolve(false)
-          }
-        }).catch(function (err) {
+      functions.ldapSearchQueryFormat(query, true).then(function (options) {
+        console.log(options)
+        return ldapFunctions.searchUsersOnLDAP(ldapMain, options)
+      }).then(users => {
+        if (users.length === 1) {
+          resolve(true)
+        } else {
           resolve(false)
-        })
+        }
+      }).catch(function () {
+        resolve(false)
+      })
     })
 }
 
@@ -155,7 +163,9 @@ function createFileEntries (files, announcementId) {
           })
           newFile.save(function (err, newFile) {
             if (err) {
-              reject(new ApplicationErrorClass(null, null, 1051, err, null, null, 500))
+              reject(
+                new ApplicationErrorClass(null, null, 1051, err, null, null,
+                  500))
             } else {
               filesIds.push(newFile._id)
               callback(null)
@@ -166,7 +176,8 @@ function createFileEntries (files, announcementId) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 1054, err, null, null, 500))
+          reject(
+            new ApplicationErrorClass(null, null, 1054, err, null, null, 500))
         }
         resolve(filesIds)
       })
@@ -178,7 +189,8 @@ function checkIfEntryExists (entryId, collection) {
     function (resolve, reject) {
       collection.findOne({_id: entryId}, function (err, doc) {
         if (err || !doc) {
-          reject(new ApplicationErrorClass(null, null, 1023, err, null, null, 500))
+          reject(
+            new ApplicationErrorClass(null, null, 1023, err, null, null, 500))
         } else {
           resolve(doc)
         }
@@ -215,82 +227,93 @@ function pushAllFiles (filesUploaded) {
 }
 
 function checkFileInput (file) {
-  return (file && fileChecks.checkFileType(file.mimetype) && fileChecks.validateFileSize(Buffer.byteLength(file.data))
+  return (file && fileChecks.checkFileType(file.mimetype) &&
+    fileChecks.validateFileSize(Buffer.byteLength(file.data))
   )
 }
 
 function postToTeithe (announcement, action) {
-  database.AnnouncementsCategories.findOne({_id: announcement._about}).exec(function (err, category) {
-    if (category && category.public) {
-      generateWordpressContent(announcement.id, announcement.text, announcement.textEn, announcement.attachments, announcement.date, announcement.publisher.name).then(function (wordpressContent) {
-        if (action === 'create') {
-          console.log(category)
-          clientWordpress.newPost({
-            title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' + announcement.titleEn + '<!--:-->',
-            content: wordpressContent,
-            status: 'publish',
-            terms: {
-              'category': [category.wid]
-            }
-          }, function (error, id) {
-            let update = {wordpressId: id}
-            database.Announcements.update({_id: announcement._id},
-              update
-            ).exec(function (err, announcementUpdated) {
-            })
-          })
-        } else if (action === 'edit') {
-          console.log(category.wid)
-          console.log(announcement)
+  database.AnnouncementsCategories.findOne({_id: announcement._about})
+    .exec(function (err, category) {
+      if (err) {}
+      if (category && category.public) {
+        generateWordpressContent(announcement.id, announcement.text,
+          announcement.textEn, announcement.attachments, announcement.date,
+          announcement.publisher.name).then(function (wordpressContent) {
+            if (action === 'create') {
+              console.log(category)
+              clientWordpress.newPost({
+                title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
+                announcement.titleEn + '<!--:-->',
+                content: wordpressContent,
+                status: 'publish',
+                terms: {
+                  'category': [category.wid]
+                }
+              }, function (error, id) {
+                if (error) {}
+                let update = {wordpressId: id}
+                database.Announcements.update({_id: announcement._id},
+                update
+              ).exec(function () {})
+              })
+            } else if (action === 'edit') {
+              console.log(category.wid)
+              console.log(announcement)
 
-          clientWordpress.editPost(announcement.wordpressId, {
-            title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' + announcement.titleEn + '<!--:-->',
-            content: wordpressContent,
-            terms: {
-              'category': [category.wid]
+              clientWordpress.editPost(announcement.wordpressId, {
+                title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
+                announcement.titleEn + '<!--:-->',
+                content: wordpressContent,
+                terms: {
+                  'category': [category.wid]
+                }
+              }, function () {})
             }
-          }, function (error, data) {
-
           })
-        }
-      })
-    }
-  })
+      }
+    })
 }
 
 function sendEmails (announcementEntry) {
   let sender = announcementEntry.publisher
   let categoryName
-  database.AnnouncementsCategories.findOne({_id: announcementEntry._about}).select('name registered -_id').exec(function (err, category) {
-    console.log('Reg users from db = ' + category.registered)
-    categoryName = category.name
-    findEmailsFromUserIds(category.registered).then(function (emails, err) {
-      console.log('Mail All = ' + emails)
-      console.log('Mail Error finding = ' + err)
-      if (emails.length) {
-        let bodyText = buildEmailBody(sender.name, announcementEntry.text, announcementEntry.title, categoryName, WEB_BASE_URL.url + '/announcements/' + announcementEntry.id)
-        async.forEach(emails, function (to) {
-          let mailOptions = {
-            from: '"IT-News (' + sender.name + ')" <notify@eng.it.teithe.gr>',
-            to: to,
-            subject: '[Apps-News] ' + categoryName + ': ' + announcementEntry.title,
-            html: bodyText
-          }
-          MAIL.sendMail(mailOptions, (error, info) => {
-            if (error) {
-              return error
+  database.AnnouncementsCategories.findOne({_id: announcementEntry._about})
+    .select('name registered -_id')
+    .exec(function (err, category) {
+      if (err) {}
+      console.log('Reg users from db = ' + category.registered)
+      categoryName = category.name
+      findEmailsFromUserIds(category.registered).then(function (emails, err) {
+        console.log('Mail All = ' + emails)
+        console.log('Mail Error finding = ' + err)
+        if (emails.length) {
+          let bodyText = buildEmailBody(sender.name, announcementEntry.text,
+            announcementEntry.title, categoryName,
+            WEB_BASE_URL.url + '/announcements/' + announcementEntry.id)
+          async.forEach(emails, function (to) {
+            let mailOptions = {
+              from: '"IT-News (' + sender.name + ')" <notify@eng.it.teithe.gr>',
+              to: to,
+              subject: '[Apps-News] ' + categoryName + ': ' +
+                announcementEntry.title,
+              html: bodyText
             }
-          })
-        }, function (err) {
-        })
-      }
+            MAIL.sendMail(mailOptions, (error, info) => {
+              if (error) {
+                return error
+              }
+            })
+          }, function () {})
+        }
+      })
     })
-  })
 }
 
 function buildEmailBody (publisher, text, title, categoryName, link) {
   let textToHTML = decodeURIComponent(text).replace(/(?:\r\n|\r|\n)/g, '<br />') // convert to html so it prints line breaks correct
-  return 'Μια νεα ανακοίνωση δημιουργήθηκε απο "' + publisher + '" στην κατηγορία " ' + categoryName + '" <br/>' +
+  return 'Μια νεα ανακοίνωση δημιουργήθηκε απο "' + publisher +
+    '" στην κατηγορία " ' + categoryName + '" <br/>' +
     'Ο τίτλος της ανακοίνωσης ειναι: ' + title + '<br/><br/>' +
     'Σύνδεσμος : ' + link + '<br/><br/>' +
     textToHTML + '<br></br>' +
@@ -315,67 +338,88 @@ function findEmailsFromUserIds (registeredIds) {
         },
         attributes: ['mail', 'id']
       }
-      client.search(ldapConfig.LDAP[process.env.NODE_ENV].baseUserDN, opts, function (err, results) {
-        if (err) {
-          reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1055, err, 'Σφάλμα κατα την εύρεση email χρήστη για την αποστολή ειδοποίησης.', null, 500))
-        }
-        results.on('searchEntry', function (entry) {
-          let tmp = entry.object
-          delete tmp.controls
-          delete tmp.dn
-          if (tmp.status !== 0) {
-            emails.push(tmp.mail + '')
+      client.search(ldapConfig.LDAP[process.env.NODE_ENV].baseUserDN, opts,
+        function (err, results) {
+          if (err) {
+            reject(
+              new ApplicationErrorClass('insertNewAnnouncement', null, 1055,
+                err,
+                'Σφάλμα κατα την εύρεση email χρήστη για την αποστολή ειδοποίησης.',
+                null, 500))
           }
+          results.on('searchEntry', function (entry) {
+            let tmp = entry.object
+            delete tmp.controls
+            delete tmp.dn
+            if (tmp.status !== 0) {
+              emails.push(tmp.mail + '')
+            }
+          })
+          results.on('error', function (err) {
+            reject(
+              new ApplicationErrorClass('insertNewAnnouncement', null, 1056,
+                err,
+                'Σφάλμα κατα την εύρεση email χρήστη για την αποστολή ειδοποίησης.',
+                null, 500))
+          })
+          results.on('end', function (result) {
+            resolve(emails)
+          })
         })
-        results.on('error', function (err) {
-          reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1056, err, 'Σφάλμα κατα την εύρεση email χρήστη για την αποστολή ειδοποίησης.', null, 500))
-        })
-        results.on('end', function (result) {
-          resolve(emails)
-        })
-      })
     })
 }
 
 function sendNotifications (announcementEntry, notificationId, publisherId) {
   return new Promise((resolve, reject) => {
     let calls = []
-    database.AnnouncementsCategories.findOne({_id: announcementEntry._about}).exec(function (err, category) {
-      category.registered.forEach(function (id) {
-        calls.push(function (callback) {
-          database.Profile.findOne({
-            'ldapId': {$eq: id, $ne: publisherId}
-          }).exec(function (err, profile) {
-            if (!err && profile) {
-              // TODO THIS NEEDS TO BE CHECKED
-              sendPush.sendNotification(profile.notySub, announcementEntry, category)
-            }
-          })
+    database.AnnouncementsCategories.findOne({_id: announcementEntry._about})
+      .exec(function (err, category) {
+        if (err || !category) {
+          reject(
+            new ApplicationErrorClass('insertNewAnnouncement', null, 1058,
+              err, 'Σφάλμα κατα την αποστολή ειδοποιήσεων.', null, 500))
+        }
+        category.registered.forEach(function (id) {
+          calls.push(function (callback) {
+            database.Profile.findOne({
+              'ldapId': {$eq: id, $ne: publisherId}
+            }).exec(function (err, profile) {
+              if (!err && profile) {
+                // TODO THIS NEEDS TO BE CHECKED
+                sendPush.sendNotification(profile.notySub, announcementEntry,
+                  category)
+              }
+            })
 
-          database.Profile.update({'ldapId': {$eq: id, $ne: publisherId}}, {
-            '$addToSet': {
-              'notifications': {_notification: notificationId, seen: false}
-            }
-          }, function (err, updated) {
-            if (err) {
-              reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1053, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
-            }
-            callback(null)
+            database.Profile.update({'ldapId': {$eq: id, $ne: publisherId}}, {
+              '$addToSet': {
+                'notifications': {_notification: notificationId, seen: false}
+              }
+            }, function (err, updated) {
+              if (err) {
+                reject(
+                  new ApplicationErrorClass('insertNewAnnouncement', null, 1053,
+                    err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
+              }
+              callback(null)
+            })
           })
         })
-      })
 
-      async.parallel(calls, function (err) {
-        if (err) {
-          reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1054, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
-        }
-        resolve()
+        async.parallel(calls, function (err) {
+          if (err) {
+            reject(
+              new ApplicationErrorClass('insertNewAnnouncement', null, 1054,
+                err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
+          }
+          resolve()
+        })
       })
-    })
   })
 }
 
-function generateWordpressContent (newAnnouncementId, text, textEn, attachments, date, publisher) {
+function generateWordpressContent (
+  newAnnouncementId, text, textEn, attachments, date, publisher) {
   return new Promise((resolve, reject) => {
     let buildAttachmentsHtml = new Promise((resolve, reject) => {
       let calls = []
@@ -383,12 +427,14 @@ function generateWordpressContent (newAnnouncementId, text, textEn, attachments,
       if (attachments) {
         for (let i = 0; i < attachments.length; i++) {
           calls.push(function (callback) {
-            database.File.findOne({_id: attachments[i]}).exec(function (err, file) {
-              if (file) {
-                attachmentsHtml += 'Επισύναψη: <a href="' + WEB_BASE_URL.url + '/files/' + attachments[i] + '">' + file.name + '</a><br/>'
-              }
-              callback(null)
-            })
+            database.File.findOne({_id: attachments[i]})
+              .exec(function (err, file) {
+                if (file && !err) {
+                  attachmentsHtml += 'Επισύναψη: <a href="' + WEB_BASE_URL.url +
+                    '/files/' + attachments[i] + '">' + file.name + '</a><br/>'
+                }
+                callback(null)
+              })
           })
         }
       }
@@ -404,8 +450,10 @@ function generateWordpressContent (newAnnouncementId, text, textEn, attachments,
       let isoDate = new Date(date)
       let dateModified = formatDate(isoDate, true)
 
-      let htmlContentEl = '<!--:el-->' + text + '<br/>' + attachmentsHtml + dateModified + ' - από ' + publisher + '<!--:-->'
-      let htmlContentEn = '<!--:en-->' + textEn + '<br/>' + attachmentsHtml + dateModified + ' - από ' + publisher + '<!--:-->'
+      let htmlContentEl = '<!--:el-->' + text + '<br/>' + attachmentsHtml +
+        dateModified + ' - από ' + publisher + '<!--:-->'
+      let htmlContentEn = '<!--:en-->' + textEn + '<br/>' + attachmentsHtml +
+        dateModified + ' - από ' + publisher + '<!--:-->'
       resolve(htmlContentEl + htmlContentEn)
     })
   })
@@ -425,7 +473,9 @@ function formatDate (date, monthString) {
   let hour = date.getHours()
   let minute = date.getMinutes()
 
-  return monthString ? (day + ' ' + monthNames[monthIndex] + ' ' + year + ' ' + hour + ':' + minute) : (day + '/' + monthIndex + '/' + year + ' ' + hour + ':' + minute)
+  return monthString ? (day + ' ' + monthNames[monthIndex] + ' ' + year + ' ' +
+    hour + ':' + minute) : (day + '/' + monthIndex + '/' + year + ' ' + hour +
+    ':' + minute)
 }
 
 function createNotification (announcementId, publisher) {
@@ -441,7 +491,8 @@ function createNotification (announcementId, publisher) {
     }
     notification.save(function (err, newNotification) {
       if (err) {
-        reject(new ApplicationErrorClass(null, null, 1052, err, null, null, 500))
+        reject(
+          new ApplicationErrorClass(null, null, 1052, err, null, null, 500))
       } else {
         resolve(newNotification)
       }

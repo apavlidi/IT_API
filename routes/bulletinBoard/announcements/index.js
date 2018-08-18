@@ -172,7 +172,7 @@ function deleteAnnouncement (req, res, next) {
           if (err) {
             next(new ApplicationErrorClass('deleteAnnouncement', req.user.id, 1082, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή ανακοίνωσης', apiFunctions.getClientIp(req), 500))
           } else {
-            clientWordpress.deletePost(announcement.wordpressId, function (error, data) {})
+            clientWordpress.deletePost(announcement.wordpressId, function () {})
             res.status(200).json({
               message: 'H ανακοίνωση διαγράφηκε επιτυχώς',
               announcementDeleted
@@ -229,13 +229,13 @@ function editAnnouncement (req, res, next) {
         next(new ApplicationErrorClass('editAnnouncement', req.user.id, 1091, null, 'Συνέβη κάποιο σφάλμα κατα την επεξεργασία ανακοίνωσης', null, 500))
       } else {
         database.AnnouncementsCategories.findOne({_id: announcementToBeEdited._about}, function (err, categoryOld) {
+          if (err) {}
           if (category.public && categoryOld.public) {
             announcementsFunc.postToTeithe(updatedAnnouncement, 'edit')
           } else if (category.public) {
             announcementsFunc.postToTeithe(updatedAnnouncement, 'create')
           } else if (!category.public && categoryOld.public) {
-            clientWordpress.deletePost(announcementToBeEdited.wordpressId, function (error, data) {
-            })
+            clientWordpress.deletePost(announcementToBeEdited.wordpressId, function () {})
           }
         })
         res.status(201).json({

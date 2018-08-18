@@ -72,7 +72,7 @@ function sendActivationMailToAllUsers (userIDs) {
 }
 
 function fileMimeTypeIsValid (file) {
-  return file.mimetype == 'text/plain'
+  return file.mimetype === 'text/plain'
 }
 
 function saveFileToPath (file) {
@@ -158,22 +158,21 @@ function importUser (user, ldapBinded) {
     function (resolve, reject) {
       functionLdapUser.checkIfUserExists(ldapBinded, user, user.basedn).then(result => {
         let err = result[0]
-
         let itEXistsAndHasSameStatus = result[1]
         if (functionLdapUser.doesNotExist(err, user.status)) {
           functionLdapUser.createUser(ldapBinded, user).then(() => {
             resolve('Inserted')
-          }).catch(function (err) {
+          }).catch(function () {
             resolve(['Error', user.am])
           })
         } else if (itEXistsAndHasSameStatus) {
           ldapBinded.compare(functionLdapUser.ldapBaseDN(user.uid, user.basedn), 'sem', '' + user.sem, function (err, matchedSem) {
-            if (matchedSem) {
+            if (matchedSem || err) {
               resolve('NoChange')
             } else {
               updateUserSem(ldapBinded, user, user.basedn).then(() => {
                 resolve('Updated')
-              }).catch(function (err) {
+              }).catch(function () {
                 resolve(['Error', user.am])
               })
             }
@@ -188,7 +187,7 @@ function importUser (user, ldapBinded) {
               }).then(() => {
                 removeDisabledFromDatabase(ldapBinded, user)
                 resolve('Blocked')
-              }).catch(function (err) {
+              }).catch(function () {
                 resolve(['Error', user.am])
               })
             }
@@ -198,7 +197,7 @@ function importUser (user, ldapBinded) {
             return updateStatus(ldapBinded, user, user.basedn)
           }).then(() => {
             resolve('Updated')
-          }).catch(function (err) {
+          }).catch(function () {
             resolve(['Error', user.am])
           })
         }
@@ -279,7 +278,7 @@ function updatePassword (ldapBinded, newUser, basedn) {
 }
 
 function statusChanged (status) {
-  return status != 1
+  return status !== 1
 }
 
 function updateUserSem (ldapBinded, newUser, basedn) {

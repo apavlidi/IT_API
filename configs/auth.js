@@ -59,7 +59,7 @@ function checkToken (token, scopeRequired, userScopeRequired) {
     function (resolve, reject) {
       jwt.verify(token, cert, {audience: audience[process.env.NODE_ENV]}, function (err, tokenInfo) {
         if (err) {
-          if (err.name == 'TokenExpiredError') {
+          if (err.name === 'TokenExpiredError') {
             reject(new Error({
               type: 'TokenExpiredError',
               code: 4001,
@@ -79,7 +79,6 @@ function checkToken (token, scopeRequired, userScopeRequired) {
           if (scopeRequired.every(val => tokenInfo.scope.includes(val))) {
             getUser(tokenInfo.userId)
               .then(function (user) {
-                console.log(user)
                 if (user.eduPersonScopedAffiliation >= userScopeRequired) {
                   resolve(user)
                 } else {
