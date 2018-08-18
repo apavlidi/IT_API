@@ -1,6 +1,6 @@
-# [IT_API](http://api.it.teithe.gr/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/apavlidi/IT_API/wiki/How-to-contribute) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+# [IT_API](http://api.it.teithe.gr/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/apavlidi/IT_API/wiki/How-to-contribute) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6264e9c8a11049739bdfd7b7b331b062)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=apavlidi/IT_API&amp;utm_campaign=Badge_Grade)
 
-IT_API is an API that integrates with the Internet services of the department of [Information Technology at Alexander Technological Education Institute of Thessaloniki](https://www.it.teithe.gr/?lang=el)
+IT_API is an API that integrates with the Internet services of the department of [Information Technology at Alexander Technological Education Institute of Thessaloniki](https://www.it.teithe.gr/?lang=el) 
 
 ## Installation
 
