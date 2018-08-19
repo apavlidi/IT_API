@@ -7,7 +7,7 @@ const audience = {
   development: '59a99d5989ef64657780879c'
 }
 
-const cert = fs.readFileSync('./public.pem')  // get public key
+const cert = fs.readFileSync('./public.pem') // get public key
 const config = require('./config')
 
 const ldapClient = ldap.createClient({

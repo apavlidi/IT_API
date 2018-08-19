@@ -240,37 +240,37 @@ function postToTeithe (announcement, action) {
         generateWordpressContent(announcement.id, announcement.text,
           announcement.textEn, announcement.attachments, announcement.date,
           announcement.publisher.name).then(function (wordpressContent) {
-            if (action === 'create') {
-              console.log(category)
-              clientWordpress.newPost({
-                title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
+          if (action === 'create') {
+            console.log(category)
+            clientWordpress.newPost({
+              title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
                 announcement.titleEn + '<!--:-->',
-                content: wordpressContent,
-                status: 'publish',
-                terms: {
-                  'category': [category.wid]
-                }
-              }, function (error, id) {
-                if (error) {}
-                let update = {wordpressId: id}
-                database.Announcements.update({_id: announcement._id},
+              content: wordpressContent,
+              status: 'publish',
+              terms: {
+                'category': [category.wid]
+              }
+            }, function (error, id) {
+              if (error) {}
+              let update = {wordpressId: id}
+              database.Announcements.update({_id: announcement._id},
                 update
               ).exec(function () {})
-              })
-            } else if (action === 'edit') {
-              console.log(category.wid)
-              console.log(announcement)
+            })
+          } else if (action === 'edit') {
+            console.log(category.wid)
+            console.log(announcement)
 
-              clientWordpress.editPost(announcement.wordpressId, {
-                title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
+            clientWordpress.editPost(announcement.wordpressId, {
+              title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
                 announcement.titleEn + '<!--:-->',
-                content: wordpressContent,
-                terms: {
-                  'category': [category.wid]
-                }
-              }, function () {})
-            }
-          })
+              content: wordpressContent,
+              terms: {
+                'category': [category.wid]
+              }
+            }, function () {})
+          }
+        })
       }
     })
 }

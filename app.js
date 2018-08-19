@@ -28,7 +28,7 @@ const apiFunctions = require('./routes/apiFunctions')
 
 app.use(logger('dev'))
 app.use(bodyParser.json())
-app.use(compression())   // Κανει compress ολα τα responses.Διαβασα οτι παντα πρεπει να γινεται compress στο response
+app.use(compression()) // Κανει compress ολα τα responses.Διαβασα οτι παντα πρεπει να γινεται compress στο response
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(fileUpload())
@@ -46,8 +46,8 @@ app.all('/*', apiFunctions.sanitizeInput, function (req, res, next) {
 
 app.use('/', index)
 app.use('/announcements', announcements)
-app.use('/announcements/categories', categories)
-app.use('/announcements/files', announcementFiles)
+app.use('/categories', categories)
+app.use('/files', announcementFiles)
 app.use('/notifications', notifications)
 app.use('/reg', reg)
 app.use('/user', user)
@@ -77,13 +77,12 @@ mongoose.connect(config.MONGO[process.env.NODE_ENV], {
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  res.status(404).json({
-    error: {
-      message: 'Ο σύνδεσμος δεν βρέθηκε',
-      type: 'WrongEndPointError',
-      code: '2000'
-    }
-  })
+  let err = {
+    message: 'Ο σύνδεσμος δεν βρέθηκε',
+    type: 'WrongEndPointError',
+    code: '9000'
+  }
+  next(err)
 })
 
 // error handler
@@ -99,6 +98,8 @@ app.use(function (err, req, res, next) {
         code: err.httpCode
       }
     })
+  } else if (err.code === '9000') {
+    res.status(404).json(err)
   } else {
     res.status(500).json({
       error: {

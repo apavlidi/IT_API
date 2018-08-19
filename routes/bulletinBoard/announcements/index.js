@@ -71,17 +71,17 @@ function getAnnouncementsFeed (req, res, next) {
     } else {
       database.Announcements.find({_about: {$in: rssCategories}}).populate('_about', 'name').populate('attachments',
         'name').exec(function (err, announcements) {
-          if (err) {
-            next(new ApplicationErrorClass('getAnnouncementsFeed', 'unknown', 1032, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων!', apiFunctions.getClientIp(req), 500))
-          } else {
-            announcementsFunc.getAnnouncementsRSSPromise(announcements, rssCategories, req.params.categoryIds,
+        if (err) {
+          next(new ApplicationErrorClass('getAnnouncementsFeed', 'unknown', 1032, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων!', apiFunctions.getClientIp(req), 500))
+        } else {
+          announcementsFunc.getAnnouncementsRSSPromise(announcements, rssCategories, req.params.categoryIds,
             feedType, res, login).then(function (response) {
-              res.send(response)
-            }).catch(function (err) {
-              next(new ApplicationErrorClass('getAnnouncementsFeed', 'unknown', 1033, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων!', apiFunctions.getClientIp(req), 500))
-            })
-          }
-        })
+            res.send(response)
+          }).catch(function (err) {
+            next(new ApplicationErrorClass('getAnnouncementsFeed', 'unknown', 1033, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων!', apiFunctions.getClientIp(req), 500))
+          })
+        }
+      })
     }
   })
 }
