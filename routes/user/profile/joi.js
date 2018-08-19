@@ -18,7 +18,7 @@ const profileUpdate = Joi.object().keys({
   github: Joi.string().uri().optional().allow(''),
   googlePlus: Joi.string().uri().optional().allow(''),
   linkedIn: Joi.string().uri().optional().allow(''),
-  socialMediaExtra:  Joi.array().items(socialMediaExtr)
+  socialMediaExtra: Joi.array().items(socialMediaExtr)
 })
 
 module.exports = {

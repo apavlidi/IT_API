@@ -1,7 +1,6 @@
 const apiFunctions = require('./../routes/apiFunctions')
 
 class ApplicationErrorClass {
-
   constructor (type, user, code, error, text, ip, httpCode, logging) {
     this.type = type
     this.user = user
@@ -17,8 +16,6 @@ class ApplicationErrorClass {
       apiFunctions.logging('error', this.type, this.user, this.code, this.error, this.text, this.ip)
     }
   }
-
-
 }
 
 module.exports = ApplicationErrorClass

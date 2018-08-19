@@ -1,3 +1,5 @@
+/* eslint-disable new-cap */
+
 const database = require('../../../configs/database')
 const ldap = require('ldapjs')
 const ApplicationErrorClass = require('./../../applicationErrorClass')
@@ -5,7 +7,6 @@ const config = require('../../../configs/config')
 const ldapFunction = require('./../../../configs/ldap')
 const ldapConfig = require('../../../configs/ldap')
 const _ = require('lodash')
-const async = require('async')
 
 function updatePhotoProfileIfNecessary (user, files) {
   return new Promise(
@@ -13,9 +14,10 @@ function updatePhotoProfileIfNecessary (user, files) {
       if (files && user.eduPersonScopedAffiliation >= config.PERMISSIONS.professor) {
         let profilePhoto = files['profilePhoto']
         if (photoTypeIsValid(profilePhoto)) {
+          console.log('hello')
           database.Profile.findOneAndUpdate({ldapId: user.id}, {
             'profilePhoto.contentType': profilePhoto.mimetype,
-            'profilePhoto.data': new Buffer(profilePhoto.data).toString('base64')
+            'profilePhoto.data': new Buffer.from(profilePhoto.data).toString('base64')
           }, function (err, result) {
             if (err) {
               reject(new ApplicationErrorClass('updatePublicProfile', null, 2011, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
@@ -32,7 +34,7 @@ function updatePhotoProfileIfNecessary (user, files) {
 }
 
 function photoTypeIsValid (photo) {
-  return (photo.mimetype == 'image/png' || photo.mimetype == 'image/jpeg' || photo.mimetype == 'image/bmp')
+  return (photo.mimetype === 'image/png' || photo.mimetype === 'image/jpeg' || photo.mimetype === 'image/bmp')
 }
 
 function updateSocialMediaIfNecessary (userId, reqBody) {
@@ -52,6 +54,9 @@ function updateCoreSocialMediaIfNecessary (ldapId, reqBody) {
   return new Promise(
     function (resolve, reject) {
       database.Profile.findOne({ldapId: ldapId}, function (err, profile) {
+        if (err) {
+          reject(new ApplicationErrorClass('updatePublicProfile', null, 2017, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
+        }
         if (_.has(reqBody, 'facebook')) {
           profile.socialMedia.facebook = reqBody['facebook']
         }
@@ -113,7 +118,7 @@ function updateExtraSocialMediaIfNecessary (ldapId, socialMediaExtras) {
 }
 
 function findSocialMediaPosAndUpdate (profile, value) {
-  let elementPos = profile.socialMedia.socialMediaExtra.findIndex(x => x._id == value._id)
+  let elementPos = profile.socialMedia.socialMediaExtra.findIndex(x => x._id === value._id)
   if (value.name && value.url && elementPos >= 0) {
     profile.socialMedia.socialMediaExtra[elementPos].name = value.name
     profile.socialMedia.socialMediaExtra[elementPos].url = value.url
@@ -124,7 +129,7 @@ function findSocialMediaPosAndUpdate (profile, value) {
 
 function extraSocialMediaExistsInProfile (profile, extraSocialMedia) {
   return profile.socialMedia.socialMediaExtra.find(function (ele) {
-    return ele._id == extraSocialMedia._id
+    return ele._id === extraSocialMedia._id
   })
 }
 

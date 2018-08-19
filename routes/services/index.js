@@ -1,6 +1,5 @@
 const express = require('express')
 const router = express.Router()
-const ldap = require('ldapjs')
 const auth = require('../../configs/auth')
 const config = require('../../configs/config')
 const ldapFunctions = require('../ldapFunctions')
@@ -52,7 +51,6 @@ function sshChangeStatusUsers (req, res, next) {
         return functions.disableSshFromVM(ldapBinded, user, 'users')
       } else {
         return functions.enableSshFromVm(ldapBinded, user, 'users')
-
       }
     } else {
       throw new ApplicationErrorClass('sshChangeStatusUsers', null, 4013, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', apiFunctions.getClientIp(req), 500)

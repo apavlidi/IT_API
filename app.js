@@ -23,7 +23,6 @@ const configs = require('./routes/ldap/config/index').router
 const userAdmin = require('./routes/ldap/userAdmin/index').router
 const services = require('./routes/services/index').router
 
-
 const config = require('./configs/config')
 const apiFunctions = require('./routes/apiFunctions')
 
@@ -38,7 +37,7 @@ app.all('/*', apiFunctions.sanitizeInput, function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*')
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,PATCH,DELETE,OPTIONS')
   res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token')
-  if (req.method == 'OPTIONS') {
+  if (req.method === 'OPTIONS') {
     res.status(200).end()
   } else {
     next()
@@ -61,7 +60,6 @@ app.use('/configs', configs)
 app.use('/userAdmin', userAdmin)
 app.use('/services', services)
 
-
 app.io = require('socket.io')()
 
 app.io.on('connection', function (socket) {
@@ -83,10 +81,10 @@ app.use(function (req, res, next) {
     error: {
       message: 'Ο σύνδεσμος δεν βρέθηκε',
       type: 'WrongEndPointError',
-      code: '2000',
+      code: '2000'
     }
   })
-});
+})
 
 // error handler
 app.use(function (err, req, res, next) {
@@ -98,7 +96,7 @@ app.use(function (err, req, res, next) {
       error: {
         message: err.text,
         type: err.type,
-        code: err.httpCode,
+        code: err.httpCode
       }
     })
   } else {
@@ -106,7 +104,7 @@ app.use(function (err, req, res, next) {
       error: {
         message: 'Συνέβη κάποιο σφάλμα.',
         type: 'WrongEndPointError',
-        code: '2000',
+        code: '2000'
       }
     })
   }

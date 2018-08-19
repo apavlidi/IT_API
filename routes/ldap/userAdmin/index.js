@@ -28,7 +28,7 @@ function updateUser (req, res, next) {
   }
   ldapFunctions.bindLdap(ldapMain).then(ldapBinded => {
     ldapMainBinded = ldapBinded
-    let options = ldapFunctions.buildOptions('(id=' + userID + ')', 'sub', ['id']) //check if this is the correct id
+    let options = ldapFunctions.buildOptions('(id=' + userID + ')', 'sub', ['id']) // check if this is the correct id
     return ldapFunctions.searchUserOnLDAP(ldapMain, options)
   }).then(user => {
     if (user) {
@@ -94,7 +94,7 @@ function deleteUser (req, res, next) {
   let ldapMainBinded
   ldapFunctions.bindLdap(ldapMain).then(ldapBinded => {
     ldapMainBinded = ldapBinded
-    let options = ldapFunctions.buildOptions('(id=' + userID + ')', 'sub', ['id']) //check if this is the correct id
+    let options = ldapFunctions.buildOptions('(id=' + userID + ')', 'sub', ['id']) // check if this is the correct id
     return ldapFunctions.searchUserOnLDAP(ldapMain, options)
   }).then(user => {
     if (user) {

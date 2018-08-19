@@ -70,7 +70,7 @@ const activationMailSubject = {
   en: {
     normalUser: 'Account Activation',
     privUser: '[ΙΤ-' + date.getFullYear() + (date.getMonth() + 1) + date.getDate() + '] Account Activation'
-  },
+  }
 }
 
 const resetMailSubject = {
@@ -81,7 +81,7 @@ const resetMailSubject = {
   en: {
     normalUser: 'Reset Password',
     privUser: '[ΙΤ-' + date.getFullYear() + (date.getMonth() + 1) + date.getDate() + '] Reset Password'
-  },
+  }
 }
 
 module.exports = {

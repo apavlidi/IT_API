@@ -9,6 +9,9 @@ function checkIfSubscribedAlready (user, browserFp) {
         ldapId: user,
         'notySub.browserFp': browserFp
       }, function (err, profileNotySub) {
+        if (err) {
+          reject(new ApplicationErrorClass(null, null, 2063, err, 'Υπήρχε σφάλμα κατα την ενημέρωση εγγραφης', null, 500))
+        }
         if (profileNotySub) {
           resolve({isSubscribed: true, profile: profileNotySub})
         } else {
@@ -81,12 +84,11 @@ function isNotMaximumSubscriptions (subscriptionCounter) {
 
 function getPositionOfNotySub (notySubs, fp) {
   let found = notySubs.find(function (ele) {
-    return ele.browserFp == fp
+    return ele.browserFp === fp
   })
-  let elementPos = notySubs.map(function (x) {
+  return notySubs.map(function (x) {
     return x._id
   }).indexOf(found._id)
-  return elementPos
 }
 
 module.exports = {

@@ -1,5 +1,4 @@
 const ApplicationErrorClass = require('./../applicationErrorClass')
-const config = require('../../configs/config')
 const ldap = require('ldapjs')
 
 function activateUser (user) {

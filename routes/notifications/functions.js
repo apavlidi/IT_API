@@ -1,6 +1,8 @@
 const database = require('../../configs/database')
 const ApplicationErrorClass = require('../applicationErrorClass')
+const async = require('async')
 
+// TODO CHANGE ERROR CODES
 function createNotification (announcementId, publisher) {
   return new Promise((resolve, reject) => {
     let notification = new database.Notification()
@@ -22,14 +24,18 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
   return new Promise((resolve, reject) => {
     let calls = []
     database.AnnouncementsCategories.findOne({_id: announcementEntry._about}).exec(function (err, category) {
+      if (err || !category) {
+        reject(new ApplicationErrorClass('insertNewAnnouncement', null, 999, err, 'Σφάλμα κατα την την αποστολή ειδοποιήσεων', null, 500))
+      }
+
       category.registered.forEach(function (id) {
         calls.push(function (callback) {
           database.Profile.findOne({
             'ldapId': {$eq: id, $ne: publisherId}
           }).exec(function (err, profile) {
             if (!err && profile) {
-              //TODO THIS NEEDS TO BE CHECKED WHEN USER IS IMPLEMENTED
-              //sendPush.sendNotification(profile.notySub, announcementEntry, category)
+              // TODO THIS NEEDS TO BE CHECKED WHEN USER IS IMPLEMENTED
+              // sendPush.sendNotification(profile.notySub, announcementEntry, category)
             }
           })
 

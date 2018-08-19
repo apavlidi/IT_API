@@ -30,7 +30,7 @@ function formatQuery (req, res, next) {
     delete query.pageSize
   }
   if (Object.prototype.hasOwnProperty.call(query, 'sort')) {
-    let sortBy;
+    let sortBy
     let sortDir = 'ascending'
     formatedSort = query.sort
     if (query.sort.charAt(0) === '-') {
@@ -100,7 +100,7 @@ function logging (typeOfLog, type, user, code, error, text, ip) {
       //     log.info(type, user, code, error, text, ip)
       break
     default:
-    //log.info(type, user, code, error, text, ip)
+    // log.info(type, user, code, error, text, ip)
   }
 }
 
