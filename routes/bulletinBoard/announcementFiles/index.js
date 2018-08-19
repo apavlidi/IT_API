@@ -35,27 +35,31 @@ function downloadFiles (req, res, next) {
   if (mongoose.Types.ObjectId.isValid(req.params.announcementId)) {
     let announcementId = req.params.announcementId
     database.Announcements.findOne({_id: announcementId}).populate('_about', 'public').exec(function (err, announcement) {
-      if ((announcement._about.public || req.user) && !err) {
-        let files = announcement.attachments
-        filesFunc.addToZip(files).then(function (finalZip) {
-          finalZip
-            .generateNodeStream({type: 'nodebuffer', streamFiles: true})
-            .pipe(fs.createWriteStream('files.zip'))
-            .on('finish', function () {
-              finalZip.generateAsync({type: 'uint8array'})
-                .then(function (content) {
-                  res.status(200).download('files.zip', function (err) {
-                    if (!err) {
-                      fs.unlink('files.zip')
-                    }
+      if (announcement && !err) {
+        if (announcement._about.public || req.user) {
+          let files = announcement.attachments
+          filesFunc.addToZip(files).then(function (finalZip) {
+            finalZip
+              .generateNodeStream({type: 'nodebuffer', streamFiles: true})
+              .pipe(fs.createWriteStream('files.zip'))
+              .on('finish', function () {
+                finalZip.generateAsync({type: 'uint8array'})
+                  .then(function (content) {
+                    res.status(200).download('files.zip', function (err) {
+                      if (!err) {
+                        fs.unlink('files.zip')
+                      }
+                    })
                   })
-                })
-            })
-        }).catch(function (err) {
-          next(new ApplicationErrorClass('downloadFiles', null, 1111, err, 'Σφάλμα κατα την συμπίεση αρχείων', apiFunctions.getClientIp(req), 500))
-        })
+              })
+          }).catch(function (err) {
+            next(new ApplicationErrorClass('downloadFiles', null, 1111, err, 'Σφάλμα κατα την συμπίεση αρχείων', apiFunctions.getClientIp(req), 500))
+          })
+        } else {
+          next(new ApplicationErrorClass('downloadFiles', null, 1112, null, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', apiFunctions.getClientIp(req), 500))
+        }
       } else {
-        next(new ApplicationErrorClass('downloadFiles', null, 1112, null, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', apiFunctions.getClientIp(req), 500))
+        next(new ApplicationErrorClass('downloadFiles', null, 1116, null, 'Σφάλμα κατά την εύρεση αρχείου', apiFunctions.getClientIp(req), 500))
       }
     })
   } else {
