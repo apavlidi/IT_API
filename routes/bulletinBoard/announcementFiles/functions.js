@@ -13,7 +13,7 @@ function addToZip (files) {
       files.forEach(file => {
         calls.push(function (callback) {
           database.File.findOne({_id: file}).exec(function (err, file) {
-            if (err) {
+            if (err || !file) {
               reject(new ApplicationErrorClass('downloadFiles', null, 1114, null, 'Συνέβη κάποιο σφάλμα κατα λήψη αρχείων', null, 500))
             } else {
               zip.file(file.name, file.data)

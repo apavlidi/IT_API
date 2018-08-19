@@ -12,7 +12,7 @@ function createNotification (announcementId, publisher) {
     notification.related.id = announcementId
     notification.save(function (err, newNotification) {
       if (err) {
-        reject(new ApplicationErrorClass(null, null, 108, err, null, null, 500))
+        reject(new ApplicationErrorClass(null, null, 1058, err, null, null, 500))
       } else {
         resolve(newNotification)
       }
@@ -45,7 +45,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
             }
           }, function (err, updated) {
             if (err) {
-              reject(new ApplicationErrorClass('insertNewAnnouncement', null, 109, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
+              reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1059, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
             }
             callback(null)
           })
@@ -54,7 +54,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('insertNewAnnouncement', null, 110, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
+          reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1060, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
         }
         resolve()
       })
