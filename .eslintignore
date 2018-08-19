@@ -1,0 +1,5 @@
+configs/database.js
+test/announcements.js
+routes/translate.js
+configs/ldap.js
+coverage/
