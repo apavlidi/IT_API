@@ -20,8 +20,6 @@ const resetPasswordToken = Joi.object().keys({
   newPasswordVerify: Joi.string().required()
 })
 
-
-
 module.exports = {
   chpw,
   updateMail,

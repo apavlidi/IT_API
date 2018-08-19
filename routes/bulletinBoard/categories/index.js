@@ -57,7 +57,7 @@ function updateRegistrationToCategories (req, res, next) {
   }
   Promise.all([promiseAdd, promiseRemove]).then(() => {
     res.status(200).json({
-      message: 'Η εγγραφή πραγματοποιήθηκε επιτυχώς',
+      message: 'Η εγγραφή πραγματοποιήθηκε επιτυχώς'
     })
   }).catch(function (applicationError) {
     applicationError.user = req.user.id
@@ -121,7 +121,7 @@ function editCategory (req, res, next) {
     value: req.body.name.replace(/ /g, '')
   }
   if (editedCategory.public === 'true') {
-    if (editedCategory.wid != 5 && editedCategory.wid != 31) {
+    if (editedCategory.wid !== 5 && editedCategory.wid !== 31) {
       editedCategory.wid = 5
     } else {
       editedCategory.wid = req.body.wid

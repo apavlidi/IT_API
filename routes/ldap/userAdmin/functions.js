@@ -37,11 +37,10 @@ function createUser (ldapBinded, newUser) {
         newUser.displayName = newUser.cn
         newUser['displayName;lang-el'] = newUser['cn;lang-el']
       }
-      delete newUser.basedn //It must be deleted!
+      delete newUser.basedn // It must be deleted!
 
       checkIfUserExists(ldapBinded, newUser, basedn).then(result => {
         let err = result[0]
-        let matchedStatus = result[1]
         if (doesNotExist(err, newUser.status)) {
           getNextUidNumber().then(uid => {
             newUser.uidNumber = uid
@@ -59,7 +58,6 @@ function createUser (ldapBinded, newUser) {
         } else {
           reject(new ApplicationErrorClass('addUser', null, 3316, err, 'Ο χρήστης υπάρχει ήδη', null, 500))
         }
-
       })
     })
 }
@@ -74,7 +72,7 @@ function checkIfUserExists (ldapBinded, newUser, basedn) {
 }
 
 function doesNotExist (err, status) {
-  return (err && status == 1)
+  return (err && parseInt(status) === 1)
 }
 
 function getNextUidNumber () {
@@ -175,7 +173,7 @@ function removeUserFromLdap (ldabBinded, userDN) {
 }
 
 function fieldsQuery (user, query) {
-  let attributesPermitted = functionsUser.buildFieldsQueryLdap([],query)
+  let attributesPermitted = functionsUser.buildFieldsQueryLdap([], query)
   let filteredUser = Object.keys(user)
     .filter(key => attributesPermitted.includes(key))
     .reduce((obj, key) => {

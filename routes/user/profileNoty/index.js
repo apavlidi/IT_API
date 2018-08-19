@@ -13,18 +13,27 @@ router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), getNot
 router.patch('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.enableNotySub), enableNotySub)
 router.delete('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.disableNotySub), disableNotySub)
 
+// TODO REFACTOR
 function disableNotySub (req, res, next) {
   database.Profile.findOne({ldapId: req.user.id}).exec(function (err, profile) {
     if (!err && profile) {
       if (req.body.all && req.body.all === 'true') {
         functions.disableAllNotiesSub(profile).then(() => {
           res.sendStatus(200)
+        }).catch(function (applicationError) {
+          applicationError.type = 'disableNotySub'
+          applicationError.ip = apiFunctions.getClientIp(req)
+          next(applicationError)
         })
       } else {
         functions.checkIfSubscribedAlready(req.user.id, req.body.browserFp).then(result => {
-          functions.modifyNotySub(result.profile, req.body, false).then(() => {
-            res.sendStatus(200)
-          })
+          return functions.modifyNotySub(result.profile, req.body, false)
+        }).then(() => {
+          res.sendStatus(200)
+        }).catch(function (applicationError) {
+          applicationError.type = 'disableNotySub'
+          applicationError.ip = apiFunctions.getClientIp(req)
+          next(applicationError)
         })
       }
     } else {
@@ -44,6 +53,10 @@ function enableNotySub (req, res, next) {
         }
       }).then(() => {
         res.sendStatus(200)
+      }).catch(function (applicationError) {
+        applicationError.type = 'enableNotySub'
+        applicationError.ip = apiFunctions.getClientIp(req)
+        next(applicationError)
       })
     } else {
       next(new ApplicationErrorClass('updateNotySub', req.user, 2053, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
@@ -57,7 +70,7 @@ function getNotySub (req, res) {
     ldapId: req.user.id,
     'notySub.browserFp': fp
   }).select('notySub -_id').exec(function (err, profile) {
-    if (profile) {
+    if (profile && !err) {
       let notySubPos = functions.getPositionOfNotySub(profile.notySub, fp)
       res.status(200).json({notySub: profile.notySub[notySubPos]})
     } else {

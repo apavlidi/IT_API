@@ -17,7 +17,6 @@ const getAnnouncementFeedSchema = Joi.object().keys({
   categoryIds: Joi.any().allow()
 })
 
-
 const newAnnouncementsQuerySchema = Joi.object().keys({
   title: Joi.string().trim().min(1).max(80).required(),
   titleEn: Joi.string().trim().min(1).max(80).allow(''),
@@ -50,12 +49,10 @@ const editCategorySchemaBody = Joi.object().keys({
   wid: Joi.number().integer()
 })
 
-
 const registerCategoriesSchema = Joi.object().keys({
   addCat: Joi.array().allow(),
   removeCat: Joi.array().allow()
 })
-
 
 module.exports = {
   deleteAnnouncementsQuerySchema,
@@ -64,5 +61,5 @@ module.exports = {
   newCategorySchema,
   editCategorySchemaBody,
   registerCategoriesSchema,
-  getAnnouncementFeedSchema,
+  getAnnouncementFeedSchema
 }

@@ -3,17 +3,16 @@ const INTEGER_FIELDS = ['id', 'regyear', 'regsem', 'uidNumber', 'gidNumber', 'st
 const PERMITTED_FIELDS_TO_MODIFY_IN_PROFILE = ['displayName;lang-el', 'displayName', 'labeledURI', 'telephoneNumber', 'secondarymail', 'description', 'description;lang-el', 'eduPersonEntitlement']
 
 const PERMITTED_FIELDS_TO_MODIFY_IN_ADMIN = ['cn', 'cn;lang-el', 'gidNumber', 'homeDirectory', 'sn', 'sn;lang-el', 'uid', 'uidNumber', 'userPassword', 'am', 'eduPersonAffiliation',
-  'eduPersonPrimaryAffiliation', 'eduPersonScopedAffiliation'
-  , 'fathersname', 'fathersname;lang-el', 'givenName', 'givenName;lang-el', 'id', 'labeledURI', 'loginShell', 'mail', 'regyear', 'regsem', 'secondarymail', 'sem', 'status',
+  'eduPersonPrimaryAffiliation', 'eduPersonScopedAffiliation',
+  'fathersname', 'fathersname;lang-el', 'givenName', 'givenName;lang-el', 'id', 'labeledURI', 'loginShell', 'mail', 'regyear', 'regsem', 'secondarymail', 'sem', 'status',
   'telephoneNumber', 'title', 'title;lang-el', 'displayName;lang-el',
   'displayName', 'telephoneNumber', 'description', 'description;lang-el', 'eduPersonEntitlement']
 
 const DEFAULT_PASSWORD = '{CRYPT}TSMywqBza/y3A)'
 
-//elot translate
+// elot translate
 function translate (text) {
-
-  /*@cc_on @if (@_jscript_version <= 5.0) return 'Scripting engine ' + @_jscript_version + ' not supported' @end @*/
+  /* @cc_on @if (@_jscript_version <= 5.0) return 'Scripting engine ' + @_jscript_version + ' not supported' @end @ */
 
   var grCaps = stringToSet('ΑΆΒΓΔΕΈΖΗΉΘΙΊΪΚΛΜΝΞΟΌΠΡΣΤΥΎΫΦΧΨΩΏ')
 
@@ -69,7 +68,7 @@ function translate (text) {
 
     {greek: 'χ', greeklish: 'ch'},
 
-    {greek: 'ψ', greeklish: 'ps'},
+    {greek: 'ψ', greeklish: 'ps'}
 
   ]
 
@@ -80,9 +79,7 @@ function translate (text) {
   // Enchance replacements
 
   for (var i = 0, replacement; replacement = replacements[i]; i++) {
-
     replacements[replacement.greek] = replacement
-
   }
 
   // Append single letter replacements
@@ -92,13 +89,9 @@ function translate (text) {
   var engLetters = 'aavgdeezii.iiiiklmnxooprsstyyyyf..oo'
 
   for (var i = 0; i < grLetters.length; i++) {
-
     if (!replacements[grLetters.charAt(i)]) {
-
       replacements.push({greek: grLetters.charAt(i), greeklish: engLetters.charAt(i)})
-
     }
-
   }
 
   // Enchance replacements, build expression
@@ -106,11 +99,9 @@ function translate (text) {
   var expression = []
 
   for (var i = 0, replacement; replacement = replacements[i]; i++) {
-
     replacements[replacement.greek] = replacement
 
     expression[i] = replacement.greek
-
   }
 
   expression = new RegExp(expression.join('|'), 'gi')
@@ -122,78 +113,55 @@ function translate (text) {
   var viSet = stringToSet('αβγδεζηλιmμνορω')
 
   text = text.replace(expression, function ($0, index) {
-
     var replacement = replacements[$0.toLowerCase()]
 
     if ($0.toLowerCase() === 'µπ') {
-      //replacement = {};
-      //replacement.bi = true;
+      // replacement = {};
+      // replacement.bi = true;
       replacement = replacements['µπ']
     }
 
     if (replacement.bi) {
-
       var bi = (greekSet[text.charAt(index - 1).toLowerCase()] && greekSet[text.charAt(index + 2).toLowerCase()]) ? 'mp' : 'b'
 
       return fixCase(bi, $0)
-
     } else if (replacement.fivi) {
-
       var c1 = replacements[$0.charAt(0).toLowerCase()].greeklish
 
       var c2 = viSet[text.charAt(index + 2).toLowerCase()] ? 'v' : 'f'
 
       return fixCase(c1 + c2, $0)
-
     } else {
-
       return fixCase(replacement.greeklish, $0 + text.charAt(index + $0.length))
-
     }
-
   })
 
   return text
 
   function fixCase (text, mirror) {
-
     if (grCaps[mirror.charAt(0)]) {
-
       if (mirror.length == 1 || grCaps[mirror.charAt(1)]) {
-
         return text.toUpperCase()
-
       } else {
-
         return text.charAt(0).toUpperCase() + text.substr(1)
-
       }
-
     } else {
-
       return text
-
     }
-
   }
 
   function stringToSet (s) {
-
     var o = {}
 
     for (var i = 0; i < s.length; i++) {
-
       o[s.charAt(i)] = 1
-
     }
 
     return o
-
   }
-
 }
 
-//elot translate
+// elot translate
 
 module.exports = {
   INTEGER_FIELDS,

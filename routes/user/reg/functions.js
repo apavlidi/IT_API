@@ -10,8 +10,7 @@ function validateUserAndPassOnPithia (ldapBind, user, password) {
         ldapBind.bind(user.dn, password, function (err) {
           if (err) {
             reject(new ApplicationErrorClass('pauth', null, 2113, null, 'Λάθος όνομα χρήστη η κωδικός.(Παρακαλώ δοκιμάστε και με τα στοιχεία του moodle)', null, 500))
-          }
-          else {
+          } else {
             resolve()
           }
         })

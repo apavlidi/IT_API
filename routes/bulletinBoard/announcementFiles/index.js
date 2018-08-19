@@ -23,7 +23,7 @@ function downloadFile (req, res, next) {
       'Content-Type': file.contentType,
       'Content-Disposition': 'attachment;filename*=UTF-8\'\'' + name
     })
-    res.end(file.data) //the second parameter is cashed to the browser
+    res.end(file.data) // the second parameter is cashed to the browser
   }).catch(function (applicationError) {
     applicationError.type = 'downloadFile'
     applicationError.ip = apiFunctions.getClientIp(req)
@@ -35,7 +35,7 @@ function downloadFiles (req, res, next) {
   if (mongoose.Types.ObjectId.isValid(req.params.announcementId)) {
     let announcementId = req.params.announcementId
     database.Announcements.findOne({_id: announcementId}).populate('_about', 'public').exec(function (err, announcement) {
-      if (announcement._about.public || req.user) {
+      if ((announcement._about.public || req.user) && !err) {
         let files = announcement.attachments
         filesFunc.addToZip(files).then(function (finalZip) {
           finalZip
@@ -66,7 +66,7 @@ function downloadFiles (req, res, next) {
 function viewFile (req, res, next) {
   filesFunc.getFile(req.params.id, req.user).then(file => {
     let type = fileType(file.data)
-    if (type != null && filesFunc.browserMimeTypesSupported(type.mime)) { //here we can check what types we want to send depending if the browser supports it (eg pdf is supported)
+    if (type != null && filesFunc.browserMimeTypesSupported(type.mime)) { // here we can check what types we want to send depending if the browser supports it (eg pdf is supported)
       res.contentType(type.mime)
       res.send(file.data)
     } else {
@@ -75,7 +75,7 @@ function viewFile (req, res, next) {
         'Content-Type': file.contentType,
         'Content-Disposition': 'attachment;filename*=UTF-8\'\'' + name
       })
-      res.end(file.data) //the second parameter is cashed to the browser
+      res.end(file.data) // the second parameter is cashed to the browser
     }
   }).catch(function (applicationError) {
     applicationError.type = 'viewFile'
@@ -90,7 +90,7 @@ function deleteFile (req, res, next) {
     if (err || !announcement) {
       next(new ApplicationErrorClass('deleteFile', req.user.id, 1121, null, 'Σφάλμα κατα την εύρεση αρχείου', apiFunctions.getClientIp(req), 500))
     } else {
-      if (announcement.publisher.id === req.user.id || req.user.scope === PERMISSIONS.admin) {
+      if (announcement.publisher.id === req.user.id || req.user.scope === config.PERMISSIONS.admin) {
         announcement.attachments.pull(fileId)
         announcement.save(function (err) {
           if (err) {
@@ -101,7 +101,7 @@ function deleteFile (req, res, next) {
                 next(new ApplicationErrorClass('deleteFile', req.user.id, 1123, err, 'Σφάλμα κατα την διαγραφή αρχείου', apiFunctions.getClientIp(req), 500))
               } else {
                 res.status(200).json({
-                  message: 'Το αρχείο διαγράφηκε επιτυχώς',
+                  message: 'Το αρχείο διαγράφηκε επιτυχώς'
                 })
               }
             })

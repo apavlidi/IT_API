@@ -43,7 +43,7 @@ function sendActivationMailToAllUsers (userIDs) {
 
       userIDs.forEach(function (userID) {
         calls.push(function (callback) {
-          let options = ldapFunctions.buildOptions('(id=' + userID + ')', 'sub', []) //check if this is the correct id
+          let options = ldapFunctions.buildOptions('(id=' + userID + ')', 'sub', []) // check if this is the correct id
           ldapFunctions.searchUserOnLDAP(ldapMain, options).then(user => {
             if (user.dn) {
               return buildTokenAndMakeEntryForActivation(user)
@@ -72,7 +72,7 @@ function sendActivationMailToAllUsers (userIDs) {
 }
 
 function fileMimeTypeIsValid (file) {
-  return file.mimetype == 'text/plain'
+  return file.mimetype === 'text/plain'
 }
 
 function saveFileToPath (file) {
@@ -151,7 +151,6 @@ function importUsers (users) {
         })
       })
     })
-
 }
 
 function importUser (user, ldapBinded) {
@@ -159,29 +158,28 @@ function importUser (user, ldapBinded) {
     function (resolve, reject) {
       functionLdapUser.checkIfUserExists(ldapBinded, user, user.basedn).then(result => {
         let err = result[0]
-
         let itEXistsAndHasSameStatus = result[1]
         if (functionLdapUser.doesNotExist(err, user.status)) {
           functionLdapUser.createUser(ldapBinded, user).then(() => {
             resolve('Inserted')
-          }).catch(function (err) {
+          }).catch(function () {
             resolve(['Error', user.am])
           })
         } else if (itEXistsAndHasSameStatus) {
           ldapBinded.compare(functionLdapUser.ldapBaseDN(user.uid, user.basedn), 'sem', '' + user.sem, function (err, matchedSem) {
-            if (matchedSem) {
+            if (matchedSem || err) {
               resolve('NoChange')
             } else {
               updateUserSem(ldapBinded, user, user.basedn).then(() => {
                 resolve('Updated')
-              }).catch(function (err) {
+              }).catch(function () {
                 resolve(['Error', user.am])
               })
             }
           })
         } else if (statusChanged(user.status)) {
           ldapBinded.compare(functionLdapUser.ldapBaseDN(user.uid, user.basedn), 'am', user.am + '', function (err, matchedStatus) {
-            if (err) { //it does not exist on ldap
+            if (err) { // it does not exist on ldap
               resolve('NoAction')
             } else {
               updatePassword(ldapBinded, user, user.basedn).then(() => {
@@ -189,17 +187,17 @@ function importUser (user, ldapBinded) {
               }).then(() => {
                 removeDisabledFromDatabase(ldapBinded, user)
                 resolve('Blocked')
-              }).catch(function (err) {
+              }).catch(function () {
                 resolve(['Error', user.am])
               })
             }
           })
-        } else { //he was deactivated and became activated
+        } else { // he was deactivated and became activated
           updateScope(ldapBinded, user, user.basedn).then(() => {
             return updateStatus(ldapBinded, user, user.basedn)
           }).then(() => {
             resolve('Updated')
-          }).catch(function (err) {
+          }).catch(function () {
             resolve(['Error', user.am])
           })
         }
@@ -221,7 +219,7 @@ function removeDisabledFromDatabase (ldapBinded, user) {
 function updateScope (ldapBinded, newUser, basedn) {
   return new Promise(
     function (resolve, reject) {
-      let updateScope = new ldap.Change({ //to give user access into activate page
+      let updateScope = new ldap.Change({ // to give user access into activate page
         operation: 'replace',
         modification: {
           eduPersonScopedAffiliation: 0
@@ -280,7 +278,7 @@ function updatePassword (ldapBinded, newUser, basedn) {
 }
 
 function statusChanged (status) {
-  return status != 1
+  return status !== 1
 }
 
 function updateUserSem (ldapBinded, newUser, basedn) {
@@ -346,7 +344,7 @@ function buildUser (reqBody, cols) {
     let fathersname = cols[4]
     let eduPersonAffiliation = reqBody.type
     let primaryAffiliation = reqBody.typeP
-    let gidNumber = reqBody.gid //get it from html
+    let gidNumber = reqBody.gid // get it from html
     let basedn = reqBody.basedn
     let title = reqBody.title
     let titleGr = reqBody.titleGr

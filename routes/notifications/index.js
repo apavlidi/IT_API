@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const database = require('../../configs/database')
-const Joi = require('joi')
 const auth = require('../../configs/auth')
 const config = require('../../configs/config')
 const ApplicationErrorClass = require('./../applicationErrorClass')
@@ -22,23 +21,27 @@ function getNotificationsUser (req, res, next) {
 
   let userId = req.user.id
   database.Profile.findOne({'ldapId': userId}, limit).select('-ldapId -__v -_id -socialMedia -profilePhoto').populate('notifications._notification', '-userId -__v -_id').exec(function (err, profile) {
-    if (profile) {
+    if (profile && !err) {
       let notifications = profile.notifications
       database.Announcements.populate(notifications, {
         path: '_notification.related.id',
         select: '_about title titleEn'
       }, function (err, doc) {
-        let notificationsPopulated = profile.notifications
-        database.AnnouncementsCategories.populate(notificationsPopulated, {
-          path: '_notification.related.id._about',
-          select: 'name -_id'
-        }, function (err, profilePopulated) {
-          if (profilePopulated && !err) {
-            res.status(200).json(profile)
-          } else {
-            next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 5000, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
-          }
-        })
+        if (err) {
+          next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 5002, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
+        } else {
+          let notificationsPopulated = profile.notifications
+          database.AnnouncementsCategories.populate(notificationsPopulated, {
+            path: '_notification.related.id._about',
+            select: 'name -_id'
+          }, function (err, profilePopulated) {
+            if (profilePopulated && !err) {
+              res.status(200).json(profile)
+            } else {
+              next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 5000, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
+            }
+          })
+        }
       })
     } else {
       next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 5001, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
@@ -49,7 +52,7 @@ function getNotificationsUser (req, res, next) {
 function readNotificationsUser (req, res, next) {
   let userId = req.user.id
   database.Profile.findOne({'ldapId': userId}).populate('notifications._notification').exec(function (err, profile) {
-    if (profile) {
+    if (profile && !err) {
       profile.notifications.forEach(function (notification) {
         notification.seen = true
       })

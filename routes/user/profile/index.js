@@ -18,7 +18,7 @@ router.delete('/photo', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student)
 
 function deleteProfilePhoto (req, res, next) {
   database.Profile.findOneAndUpdate({ldapId: req.user.id}, {
-    'profilePhoto': {},
+    'profilePhoto': {}
   }, function (err, profile) {
     if (err || !profile) {
       next(new ApplicationErrorClass('deleteProfilePhoto', req.user.id, 2031, null, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή φωτογραφίας προφιλ', apiFunctions.getClientIp(req), 500))
@@ -53,7 +53,7 @@ function updatePublicProfile (req, res, next) {
 }
 
 function getUserProfile (req, res, next) {
-  let opts = ldapFunctions.buildOptions('(id=' + req.user.id + ')', 'sub', functionsUser.buildFieldsQueryLdap(['am', 'id','description', 'eduPersonEntitlement', 'pwdChangedTime', 'displayName', 'regyear', 'regsem', 'sem', 'givenName', 'sn', 'fathersname', 'cn', 'secondarymail', 'mail', 'eduPersonAffiliation', 'eduPersonPrimaryAffiliation', 'title', 'telephoneNumber', 'labeledURI'], req.query))
+  let opts = ldapFunctions.buildOptions('(id=' + req.user.id + ')', 'sub', functionsUser.buildFieldsQueryLdap(['am', 'id', 'description', 'eduPersonEntitlement', 'pwdChangedTime', 'displayName', 'regyear', 'regsem', 'sem', 'givenName', 'sn', 'fathersname', 'cn', 'secondarymail', 'mail', 'eduPersonAffiliation', 'eduPersonPrimaryAffiliation', 'title', 'telephoneNumber', 'labeledURI'], req.query))
   ldapFunctions.searchUserOnLDAP(ldapMain, opts).then(user => {
     delete user.controls
     delete user.dn

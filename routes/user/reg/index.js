@@ -124,11 +124,11 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
     }
   })
 
-  ldapTei.unbind(function (err) {
+  ldapTei.unbind(function () {
   })
 }
 
-//TODO CHECK WHEN LDAP CREATES TOKEN FOR ACTIVATING
+// TODO CHECK WHEN LDAP CREATES TOKEN FOR ACTIVATING
 function checkTokenUser (req, res, next) {
   let mail = req.body.mail
   let token = req.body.token

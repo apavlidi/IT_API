@@ -6,9 +6,9 @@ function addAccountTypeToDB (newType, reqBody) {
     function (resolve, reject) {
       if (reqBody.primary) {
         let primaries
-        try{
-        primaries = JSON.parse(reqBody.primary)
-        }catch(error){
+        try {
+          primaries = JSON.parse(reqBody.primary)
+        } catch (error) {
           reject(new ApplicationErrorClass('addAccountType', null, 3013, null, 'Συνεβη καποιο λάθος κατα την δημιουργία τύπου', null, 500))
         }
         primaries.forEach(primary => {

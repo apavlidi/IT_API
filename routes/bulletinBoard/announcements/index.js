@@ -40,9 +40,9 @@ function getAnnouncement (req, res, next) {
     } else {
       announcementsFunc.checkIfEntryExists(announcement._about, database.AnnouncementsCategories).then(() => {
         if (req.user || announcement._about.public) {
-          announcement._about.public = undefined //remove the public property
+          announcement._about.public = undefined // remove the public property
           if (req.query.fields && req.query.fields.indexOf('_about') === -1) {
-            announcement._about = undefined //remove the _about property if its not on query
+            announcement._about = undefined // remove the _about property if its not on query
           }
           res.status(200).json(announcement)
         } else {
@@ -71,17 +71,17 @@ function getAnnouncementsFeed (req, res, next) {
     } else {
       database.Announcements.find({_about: {$in: rssCategories}}).populate('_about', 'name').populate('attachments',
         'name').exec(function (err, announcements) {
-        if (err) {
-          next(new ApplicationErrorClass('getAnnouncementsFeed', 'unknown', 1032, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων!', apiFunctions.getClientIp(req), 500))
-        } else {
-          announcementsFunc.getAnnouncementsRSSPromise(announcements, rssCategories, req.params.categoryIds,
+          if (err) {
+            next(new ApplicationErrorClass('getAnnouncementsFeed', 'unknown', 1032, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων!', apiFunctions.getClientIp(req), 500))
+          } else {
+            announcementsFunc.getAnnouncementsRSSPromise(announcements, rssCategories, req.params.categoryIds,
             feedType, res, login).then(function (response) {
-            res.send(response)
-          }).catch(function (err) {
-            next(new ApplicationErrorClass('getAnnouncementsFeed', 'unknown', 1033, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων!', apiFunctions.getClientIp(req), 500))
-          })
-        }
-      })
+              res.send(response)
+            }).catch(function (err) {
+              next(new ApplicationErrorClass('getAnnouncementsFeed', 'unknown', 1033, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων!', apiFunctions.getClientIp(req), 500))
+            })
+          }
+        })
     }
   })
 }
@@ -124,7 +124,7 @@ function insertNewAnnouncement (req, res, next) {
     validatePublisherPromise = announcementsFunc.validatePublisher(publisher.publisherId)
   }
 
-  req.files != null ? filesInput = req.files['uploads'] : null
+  (req.files != null) ? filesInput = req.files['uploads'] : filesInput = null
   announcementsFunc.gatherFilesInput(filesInput).then(filesReturned => {
     files = filesReturned
     return announcementsFunc.checkIfEntryExists(req.body.about, database.AnnouncementsCategories)
@@ -146,7 +146,7 @@ function insertNewAnnouncement (req, res, next) {
     return notificationsFunc.sendNotifications(announcementEntry, newNotification.id, publisher.id)
   }).then(newNotification => {
     // announcementsFunc.postToTeithe(announcementEntry, 'create')
-    announcementsFunc.sendEmails(announcementEntry);
+    announcementsFunc.sendEmails(announcementEntry)
     req.app.io.emit('new announcement', newNotification)
     res.status(201).json({
       message: 'Η ανακοίνωση προστέθηκε επιτυχώς',
@@ -172,7 +172,7 @@ function deleteAnnouncement (req, res, next) {
           if (err) {
             next(new ApplicationErrorClass('deleteAnnouncement', req.user.id, 1082, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή ανακοίνωσης', apiFunctions.getClientIp(req), 500))
           } else {
-            clientWordpress.deletePost(announcement.wordpressId, function (error, data) {})
+            clientWordpress.deletePost(announcement.wordpressId, function () {})
             res.status(200).json({
               message: 'H ανακοίνωση διαγράφηκε επιτυχώς',
               announcementDeleted
@@ -229,13 +229,13 @@ function editAnnouncement (req, res, next) {
         next(new ApplicationErrorClass('editAnnouncement', req.user.id, 1091, null, 'Συνέβη κάποιο σφάλμα κατα την επεξεργασία ανακοίνωσης', null, 500))
       } else {
         database.AnnouncementsCategories.findOne({_id: announcementToBeEdited._about}, function (err, categoryOld) {
+          if (err) {}
           if (category.public && categoryOld.public) {
             announcementsFunc.postToTeithe(updatedAnnouncement, 'edit')
           } else if (category.public) {
             announcementsFunc.postToTeithe(updatedAnnouncement, 'create')
           } else if (!category.public && categoryOld.public) {
-            clientWordpress.deletePost(announcementToBeEdited.wordpressId, function (error, data) {
-            })
+            clientWordpress.deletePost(announcementToBeEdited.wordpressId, function () {})
           }
         })
         res.status(201).json({
