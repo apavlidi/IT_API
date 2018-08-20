@@ -36,9 +36,11 @@ function getDescriptionRSSLogged (rssCategories) {
 }
 
 function getDescriptionRSSDependOnLogged (isAuthenticated) {
-  return isAuthenticated
-    ? 'Όλες οι ανακοινώσεις'
-    : 'Όλες οι δημόσιες ανακοινώσεις'
+  if (typeof (isAuthenticated) === 'boolean') {
+    return isAuthenticated ? 'Όλες οι ανακοινώσεις' : 'Όλες οι δημόσιες ανακοινώσεις'
+  } else {
+    return 'Όλες οι δημόσιες ανακοινώσεις'
+  }
 }
 
 function createFeedObj (description) {
@@ -227,9 +229,11 @@ function pushAllFiles (filesUploaded) {
 }
 
 function checkFileInput (file) {
-  return (file && fileChecks.checkFileType(file.mimetype) &&
-    fileChecks.validateFileSize(Buffer.byteLength(file.data))
-  )
+  if (typeof file.data === 'string' || file.data instanceof String) {
+    return (file && fileChecks.checkFileType(file.mimetype) && fileChecks.validateFileSize(Buffer.byteLength(file.data)))
+  } else {
+    return false
+  }
 }
 
 function postToTeithe (announcement, action) {
