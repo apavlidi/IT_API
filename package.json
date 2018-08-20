@@ -7,7 +7,9 @@
     "startDevWindows": "set NODE_ENV=development&&node ./bin/www",
     "coverageWindows": "set NODE_ENV=test&&istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec",
     "standard": "standard --verbose | snazzy",
-    "eslint": "eslint ."
+    "standardFix": "standard --fix",
+    "eslint": "eslint .",
+    "test": "mocha"
   },
   "dependencies": {
     "async": "^2.6.0",
@@ -56,14 +58,19 @@
     "eslint-plugin-node": "^7.0.1",
     "eslint-plugin-promise": "^4.0.0",
     "eslint-plugin-standard": "^3.1.0",
-    "mocha": "^5.0.0",
     "snazzy": "^7.1.1",
-    "standard": "11.0.0"
+    "standard": "11.0.0",
+    "chai-http": "^4.0.0",
+    "mocha": "^5.2.0",
+    "nyc": "^12.0.2",
+    "rewire": "^4.0.1",
+    "sinon": "^6.1.5",
+    "sinon-mongoose": "^2.2.1"
   },
   "standard": {
     "ignore": [
       "configs/database.js",
-      "test/announcements.js",
+      "test/",
       "routes/translate.js",
       "configs/ldap.js"
     ]

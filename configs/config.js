@@ -6,9 +6,9 @@ const LDAP = {
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   test: {
-    host: 'ldap://192.168.6.30:389',
+    host: 'ldap://192.168.6.89:389',
     user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: 'fakePassword',
+    password: '8=PmDVw4',
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   production: {
@@ -31,7 +31,7 @@ const LDAP_CLIENT = ldap.createClient({
 
 const MONGO = {
   development: 'mongodb://admin:Password@192.168.6.94/myappdev',
-  test: 'mongodb://192.168.6.94/myapptest',
+  test: 'mongodb://192.168.6.85/myapptest',
   production: 'mongodb://192.168.6.85/myapp'
 }
 

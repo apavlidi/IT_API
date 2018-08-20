@@ -38,8 +38,6 @@ describe('categories', () => {
         chai.request(server)
           .get('/categories?' + access_token)
           .end((err, res) => {
-            let body = res.body
-            body.should.be.an('array')
             res.should.have.status(200)
             done()
           })
@@ -49,6 +47,7 @@ describe('categories', () => {
         chai.request(server)
           .get('/categories')
           .end((err, res) => {
+            console.log(res.body)
             res.should.have.status(400)
             done()
           })
