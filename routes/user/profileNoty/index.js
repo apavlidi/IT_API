@@ -9,9 +9,9 @@ const config = require('../../../configs/config')
 const ApplicationErrorClass = require('./../../applicationErrorClass')
 const validSchemas = require('./joi')
 
-router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), getNotySub)
-router.patch('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.enableNotySub), enableNotySub)
-router.delete('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.disableNotySub), disableNotySub)
+router.get('/', auth.checkAuth(['user'], config.PERMISSIONS.student), getNotySub)
+router.patch('/', auth.checkAuth(['user'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.enableNotySub), enableNotySub)
+router.delete('/', auth.checkAuth(['user'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.disableNotySub), disableNotySub)
 
 // TODO REFACTOR
 function disableNotySub (req, res, next) {

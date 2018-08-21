@@ -13,10 +13,10 @@ const ldapConfig = require('../../../configs/ldap')
 
 let ldapMain = config.LDAP_CLIENT
 
-router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), getUser)
-router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.addUser), addUser)
-router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), deleteUser)
-router.patch('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.updateUser), updateUser)
+router.get('/:id', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), getUser)
+router.post('/', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.addUser), addUser)
+router.delete('/:id', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), deleteUser)
+router.patch('/:id', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.updateUser), updateUser)
 
 function updateUser (req, res, next) {
   let attr = req.body.attr
