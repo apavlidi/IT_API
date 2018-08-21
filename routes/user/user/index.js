@@ -16,8 +16,8 @@ const ldapFunctions = require('../../ldapFunctions')
 let ldapMain = config.LDAP_CLIENT
 owasp.config(config.OWASP_CONFIG)
 
-router.post('/chpw', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.chpw), updatePassword)
-router.post('/chmail', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.updateMail), updateMail)
+router.post('/chpw', auth.checkAuth(['user'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.chpw), updatePassword)
+router.post('/chmail', auth.checkAuth(['user'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.updateMail), updateMail)
 router.post('/reset', apiFunctions.validateInput('body', validSchemas.resetPassword), resetPassword)
 router.post('/reset/token', apiFunctions.validateInput('body', validSchemas.resetPasswordToken), resetPasswordToken)
 

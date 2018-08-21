@@ -12,10 +12,10 @@ const functions = require('./functions')
 
 let ldapMain = config.LDAP_CLIENT
 
-router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.formatQuery, getAccountTypes)
-router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.addAccType), addAccountType)
-router.delete('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.deleteAccType), deleteAccountType)
-router.patch('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.editAccType), editAccountType)
+router.get('/', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.formatQuery, getAccountTypes)
+router.post('/', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.addAccType), addAccountType)
+router.delete('/', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.deleteAccType), deleteAccountType)
+router.patch('/', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.editAccType), editAccountType)
 
 function editAccountType (req, res, next) {
   let basedn = req.body.basedn

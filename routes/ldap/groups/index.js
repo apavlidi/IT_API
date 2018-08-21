@@ -11,9 +11,9 @@ const apiFunctions = require('./../../apiFunctions')
 
 let ldapMain = config.LDAP_CLIENT
 
-router.get('/:id?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), getGroups)
-router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.addGroup), addGroup)
-router.delete('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.deleteGroup), deleteGroup)
+router.get('/:id?', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), getGroups)
+router.post('/', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.addGroup), addGroup)
+router.delete('/', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.deleteGroup), deleteGroup)
 
 function getGroups (req, res, next) {
   let gid = parseInt(req.params.id)

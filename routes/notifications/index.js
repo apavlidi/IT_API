@@ -7,8 +7,8 @@ const ApplicationErrorClass = require('./../applicationErrorClass')
 const apiFunctions = require('../apiFunctions')
 const validSchemas = require('./joi')
 
-router.get('/:limit?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, apiFunctions.validateInput('params', validSchemas.getNotificationsUser), getNotificationsUser)
-router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), readNotificationsUser)
+router.get('/:limit?', auth.checkAuth(['notifications'], config.PERMISSIONS.student), apiFunctions.formatQuery, apiFunctions.validateInput('params', validSchemas.getNotificationsUser), getNotificationsUser)
+router.post('/', auth.checkAuth(['notifications'], config.PERMISSIONS.student), readNotificationsUser)
 
 function getNotificationsUser (req, res, next) {
   let notsCounter = req.params.limit
