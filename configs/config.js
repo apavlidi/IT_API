@@ -31,7 +31,7 @@ const LDAP_CLIENT = ldap.createClient({
 
 const MONGO = {
   development: 'mongodb://admin:Password@192.168.6.94/myappdev',
-  test: 'mongodb://192.168.6.85/myapptest',
+  test: 'mongodb://admin:Password@192.168.6.94/myapptest',
   production: 'mongodb://192.168.6.85/myapp'
 }
 
