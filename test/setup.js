@@ -1,0 +1,23 @@
+process.env.NODE_ENV = 'test'
+
+const database = require('../configs/database')
+const mongoose = require('mongoose')
+global.database = database
+global.mongoose = mongoose
+
+const server = require('../app')
+global.server = server
+
+const chai = require('chai')
+const chaiHttp = require('chai-http')
+const expect = chai.expect
+const should = chai.should()
+const sinon = require('sinon')
+require('sinon-mongoose')
+const access_token = "access_token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MTA2Iiwic2NvcGUiOlsiaWQiLCJjbiIsInVpZCIsImVkdVBlcnNvblNjb3BlZEFmZmlsaWF0aW9uIl0sImhhc2giOiIyMmNuOXM2bG9qZGZ0cmE5bzJkbSIsImlhdCI6MTUzMDYyODg5NiwiZXhwIjozNTMwOTI5MDE2LCJhdWQiOlsiNTlhOTlkNTk4OWVmNjQ2NTc3ODA4NzljIl19.vm89SCGcHsiq80circy9N2RLY1Y2vkdBzfjfGy5r_-X0Yz39ynWTeKKw3rEJ4qgUfUHuABrW2qYBXOb8VMp49Tg7Sg8foc2K05yt9dyqzRk25AXJL1tFHJqALV2hnqYasx5gpSYL-uMPDBiMDAMpU_gY4MjI7kH51bUArc4XVyYp9jptusxemZ5TwfTgINYGLfFELwE6l1Girxf2eI2Gw0KGEDUQYj64O_B3UCMo7y_ARlOTRx9MG3RfWE95FrqNMWnYJtIx4rwZoNLlhItWFx5u78lUrSO_aCLvooE1jgjtEOZmNt0JpuTudQeNhjjuRg4Rt2wzYxfcrwnSB1oBZOAl9Bv2qQGOhgmWGlSnnGV3cHleHqAj2x4kI8IUrsrxz6yxdYUeN8fwOiOZm52cui3W2eCDtjFPb-cBpjLjtKxsp5a4khylZOf8yXaGjcgEPR_ceMkhdGCcc5CES_1Kl6q14x5YmjJp6E2f7DsXTPCxryMtPMJC8qG_4hO-wup44eFbNOMZuihlp2j0bwOYMl4HAdyAZk_z-puETGqmw7UJFaD5Afqx9Gc7pc69RdZFM96eQ8hjv3C4lqyRJBkDJgBI0B_6SEdeJWHeeKIVQKdk04VDSRrxZKZ35mSY6b2_vN_6_7PjB08QGR4Olgxi0h2T2byAiG_hRdcHOEOGybw"
+chai.use(chaiHttp)
+global.chai = chai
+global.should = should
+global.expect = expect
+global.sinon = sinon
+global.access_token = access_token
