@@ -57,22 +57,19 @@ function getUser (userID) {
 function checkToken (token, scopeRequired, userScopeRequired) {
   return new Promise(
     function (resolve, reject) {
+      let errorCustom = new Error()
+      errorCustom.httpCode = 400
       jwt.verify(token, cert, {audience: audience[process.env.NODE_ENV]}, function (err, tokenInfo) {
         if (err) {
+          errorCustom.type = 'TokenExpiredError'
           if (err.name === 'TokenExpiredError') {
-            reject(new Error({
-              type: 'TokenExpiredError',
-              code: 4001,
-              httpCode: 400,
-              text: 'Access token has expired.'
-            }))
+            errorCustom.code = 4001
+            errorCustom.text = 'Access token has expired.'
+            reject(errorCustom)
           } else {
-            reject(new Error({
-              type: 'TokenError',
-              code: 4002,
-              httpCode: 400,
-              text: 'An active access token required to complete this action.'
-            }))
+            errorCustom.code = 4002
+            errorCustom.text = 'An active access token required to complete this action.'
+            reject(errorCustom)
           }
         } else {
           // doulevei den exw idea ti kanei to every
@@ -82,23 +79,20 @@ function checkToken (token, scopeRequired, userScopeRequired) {
                 if (user.eduPersonScopedAffiliation >= userScopeRequired) {
                   resolve(user)
                 } else {
-                  reject(new Error({
-                    type: 'UserPermissionError',
-                    code: 4006,
-                    httpCode: 400,
-                    text: 'Permission denied. User cannot access this resource.'
-                  }))
+                  errorCustom.type = 'UserPermissionError'
+                  errorCustom.code = 4006
+                  errorCustom.text = 'Permission denied. User cannot access this resource.'
+                  reject(errorCustom)
                 }
               }, function (err) {
                 reject(err)
               })
           } else {
-            reject(new Error({
-              type: 'TokenError',
-              code: 4003,
-              httpCode: 400,
-              text: 'Access token doesn\'t have the required scope to complete this action. Scope required : ' + scopeRequired
-            }))
+            errorCustom.type = 'TokenError'
+            errorCustom.code = 4003
+            errorCustom.text = 'Access token doesn\'t have the required scope to complete this action. Scope required : ' + scopeRequired
+            reject(errorCustom)
+            reject(errorCustom)
           }
         }
       })
