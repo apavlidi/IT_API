@@ -1,6 +1,7 @@
 const database = require('../../configs/database')
-const ApplicationErrorClass = require('../applicationErrorClass')
+const PromiseError = require('../promiseErrorClass')
 const async = require('async')
+const mongoose = require('mongoose')
 
 // TODO CHANGE ERROR CODES
 function createNotification (announcementId, publisher) {
@@ -9,10 +10,14 @@ function createNotification (announcementId, publisher) {
     notification.userId = publisher.id
     notification.nameEn = publisher.nameEn
     notification.nameEl = publisher.nameEl
-    notification.related.id = announcementId
+    if (mongoose.Types.ObjectId.isValid(announcementId)) {
+      notification.related.id = announcementId
+    } else {
+      reject(new PromiseError(1057, null))
+    }
     notification.save(function (err, newNotification) {
       if (err) {
-        reject(new ApplicationErrorClass(null, null, 1058, err, null, null, 500))
+        reject(new PromiseError(1058, err))
       } else {
         resolve(newNotification)
       }
@@ -25,7 +30,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
     let calls = []
     database.AnnouncementsCategories.findOne({_id: announcementEntry._about}).exec(function (err, category) {
       if (err || !category) {
-        reject(new ApplicationErrorClass('insertNewAnnouncement', null, 999, err, 'Σφάλμα κατα την την αποστολή ειδοποιήσεων', null, 500))
+        reject(new PromiseError(1061, err))
       }
 
       category.registered.forEach(function (id) {
@@ -45,7 +50,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
             }
           }, function (err, updated) {
             if (err) {
-              reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1059, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
+              reject(new PromiseError(1059, err))
             }
             callback(null)
           })
@@ -54,7 +59,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('insertNewAnnouncement', null, 1060, err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
+          reject(new PromiseError(1060, err))
         }
         resolve()
       })
