@@ -1,20 +1,21 @@
-const apiFunctions = require('./../routes/apiFunctions')
+const LogClass = require('./logClass')
+const logError = require('./../configs/log').error
+const _ = require('lodash')
 
-class ApplicationErrorClass {
-  constructor (type, user, code, error, text, ip, httpCode, logging) {
-    this.type = type
-    this.user = user
+class ApplicationErrorClass extends LogClass {
+  constructor (type, user, code, error, text, ip, httpCode, log = true) {
+    super(type, user, text, ip, httpCode)
     this.code = code
     this.error = error
-    this.ip = ip
-    this.text = text
-    this.httpCode = httpCode
-    this.logging = logging
-
-    if (logging) {
-      console.log('You chose to log the error...')
-      apiFunctions.logging('error', this.type, this.user, this.code, this.error, this.text, this.ip)
+    if (log) {
+      this.logError()
     }
+  }
+
+  logError () {
+    let errorMsg
+    (_.has(this.error, 'message')) ? errorMsg = this.error.message : errorMsg = 'No message submitted'
+    logError.error(this.type, this.user, this.code, errorMsg, this.text, this.ip)
   }
 }
 

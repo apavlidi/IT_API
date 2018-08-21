@@ -12,7 +12,8 @@ const ldapConfig = require('../../../configs/config')
 const ldap = require('ldapjs')
 const filter = require('ldap-filters')
 const sendPush = require('./sendPush')
-const ApplicationErrorClass = require('../../applicationErrorClass')
+const ApplicationError = require('../../applicationErrorClass')
+const PromiseError = require('../../promiseErrorClass')
 const functions = require('./../../user/user/function')
 const ldapFunctions = require('./../../ldapFunctions')
 const config = require('../../../configs/config')
@@ -87,7 +88,7 @@ function appendPostsToFeed (feed, posts) {
       async.parallel(calls, function (err) {
         if (err) {
           reject(
-            new ApplicationErrorClass(null, null, 1034, err, null, null, 500))
+            new ApplicationError(null, null, 1034, err, null, null, 500))
         } else {
           resolve()
         }
@@ -95,6 +96,7 @@ function appendPostsToFeed (feed, posts) {
     })
 }
 
+// TODO HANDLE ERROR
 function getAnnouncementsRSSPromise (
   announcements, rssCategories, categoryValues, feedType, res,
   isAuthenticated) {
@@ -165,9 +167,7 @@ function createFileEntries (files, announcementId) {
           })
           newFile.save(function (err, newFile) {
             if (err) {
-              reject(
-                new ApplicationErrorClass(null, null, 1051, err, null, null,
-                  500))
+              reject(new PromiseError(1051, err))
             } else {
               filesIds.push(newFile._id)
               callback(null)
@@ -178,8 +178,7 @@ function createFileEntries (files, announcementId) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(
-            new ApplicationErrorClass(null, null, 1054, err, null, null, 500))
+          reject(new PromiseError(1054, err))
         }
         resolve(filesIds)
       })
@@ -191,8 +190,7 @@ function checkIfEntryExists (entryId, collection) {
     function (resolve, reject) {
       collection.findOne({_id: entryId}, function (err, doc) {
         if (err || !doc) {
-          reject(
-            new ApplicationErrorClass(null, null, 1023, err, null, null, 500))
+          reject(new PromiseError(1023, err))
         } else {
           resolve(doc)
         }
@@ -279,6 +277,7 @@ function postToTeithe (announcement, action) {
     })
 }
 
+// TODO HANDLE ERROR
 function sendEmails (announcementEntry) {
   let sender = announcementEntry.publisher
   let categoryName
@@ -346,7 +345,7 @@ function findEmailsFromUserIds (registeredIds) {
         function (err, results) {
           if (err) {
             reject(
-              new ApplicationErrorClass('insertNewAnnouncement', null, 1055,
+              new ApplicationError('insertNewAnnouncement', null, 1055,
                 err,
                 'Σφάλμα κατα την εύρεση email χρήστη για την αποστολή ειδοποίησης.',
                 null, 500))
@@ -361,10 +360,10 @@ function findEmailsFromUserIds (registeredIds) {
           })
           results.on('error', function (err) {
             reject(
-              new ApplicationErrorClass('insertNewAnnouncement', null, 1056,
+              new ApplicationError('insertNewAnnouncement', null, 1056,
                 err,
                 'Σφάλμα κατα την εύρεση email χρήστη για την αποστολή ειδοποίησης.',
-                null, 500))
+                null, 500, false))
           })
           results.on('end', function (result) {
             resolve(emails)
@@ -380,7 +379,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
       .exec(function (err, category) {
         if (err || !category) {
           reject(
-            new ApplicationErrorClass('insertNewAnnouncement', null, 1058,
+            new ApplicationError(null, null, 1058,
               err, 'Σφάλμα κατα την αποστολή ειδοποιήσεων.', null, 500))
         }
         category.registered.forEach(function (id) {
@@ -402,7 +401,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
             }, function (err, updated) {
               if (err) {
                 reject(
-                  new ApplicationErrorClass('insertNewAnnouncement', null, 1053,
+                  new ApplicationError(null, null, 1053,
                     err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
               }
               callback(null)
@@ -413,7 +412,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
         async.parallel(calls, function (err) {
           if (err) {
             reject(
-              new ApplicationErrorClass('insertNewAnnouncement', null, 1054,
+              new ApplicationError(null, null, 1054,
                 err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
           }
           resolve()
@@ -482,28 +481,6 @@ function formatDate (date, monthString) {
     ':' + minute)
 }
 
-function createNotification (announcementId, publisher) {
-  return new Promise((resolve, reject) => {
-    let notification = new database.Notification()
-    notification.userId = publisher.id
-    notification.nameEn = publisher.nameEn
-    notification.nameEl = publisher.nameEl
-    if (mongoose.Types.ObjectId.isValid(announcementId)) {
-      notification.related.id = announcementId
-    } else {
-      reject(new ApplicationErrorClass(null, null, 1057, null, null, null, 500))
-    }
-    notification.save(function (err, newNotification) {
-      if (err) {
-        reject(
-          new ApplicationErrorClass(null, null, 1052, err, null, null, 500))
-      } else {
-        resolve(newNotification)
-      }
-    })
-  })
-}
-
 module.exports = {
   getAnnouncementsRSSPromise,
   validatePublisher,
@@ -512,6 +489,5 @@ module.exports = {
   gatherFilesInput,
   postToTeithe,
   sendEmails,
-  sendNotifications,
-  createNotification
+  sendNotifications
 }

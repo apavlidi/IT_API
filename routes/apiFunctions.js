@@ -91,19 +91,6 @@ function validateInput (objectToBeValidateStr, schema) {
   }
 }
 
-function logging (typeOfLog, type, user, code, error, text, ip) {
-  switch (typeOfLog) {
-    case 'error':
-      //   log.error(type, user, code, error, text, ip)
-      break
-    case 'info':
-      //     log.info(type, user, code, error, text, ip)
-      break
-    default:
-    // log.info(type, user, code, error, text, ip)
-  }
-}
-
 function getClientIp (req) {
   return req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress
 }
@@ -112,6 +99,5 @@ module.exports = {
   sanitizeInput,
   formatQuery,
   validateInput,
-  logging,
   getClientIp
 }
