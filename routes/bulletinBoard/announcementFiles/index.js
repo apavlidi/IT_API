@@ -26,7 +26,7 @@ function downloadFile (req, res, next) {
     })
     res.end(file.data) // the second parameter is cashed to the browser
   }).catch(function (promiseErr) {
-    let applicationError = new ApplicationError('downloadFile', req.user.id, promiseErr.code,
+    let applicationError = new ApplicationError('downloadFile', null, promiseErr.code,
       promiseErr.error, 'Σφάλμα κατά την λήψη αρχείου.', getClientIp(req), promiseErr.httpCode, false)
     next(applicationError)
   })
@@ -54,7 +54,7 @@ function downloadFiles (req, res, next) {
                   })
               })
           }).catch(function (promiseErr) {
-            let applicationError = new ApplicationError('downloadFiles', req.user.id, promiseErr.code,
+            let applicationError = new ApplicationError('downloadFiles', null, promiseErr.code,
               promiseErr.error, 'Σφάλμα κατά την λήψη αρχείων.', getClientIp(req), promiseErr.httpCode, false)
             next(applicationError)
           })
@@ -62,7 +62,7 @@ function downloadFiles (req, res, next) {
           next(new ApplicationError('downloadFiles', null, 1112, null, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', getClientIp(req), 500, false))
         }
       } else {
-        next(new ApplicationError('downloadFiles', err, 1116, null, 'Σφάλμα κατά την εύρεση αρχείου', getClientIp(req), 500, false))
+        next(new ApplicationError('downloadFiles', null, 1116, err, 'Σφάλμα κατά την εύρεση αρχείου', getClientIp(req), 500, false))
       }
     })
   } else {
@@ -85,7 +85,7 @@ function viewFile (req, res, next) {
       res.end(file.data)
     }
   }).catch(function (promiseErr) {
-    let applicationError = new ApplicationError('downloadFile', req.user.id, promiseErr.code,
+    let applicationError = new ApplicationError('downloadFile', null, promiseErr.code,
       promiseErr.error, 'Σφάλμα κατά την προβολή αρχείου.', getClientIp(req), promiseErr.httpCode, false)
     next(applicationError)
   })

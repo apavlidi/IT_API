@@ -3,7 +3,6 @@ const PromiseError = require('../promiseErrorClass')
 const async = require('async')
 const mongoose = require('mongoose')
 
-// TODO CHANGE ERROR CODES
 function createNotification (announcementId, publisher) {
   return new Promise((resolve, reject) => {
     let notification = new database.Notification()
