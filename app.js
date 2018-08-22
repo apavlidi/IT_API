@@ -87,7 +87,6 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res, next) {
-  console.log(err)
   if (err.text) {
     res.status(err.httpCode).json({
       error: {

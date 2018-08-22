@@ -16,7 +16,7 @@ const clientWordpress = wordpress.createClient(WORDPRESS_CREDENTIALS)
 const ApplicationError = require('../../applicationErrorClass')
 const Log = require('../../logClass')
 
-router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncements)
+router.get('/', auth.checkAuth(['announcements'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncements)
 router.get('/public', apiFunctions.formatQuery, getAnnouncementsPublic)
 router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.formatQuery, getAnnouncement)
 router.get('/feed/:type/:categoryIds?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
@@ -98,12 +98,12 @@ function getAnnouncementsPublic (req, res, next) {
         .select(req.query.fields).sort(req.query.sort)
         .skip(parseInt(req.query.page) * parseInt(req.query.limit))
         .limit(parseInt(req.query.limit)).exec(function (err, announcements) {
-          if (err) {
-            next(new ApplicationError('getAnnouncementsPublic', null, 1012, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
-          } else {
-            res.status(200).json(announcements)
-          }
-        })
+        if (err) {
+          next(new ApplicationError('getAnnouncementsPublic', null, 1012, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
+        } else {
+          res.status(200).json(announcements)
+        }
+      })
     }
   })
 }
