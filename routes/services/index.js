@@ -4,7 +4,7 @@ const auth = require('../../configs/auth')
 const config = require('../../configs/config')
 const ldapFunctions = require('../ldapFunctions')
 const ApplicationError = require('./../applicationErrorClass')
-const apiFunctions = require('./../apiFunctions')
+const Log = require('./../logClass')
 const getClientIp = require('./../apiFunctions').getClientIp
 const functions = require('./functions')
 
@@ -31,6 +31,8 @@ function sshChangeStatusAetos (req, res, next) {
       throw new ApplicationError('sshChangeStatusAetos', null, 4021, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', getClientIp(req), 500)
     }
   }).then(() => {
+    let log = new Log('sshChangeStatusAetos', req.user.id, 'Η ρυθμιση ενημερώθηκε επιτυχώς', getClientIp(req), 200)
+    log.logAction('services')
     res.sendStatus(200)
   }).catch(promiseErr => {
     let applicationError = new ApplicationError('sshChangeStatusAetos', req.user.id, promiseErr.code,
@@ -56,6 +58,8 @@ function sshChangeStatusUsers (req, res, next) {
       throw new ApplicationError('sshChangeStatusUsers', null, 4013, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', getClientIp(req), 500)
     }
   }).then(() => {
+    let log = new Log('sshChangeStatusUsers', req.user.id, 'Η ρυθμιση ενημερώθηκε επιτυχώς', getClientIp(req), 200)
+    log.logAction('services')
     res.sendStatus(200)
   }).catch(promiseErr => {
     let applicationError = new ApplicationError('sshChangeStatusUsers', req.user.id, promiseErr.code,

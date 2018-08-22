@@ -1,5 +1,5 @@
-const ApplicationErrorClass = require('../../applicationErrorClass')
 const database = require('../../../configs/database')
+const PromiseError = require('../../promiseErrorClass')
 
 function addAccountTypeToDB (newType, reqBody) {
   return new Promise(
@@ -9,7 +9,7 @@ function addAccountTypeToDB (newType, reqBody) {
         try {
           primaries = JSON.parse(reqBody.primary)
         } catch (error) {
-          reject(new ApplicationErrorClass('addAccountType', null, 3013, null, 'Συνεβη καποιο λάθος κατα την δημιουργία τύπου', null, 500))
+          reject(new PromiseError(3013, error))
         }
         primaries.forEach(primary => {
           newType.primary.push(primary)
@@ -17,7 +17,7 @@ function addAccountTypeToDB (newType, reqBody) {
       }
       newType.save(function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('addAccountType', null, 3012, err, 'Συνεβη καποιο λάθος κατα την δημιουργία τύπου', null, 500))
+          reject(new PromiseError(3012, err))
         } else {
           resolve()
         }
@@ -37,7 +37,7 @@ function addAccountTypeToLDAP (ldabBinded, basedn, value) {
 
       ldabBinded.add(basedn, entry, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('addAccountType', null, 3011, err, 'Συνεβη καποιο λάθος κατα την δημιουργία τύπου,ενδεχομένως υπάρχει ήδη.', null, 500))
+          reject(new PromiseError(3011, err))
         } else {
           resolve()
         }
@@ -50,7 +50,7 @@ function editAccountType (reqBody, basedn) {
     function (resolve, reject) {
       database.AccountType.findOne({basedn: basedn}, function (err, accountType) {
         if (!accountType || err) {
-          reject(new ApplicationErrorClass('editAccountType', null, 3031, err, 'Ο τύπος δεν βρέθηκε', null, 500))
+          reject(new PromiseError(3031, err))
         } else {
           console.log(accountType)
           if (reqBody.value_main) {
@@ -67,7 +67,7 @@ function editAccountType (reqBody, basedn) {
           }
           accountType.save(function (err) {
             if (err) {
-              reject(new ApplicationErrorClass('editAccountType', null, 3032, err, 'Συνεβη καποιο λάθος κατα την επεξεργασία τύπου', null, 500))
+              reject(new PromiseError(3032, err))
             } else {
               resolve()
             }

@@ -14,8 +14,9 @@ const validSchemas = require('../joi')
 const WORDPRESS_CREDENTIALS = require('./../../../configs/config').WORDPRESS_CREDENTIALS
 const clientWordpress = wordpress.createClient(WORDPRESS_CREDENTIALS)
 const ApplicationError = require('../../applicationErrorClass')
+const Log = require('../../logClass')
 
-router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncements)
+router.get('/', auth.checkAuth(['announcements'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncements)
 router.get('/public', apiFunctions.formatQuery, getAnnouncementsPublic)
 router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.formatQuery, getAnnouncement)
 router.get('/feed/:type/:categoryIds?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
@@ -152,6 +153,8 @@ function insertNewAnnouncement (req, res, next) {
     // announcementsFunc.postToTeithe(announcementEntry, 'create')
     announcementsFunc.sendEmails(announcementEntry)
     req.app.io.emit('new announcement', newNotification)
+    let log = new Log('insertNewAnnouncement', req.user.id, 'Η ανακοίνωση ανέβηκε επιτυχώς', getClientIp(req), 201)
+    log.logAction('announcements')
     res.status(201).json({
       message: 'Η ανακοίνωση προστέθηκε επιτυχώς',
       announcementEntry
@@ -175,6 +178,8 @@ function deleteAnnouncement (req, res, next) {
             next(new ApplicationError('deleteAnnouncement', req.user.id, 1082, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή ανακοίνωσης', getClientIp(req), 500))
           } else {
             clientWordpress.deletePost(announcement.wordpressId, function () {})
+            let log = new Log('deleteAnnouncement', req.user.id, 'Η ανακοίνωση διαγράφηκε επιτυχώς', getClientIp(req), 200)
+            log.logAction('announcements')
             res.status(200).json({
               message: 'H ανακοίνωση διαγράφηκε επιτυχώς',
               announcementDeleted
@@ -240,6 +245,8 @@ function editAnnouncement (req, res, next) {
             clientWordpress.deletePost(announcementToBeEdited.wordpressId, function () {})
           }
         })
+        let log = new Log('editAnnouncement', req.user.id, 'Η ανακοίνωση ενημερώθηκε επιτυχώς', getClientIp(req), 201)
+        log.logAction('announcements')
         res.status(201).json({
           message: 'Η ανακοίνωση αποθηκεύτηκε επιτυχώς'
         })

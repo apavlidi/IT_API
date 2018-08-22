@@ -1,5 +1,5 @@
 const database = require('../../../configs/database')
-const ApplicationErrorClass = require('./../../applicationErrorClass')
+const PromiseError = require('./../../promiseErrorClass')
 const MAXIMUM_SUBSCRIPTIONS = 4
 
 function checkIfSubscribedAlready (user, browserFp) {
@@ -10,7 +10,7 @@ function checkIfSubscribedAlready (user, browserFp) {
         'notySub.browserFp': browserFp
       }, function (err, profileNotySub) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2063, err, 'Υπήρχε σφάλμα κατα την ενημέρωση εγγραφης', null, 500))
+          reject(new PromiseError(2063, err))
         }
         if (profileNotySub) {
           resolve({isSubscribed: true, profile: profileNotySub})
@@ -29,7 +29,7 @@ function disableAllNotiesSub (profile) {
       })
       profile.save(function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2061, err, 'Υπήρχε σφάλμα κατα την ενημέρωση εγγραφης', null, 500))
+          reject(new PromiseError(2061, err))
         } else {
           resolve()
         }
@@ -44,7 +44,7 @@ function modifyNotySub (profile, reqBody, action) {
       profile.notySub[notySubPos].enabled = action
       profile.save(function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2051, err, 'Υπήρχε σφάλμα κατα την απενεργοποίηση', null, 500))
+          reject(new PromiseError(2051, err))
         } else {
           resolve()
         }
@@ -70,7 +70,7 @@ function createNewNotySubscription (profile, reqBody) {
       }
       profile.save(function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2052, err, 'Υπήρχε σφάλμα κατα την εγγραφή', null, 500))
+          reject(new PromiseError(2052, err))
         } else {
           resolve()
         }

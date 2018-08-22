@@ -1,6 +1,5 @@
-const ApplicationError = require('./../applicationErrorClass')
 const ldap = require('ldapjs')
-const PromiseError = require('../../promiseErrorClass')
+const PromiseError = require('../promiseErrorClass')
 
 function activateUser (user) {
   return new Promise(
