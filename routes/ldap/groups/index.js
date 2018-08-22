@@ -17,7 +17,6 @@ router.get('/:id?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWit
 router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.addGroup), addGroup)
 router.delete('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.deleteGroup), deleteGroup)
 
-// TODO CATCH ERRORS
 function getGroups (req, res, next) {
   let gid = parseInt(req.params.id)
   let options
@@ -28,6 +27,10 @@ function getGroups (req, res, next) {
   }
   functions.searchGroupsOnLDAP(ldapMain, options).then(groups => {
     res.send(groups)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('getGroups', req.user.id, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατα την λήψη ομάδων.', getClientIp(req), promiseErr.httpCode, false)
+    next(applicationError)
   })
 }
 
@@ -67,6 +70,10 @@ function deleteGroup (req, res, next) {
         res.sendStatus(200)
       }
     })
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('deleteGroup', req.user.id, promiseErr.code,
+      promiseErr.error, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή ομάδας.', getClientIp(req), promiseErr.httpCode)
+    next(applicationError)
   })
 }
 

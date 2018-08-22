@@ -26,7 +26,6 @@ router.post('/reset/token', apiFunctions.validateInput('body', validSchemas.rese
 router.get('/vcard/:uid', getUserVCard)
 router.get('/', getUsers)
 
-// TODO CATCH ERROR
 function getUserVCard (req, res, next) {
   let userUid = req.params.uid
   let options = ldapFunctions.buildOptions('(uid=' + userUid + ')', 'sub', ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI']) // check if this is the correct id
@@ -50,6 +49,10 @@ function getUserVCard (req, res, next) {
     } else {
       next(new ApplicationError('getUserVCard', null, 2241, null, 'Κάτι πήγε στραβά.', getClientIp(req), 500, false))
     }
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('getUserVCard', null, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατα την λήψη vCard.', getClientIp(req), promiseErr.httpCode, false)
+    next(applicationError)
   })
 }
 
@@ -189,7 +192,7 @@ function updateMail (req, res, next) {
     log.logAction('user')
     res.sendStatus(200)
   }).catch(function (promiseErr) {
-    let applicationError = new ApplicationError('updatePassword', req.user.id, promiseErr.code,
+    let applicationError = new ApplicationError('updateMail', req.user.id, promiseErr.code,
       promiseErr.error, 'Σφάλμα κατα την ενημέρωση email.', getClientIp(req), promiseErr.httpCode)
     next(applicationError)
   })

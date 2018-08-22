@@ -28,7 +28,7 @@ function sshChangeStatusAetos (req, res, next) {
         return functions.enableSshFromVm(ldapBinded, user, 'aetos')
       }
     } else {
-      throw new ApplicationError('sshChangeStatusAetos', null, 4021, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', getClientIp(req), 500)
+      throw new ApplicationError('sshChangeStatusAetos', req.user.id, 4021, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', getClientIp(req), 500)
     }
   }).then(() => {
     let log = new Log('sshChangeStatusAetos', req.user.id, 'Η ρυθμιση ενημερώθηκε επιτυχώς', getClientIp(req), 200)
@@ -55,7 +55,7 @@ function sshChangeStatusUsers (req, res, next) {
         return functions.enableSshFromVm(ldapBinded, user, 'users')
       }
     } else {
-      throw new ApplicationError('sshChangeStatusUsers', null, 4013, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', getClientIp(req), 500)
+      throw new ApplicationError('sshChangeStatusUsers', req.user.id, 4013, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', getClientIp(req), 500)
     }
   }).then(() => {
     let log = new Log('sshChangeStatusUsers', req.user.id, 'Η ρυθμιση ενημερώθηκε επιτυχώς', getClientIp(req), 200)
@@ -94,7 +94,7 @@ function getServiceStatus (req, res, next) {
         })
       }
     } else {
-      next(new ApplicationError('getServiceStatus', null, 4001, null, 'Ο χρήστης δεν βρέθηκε', getClientIp(req), 500, false))
+      next(new ApplicationError('getServiceStatus', req.user.id, 4001, null, 'Ο χρήστης δεν βρέθηκε', getClientIp(req), 500, false))
     }
   }).catch(promiseErr => {
     let applicationError = new ApplicationError('getServiceStatus', req.user.id, promiseErr.code,

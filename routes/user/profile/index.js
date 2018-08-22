@@ -23,7 +23,7 @@ function deleteProfilePhoto (req, res, next) {
     'profilePhoto': {}
   }, function (err, profile) {
     if (err || !profile) {
-      next(new ApplicationError('deleteProfilePhoto', req.user.id, 2031, null, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή φωτογραφίας προφιλ', getClientIp(req), 500))
+      next(new ApplicationError('deleteProfilePhoto', req.user.id, 2031, err, 'Συνέβη κάποιο σφάλμα κατα την διαγραφή φωτογραφίας προφιλ', getClientIp(req), 500))
     } else {
       let log = new Log('deleteProfilePhoto', req.user.id, 'Η φωτογραφία διαγράφηκε επιτυχώς', getClientIp(req), 200)
       log.logAction('user')

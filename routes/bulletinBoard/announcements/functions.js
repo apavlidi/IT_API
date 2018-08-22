@@ -12,7 +12,6 @@ const ldapConfig = require('../../../configs/config')
 const ldap = require('ldapjs')
 const filter = require('ldap-filters')
 const sendPush = require('./sendPush')
-const ApplicationError = require('../../applicationErrorClass')
 const PromiseError = require('../../promiseErrorClass')
 const functions = require('./../../user/user/function')
 const ldapFunctions = require('./../../ldapFunctions')
@@ -87,8 +86,7 @@ function appendPostsToFeed (feed, posts) {
       })
       async.parallel(calls, function (err) {
         if (err) {
-          reject(
-            new ApplicationError(null, null, 1034, err, null, null, 500))
+          reject(new PromiseError(1034, err))
         } else {
           resolve()
         }
@@ -96,7 +94,6 @@ function appendPostsToFeed (feed, posts) {
     })
 }
 
-// TODO HANDLE ERROR
 function getAnnouncementsRSSPromise (
   announcements, rssCategories, categoryValues, feedType, res,
   isAuthenticated) {
@@ -124,6 +121,8 @@ function getAnnouncementsRSSPromise (
             response = feed.atom1()
         }
         resolve(response)
+      }).catch(function (promiseErr) {
+        reject(promiseErr)
       })
     })
 }
@@ -277,7 +276,6 @@ function postToTeithe (announcement, action) {
     })
 }
 
-// TODO HANDLE ERROR
 function sendEmails (announcementEntry) {
   let sender = announcementEntry.publisher
   let categoryName
@@ -309,6 +307,8 @@ function sendEmails (announcementEntry) {
             })
           }, function () {})
         }
+      }).catch(function (err) {
+        return err
       })
     })
 }
@@ -344,11 +344,7 @@ function findEmailsFromUserIds (registeredIds) {
       client.search(ldapConfig.LDAP[process.env.NODE_ENV].baseUserDN, opts,
         function (err, results) {
           if (err) {
-            reject(
-              new ApplicationError('insertNewAnnouncement', null, 1055,
-                err,
-                'Σφάλμα κατα την εύρεση email χρήστη για την αποστολή ειδοποίησης.',
-                null, 500))
+            reject(new PromiseError(1055, err))
           }
           results.on('searchEntry', function (entry) {
             let tmp = entry.object
@@ -359,11 +355,7 @@ function findEmailsFromUserIds (registeredIds) {
             }
           })
           results.on('error', function (err) {
-            reject(
-              new ApplicationError('insertNewAnnouncement', null, 1056,
-                err,
-                'Σφάλμα κατα την εύρεση email χρήστη για την αποστολή ειδοποίησης.',
-                null, 500, false))
+            reject(new PromiseError(1056, err))
           })
           results.on('end', function (result) {
             resolve(emails)
@@ -378,9 +370,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
     database.AnnouncementsCategories.findOne({_id: announcementEntry._about})
       .exec(function (err, category) {
         if (err || !category) {
-          reject(
-            new ApplicationError(null, null, 1058,
-              err, 'Σφάλμα κατα την αποστολή ειδοποιήσεων.', null, 500))
+          reject(new PromiseError(1058, err))
         }
         category.registered.forEach(function (id) {
           calls.push(function (callback) {
@@ -400,9 +390,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
               }
             }, function (err, updated) {
               if (err) {
-                reject(
-                  new ApplicationError(null, null, 1053,
-                    err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
+                reject(new PromiseError(1053, err))
               }
               callback(null)
             })
@@ -411,9 +399,7 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
 
         async.parallel(calls, function (err) {
           if (err) {
-            reject(
-              new ApplicationError(null, null, 1054,
-                err, 'Σφάλμα κατα την δημιουργία ανακοίνωσης.', null, 500))
+            reject(new PromiseError(1054, err))
           }
           resolve()
         })

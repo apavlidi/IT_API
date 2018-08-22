@@ -29,7 +29,7 @@ function getNotificationsUser (req, res, next) {
         select: '_about title titleEn'
       }, function (err, doc) {
         if (err) {
-          next(new ApplicationError('getNotificationsUser', req.user.id, 5002, null, 'To προφίλ χρήστη δεν υπάρχει', getClientIp(req), 500, false))
+          next(new ApplicationError('getNotificationsUser', req.user.id, 5002, err, 'To προφίλ χρήστη δεν υπάρχει', getClientIp(req), 500, false))
         } else {
           let notificationsPopulated = profile.notifications
           database.AnnouncementsCategories.populate(notificationsPopulated, {
@@ -45,7 +45,7 @@ function getNotificationsUser (req, res, next) {
         }
       })
     } else {
-      next(new ApplicationError('getNotificationsUser', req.user.id, 5001, null, 'To προφίλ χρήστη δεν υπάρχει', getClientIp(req), 500, true))
+      next(new ApplicationError('getNotificationsUser', req.user.id, 5001, null, 'To προφίλ χρήστη δεν υπάρχει', getClientIp(req), 500, false))
     }
   })
 }

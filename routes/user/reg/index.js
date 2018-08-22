@@ -52,6 +52,7 @@ function updatePassReg (req, res, next) {
   })
 }
 
+// TODO REFACTOR
 function updateMailReg (req, res, next) {
   let newEmail = req.body.newMail
   functionsUser.checkIfTokenExistsAndRetrieveUser(req.params.token, database.UserReg).then(userFromDatabase => {
@@ -62,12 +63,12 @@ function updateMailReg (req, res, next) {
       log.logAction('user')
       res.sendStatus(200)
     }).catch(function (promiseErr) {
-      let applicationError = new ApplicationError('updatePassReg', null, promiseErr.code,
+      let applicationError = new ApplicationError('updateMailReg', null, promiseErr.code,
         promiseErr.error, 'Σφάλμα κατα την ενημέρωση email.', getClientIp(req), promiseErr.httpCode)
       next(applicationError)
     })
   }).catch(function (promiseErr) {
-    let applicationError = new ApplicationError('updatePassReg', null, promiseErr.code,
+    let applicationError = new ApplicationError('updateMailReg', null, promiseErr.code,
       promiseErr.error, 'Σφάλμα κατα την ενημέρωση email.', getClientIp(req), promiseErr.httpCode)
     next(applicationError)
   })
@@ -83,7 +84,7 @@ function getInfoFromLdap (req, res, next) {
     res.status(200).send(userFromLdap)
   }).catch(function (promiseErr) {
     let applicationError = new ApplicationError('getInfoFromLdap', null, promiseErr.code,
-      promiseErr.error, 'Σφάλμα κατα την λήψη στοιχείων.', getClientIp(req), promiseErr.httpCode)
+      promiseErr.error, 'Σφάλμα κατα την λήψη στοιχείων.', getClientIp(req), promiseErr.httpCode, false)
     next(applicationError)
   })
 }
@@ -99,14 +100,14 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
 
   ldapTei.search(config.LDAP_TEI.baseUserDN, opts, function (err, results) {
     if (err) {
-      next(new ApplicationError('pauth', null, 2111, err, 'Παρακαλώ δοκιμάστε αργότερα', getClientIp(req), 500, false))
+      next(new ApplicationError('checkPithiaUserAndCreateEntryDB', null, 2111, err, 'Παρακαλώ δοκιμάστε αργότερα', getClientIp(req), 500, false))
     } else {
       let user = {}
       results.on('searchEntry', function (entry) {
         user = entry.object
       })
       results.on('error', function (err) {
-        next(new ApplicationError('pauth', null, 2112, err, 'Παρακαλώ δοκιμάστε αργότερα', getClientIp(req), 500, false))
+        next(new ApplicationError('checkPithiaUserAndCreateEntryDB', null, 2112, err, 'Παρακαλώ δοκιμάστε αργότερα', getClientIp(req), 500, false))
       })
       results.on('end', function () {
         functions.validateUserAndPassOnPithia(ldapTei, user, password).then(() => {
