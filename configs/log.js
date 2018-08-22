@@ -15,7 +15,7 @@ log4js.configure({
     {
       type: 'file',
       filename: './logs/auth.log',
-      category: 'login'
+      category: 'auth'
     },
     {
       type: 'file',
@@ -48,11 +48,11 @@ log4js.configure({
 log4js.addAppender(
   mongoAppender.appender(
     {connectionString: config.MONGO[process.env.NODE_ENV]}),
-  'general', 'login', 'ldap', 'error', 'announcements', 'user', 'services'
+  'general', 'auth', 'ldap', 'error', 'announcements', 'user', 'services'
 )
 
 const loggerGeneral = log4js.getLogger('general')
-const loggerLogin = log4js.getLogger('login')
+const loggerLogin = log4js.getLogger('auth')
 const loggerLdap = log4js.getLogger('ldap')
 const loggerError = log4js.getLogger('error')
 const loggerAnnouncements = log4js.getLogger('announcements')
@@ -61,7 +61,7 @@ const loggerServices = log4js.getLogger('services')
 
 module.exports = {
   general: loggerGeneral,
-  login: loggerLogin,
+  auth: loggerLogin,
   ldap: loggerLdap,
   error: loggerError,
   announcements: loggerAnnouncements,
