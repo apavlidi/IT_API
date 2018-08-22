@@ -7,6 +7,7 @@ const fs = require('fs')
 const filesFunc = require('./functions')
 const fileType = require('file-type')
 const ApplicationError = require('../../applicationErrorClass')
+const Log = require('../../logClass')
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
 
@@ -106,6 +107,8 @@ function deleteFile (req, res, next) {
               if (err) {
                 next(new ApplicationError('deleteFile', req.user.id, 1123, err, 'Σφάλμα κατα την διαγραφή αρχείου', getClientIp(req), 500))
               } else {
+                let log = new Log('deleteFile', req.user.id, 'Το αρχείο διαγράφηκε επιτυχώς', getClientIp(req), 200)
+                log.logAction('announcements')
                 res.status(200).json({
                   message: 'Το αρχείο διαγράφηκε επιτυχώς'
                 })

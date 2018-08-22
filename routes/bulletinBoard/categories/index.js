@@ -8,6 +8,7 @@ const categoriesFunc = require('./functions')
 const translate = require('./../../translate').elotTranslate
 const auth = require('../../../configs/auth')
 let ApplicationError = require('../../applicationErrorClass')
+let Log = require('../../logClass')
 const config = require('../../../configs/config')
 
 router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncementsCategories)
@@ -57,6 +58,8 @@ function updateRegistrationToCategories (req, res, next) {
     promiseRemove = categoriesFunc.updateRegistrationToCategories(removeCat, req.user.id, '$pull')
   }
   Promise.all([promiseAdd, promiseRemove]).then(() => {
+    let log = new Log('updateRegistrationToCategories', req.user.id, 'Η εγγραφή πραγματοποιήθηκε επιτυχώς', getClientIp(req), 200)
+    log.logAction('announcements')
     res.status(200).json({
       message: 'Η εγγραφή πραγματοποιήθηκε επιτυχώς'
     })
@@ -106,6 +109,8 @@ function newCategory (req, res, next) {
         if (err) {
           next(new ApplicationError('newCategory', req.user.id, 1241, err, 'Συνέβη σφάλμα κατα την προσθήκη της κατηγορίας', getClientIp(req), 500))
         } else {
+          let log = new Log('newCategory', req.user.id, 'Η κατηγορία προστέθηκε επιτυχώς', getClientIp(req), 201)
+          log.logAction('announcements')
           res.status(201).json({message: 'Η κατηγορία προστέθηκε επιτυχώς'})
         }
       })
@@ -135,6 +140,8 @@ function editCategory (req, res, next) {
     if (err) {
       next(new ApplicationError('editCategory', req.user.id, 1251, err, 'Σφάλμα κατα την ενημέρωση της κατηγορίας.', getClientIp(req), 500))
     } else {
+      let log = new Log('editCategory', req.user.id, 'Η κατηγορία ενημερώθηκε επιτυχώς', getClientIp(req), 201)
+      log.logAction('announcements')
       res.status(201).json({
         message: 'Η κατηγορία ενημερώθηκε επιτυχώς',
         categoryUpdated
@@ -153,6 +160,8 @@ function deleteCategory (req, res, next) {
         if (err) {
           next(new ApplicationError('deleteCategory', req.user.id, 1262, err, 'Συνέβει κάποιο σφάλμα κατα την διαγραφή της κατηγορίας', getClientIp(req), 500))
         } else {
+          let log = new Log('deleteCategory', req.user.id, 'Η κατηγορία διαγράφτηκε επιτυχώς', getClientIp(req), 200)
+          log.logAction('announcements')
           res.status(200).json({
             message: 'Η κατηγορία διαγράφτηκε επιτυχώς',
             categoryDeleted

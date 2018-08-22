@@ -31,6 +31,16 @@ log4js.configure({
       type: 'file',
       filename: './logs/announcements.log',
       category: 'announcements'
+    },
+    {
+      type: 'file',
+      filename: './logs/services.log',
+      category: 'services'
+    },
+    {
+      type: 'file',
+      filename: './logs/user.log',
+      category: 'user'
     }
   ]
 })
@@ -38,7 +48,7 @@ log4js.configure({
 log4js.addAppender(
   mongoAppender.appender(
     {connectionString: config.MONGO[process.env.NODE_ENV]}),
-  'general', 'login', 'ldap', 'error', 'announcements'
+  'general', 'login', 'ldap', 'error', 'announcements', 'user', 'services'
 )
 
 const loggerGeneral = log4js.getLogger('general')
@@ -46,11 +56,15 @@ const loggerLogin = log4js.getLogger('login')
 const loggerLdap = log4js.getLogger('ldap')
 const loggerError = log4js.getLogger('error')
 const loggerAnnouncements = log4js.getLogger('announcements')
+const loggerUser = log4js.getLogger('user')
+const loggerServices = log4js.getLogger('services')
 
 module.exports = {
   general: loggerGeneral,
   login: loggerLogin,
   ldap: loggerLdap,
   error: loggerError,
-  announcements: loggerAnnouncements
+  announcements: loggerAnnouncements,
+  services: loggerServices,
+  user: loggerUser
 }

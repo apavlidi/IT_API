@@ -2,8 +2,10 @@ const express = require('express')
 const router = express.Router()
 const owasp = require('owasp-password-strength-test')
 
-const ApplicationErrorClass = require('./../../applicationErrorClass')
+const ApplicationError = require('./../../applicationErrorClass')
+const Log = require('./../../logClass')
 const apiFunctions = require('./../../apiFunctions')
+const getClientIp = require('./../../apiFunctions').getClientIp
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
 const validSchemas = require('./joi')
@@ -24,6 +26,7 @@ router.post('/reset/token', apiFunctions.validateInput('body', validSchemas.rese
 router.get('/vcard/:uid', getUserVCard)
 router.get('/', getUsers)
 
+// TODO CATCH ERROR
 function getUserVCard (req, res, next) {
   let userUid = req.params.uid
   let options = ldapFunctions.buildOptions('(uid=' + userUid + ')', 'sub', ['id', 'displayName', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI']) // check if this is the correct id
@@ -45,7 +48,7 @@ function getUserVCard (req, res, next) {
         res.send(vCard.getFormattedString())
       }
     } else {
-      next(new ApplicationErrorClass('getUserVCard', null, 2241, null, 'Κάτι πήγε στραβά.', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationError('getUserVCard', null, 2241, null, 'Κάτι πήγε στραβά.', getClientIp(req), 500, false))
     }
   })
 }
@@ -60,9 +63,9 @@ function getUsers (req, res, next) {
     }).then(users => {
       let usersSorted = functions.checkForSorting(users, req.query)
       res.status(200).json(usersSorted)
-    }).catch(function (applicationError) {
-      applicationError.type = 'getUsers'
-      applicationError.ip = apiFunctions.getClientIp(req)
+    }).catch(function (promiseErr) {
+      let applicationError = new ApplicationError('getUsers', null, promiseErr.code,
+        promiseErr.error, 'Σφάλμα κατα την λήψη χρηστών.', getClientIp(req), promiseErr.httpCode, false)
       next(applicationError)
     })
 }
@@ -88,19 +91,21 @@ function resetPasswordToken (req, res, next) {
       if (!functions.newPasswordExistsInHistory(user, newPassword, next)) {
         return functionsUser.changePasswordLdap(ldapBinded, user.dn, newPassword)
       } else {
-        throw new ApplicationErrorClass('resetPasswordToken', null, 2231, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με κάποιον που είχατε στο παρελθόν', apiFunctions.getClientIp(req), 500)
+        throw new ApplicationError('resetPasswordToken', null, 2231, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με κάποιον που είχατε στο παρελθόν', getClientIp(req), 500)
       }
     }).then(() => {
       return functions.deleteResetToken(token)
     }).then(() => {
+      let log = new Log('resetPasswordToken', null, 'Ο κωδικός άλλαξε επιτυχώς.', getClientIp(req), 200)
+      log.logAction('user')
       res.sendStatus(200)
-    }).catch(function (applicationError) {
-      applicationError.type = 'resetPasswordToken'
-      applicationError.ip = apiFunctions.getClientIp(req)
+    }).catch(function (promiseErr) {
+      let applicationError = new ApplicationError('resetPasswordToken', null, promiseErr.code,
+        promiseErr.error, 'Σφάλμα κατα την ενημέρωση κωδικού.', getClientIp(req), promiseErr.httpCode)
       next(applicationError)
     })
   } else {
-    next(new ApplicationErrorClass('resetPasswordToken', null, 2233, null, 'Οι κωδικοί δεν ταυτίζοντε.', apiFunctions.getClientIp(req), 500))
+    next(new ApplicationError('resetPasswordToken', null, 2233, null, 'Οι κωδικοί δεν ταυτίζοντε.', getClientIp(req), 500))
   }
 }
 
@@ -115,20 +120,21 @@ function resetPassword (req, res, next) {
     if (functions.validateIputForReset(user, resetMail)) {
       return functions.buildTokenAndMakeEntryForReset(user)
     } else {
-      throw new ApplicationErrorClass('resetPassword', null, 2222, null, 'Τα στοιχεία σας δεν είναι σωστά.', apiFunctions.getClientIp(req), 500)
+      throw new ApplicationError('resetPassword', null, 2222, null, 'Τα στοιχεία σας δεν είναι σωστά.', getClientIp(req), 500)
     }
   }).then(token => {
     let mailToken = functions.buildEmailToken(user, token, 'Reset Mail')
     return functions.sendEmailToken(mailToken)
   }).then(() => {
+    let log = new Log('resetPassword', null, 'Το αίτημα στάλθηκε επιτυχώς.', getClientIp(req), 200)
+    log.logAction('user')
     res.status(200).json({
       message: 'Το αίτημα στάλθηκε επιτυχώς.',
       message2: 'Αν η διευθυνση που εισάγατε και το όνομα χρήστη αντιστοιχεί σε κάποιο λογαριασμό, τότε θα λάβετε ένα mail με την διαδικασία επαναφοράς του κωδικού.'
     })
-  }).catch(function (applicationError) {
-    applicationError.type = 'updatePassword'
-    applicationError.user = req.user
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('resetPassword', null, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατα την ενημέρωση κωδικού.', getClientIp(req), promiseErr.httpCode)
     next(applicationError)
   })
 }
@@ -150,21 +156,22 @@ function updatePassword (req, res, next) {
         if (!functions.newPasswordExistsInHistory(user, newPassword)) {
           return functionsUser.changePasswordLdap(ldapBinded, user.dn, newPassword)
         } else {
-          throw new ApplicationErrorClass('updatePassword', req.user.id, 2200, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με κάποιον που είχατε στο παρελθόν', apiFunctions.getClientIp(req), 500)
+          throw new ApplicationError('updatePassword', req.user.id, 2200, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με κάποιον που είχατε στο παρελθόν', getClientIp(req), 500)
         }
       } else {
-        throw new ApplicationErrorClass('updatePassword', req.user.id, 2201, null, 'Ο Τρέχον Κωδικός Πρόσβασης είναι λάθος.', apiFunctions.getClientIp(req), 500)
+        throw new ApplicationError('updatePassword', req.user.id, 2201, null, 'Ο Τρέχον Κωδικός Πρόσβασης είναι λάθος.', getClientIp(req), 500)
       }
     }).then(() => {
+      let log = new Log('updatePassword', req.user.id, 'O κωδικός ενημερώθηκε επιτυχώς', getClientIp(req), 200)
+      log.logAction('user')
       res.sendStatus(200)
-    }).catch(function (applicationError) {
-      applicationError.type = 'updatePassword'
-      applicationError.user = req.user.id
-      applicationError.ip = apiFunctions.getClientIp(req)
+    }).catch(function (promiseErr) {
+      let applicationError = new ApplicationError('updatePassword', req.user.id, promiseErr.code,
+        promiseErr.error, 'Σφάλμα κατα την ενημέρωση κωδικού.', getClientIp(req), promiseErr.httpCode)
       next(applicationError)
     })
   } else {
-    next(new ApplicationErrorClass('updatePassword', req.user, 2202, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με τον τρέχον.', apiFunctions.getClientIp(req), 500))
+    next(new ApplicationError('updatePassword', req.user.id, 2202, null, 'Ο νέος κωδικός δεν μπορεί να είναι ίδιος με τον τρέχον.', getClientIp(req), 500))
   }
 }
 
@@ -178,11 +185,12 @@ function updateMail (req, res, next) {
   }).then(user => {
     return functionsUser.changeMailLdap(ldapBinded, user.dn, newEmail)
   }).then(() => {
+    let log = new Log('updateMail', req.user.id, 'Το mail ενημερώθηκε επιτυχώς', getClientIp(req), 200)
+    log.logAction('user')
     res.sendStatus(200)
-  }).catch(function (applicationError) {
-    applicationError.type = 'updatePassword'
-    applicationError.user = req.user.id
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('updatePassword', req.user.id, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατα την ενημέρωση email.', getClientIp(req), promiseErr.httpCode)
     next(applicationError)
   })
 }

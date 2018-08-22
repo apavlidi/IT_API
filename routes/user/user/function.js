@@ -7,7 +7,8 @@ const functionsUser = require('../functionsUser')
 const mailTexts = require('./../../../configs/mailText')
 const config = require('../../../configs/config')
 const database = require('../../../configs/database')
-const ApplicationErrorClass = require('../../applicationErrorClass')
+const PromiseError = require('../../promiseErrorClass')
+const ApplicationError = require('../../applicationErrorClass')
 
 const INTEGER_FIELDS = require('./../../../configs/ldap').INTEGER_FIELDS
 
@@ -16,7 +17,7 @@ function deleteResetToken (token) {
     function (resolve, reject) {
       database.UserPassReset.findOneAndRemove({token: token}).exec(function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2232, err, 'Υπήρχε σφάλμα κατα την εύρεση token.', null, 500))
+          reject(new PromiseError(2232, err))
         } else {
           resolve()
         }
@@ -71,7 +72,7 @@ function sendEmailToken (mailToken) {
     function (resolve, reject) {
       config.MAIL.sendMail(mailToken, (err, info) => {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2223, err, 'Συνέβη κάποιο σφάλμα κατα την αποστολή email.', null, 500))
+          reject(new PromiseError(2223, err))
         } else {
           resolve()
         }
@@ -124,7 +125,7 @@ function buildTokenAndMakeEntryForReset (user) {
       })
       tmpResetRequest.save(function (err, user) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2221, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία token', null, 500))
+          reject(new PromiseError(2221, err))
         } else {
           resolve(token)
         }
@@ -158,7 +159,7 @@ function ldapSearchQueryFormat (query, isPublic) {
           attributes: attributesPermitted
         })
       } else {
-        reject(new ApplicationErrorClass(null, null, 2252, null, 'Το πεδιο αυτό δεν υπάρχει', null, 500))
+        reject(new PromiseError(2252, null))
       }
     })
 }
@@ -182,7 +183,7 @@ function buildFilterQueryLdap (attributesPermitted, query, searchAttr) {
     }
     return searchAttr
   } catch (err) {
-    throw new ApplicationErrorClass(null, null, 2251, null, 'Το query σας ειναι λάθος δομημένο', null, 500)
+    throw new ApplicationError(null, null, 2251, null, 'Το query σας ειναι λάθος δομημένο', null, 500)
   }
 }
 
