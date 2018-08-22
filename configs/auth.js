@@ -81,8 +81,8 @@ function checkToken (token, scopeRequired, userScopeRequired) {
                   reject(errorCustom)
                 }
               }).catch(err => {
-              reject(err)
-            })
+                reject(err)
+              })
           } else {
             errorCustom.type = 'TokenError'
             errorCustom.code = 4003
@@ -111,11 +111,11 @@ function checkAuth (scopeRequired, userScopeRequired, ignoreToken) {
         req.user = user
         next()
       }).catch(err => {
-      if (ignoreToken) { next() } else {
-        logAuth.error(err.type + ' ' + err.code + ' ' + err.text)
-        next(err)
-      }
-    })
+        if (ignoreToken) { next() } else {
+          logAuth.error(err.type + ' ' + err.code + ' ' + err.text)
+          next(err)
+        }
+      })
   }
 }
 

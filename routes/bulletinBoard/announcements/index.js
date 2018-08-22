@@ -98,12 +98,12 @@ function getAnnouncementsPublic (req, res, next) {
         .select(req.query.fields).sort(req.query.sort)
         .skip(parseInt(req.query.page) * parseInt(req.query.limit))
         .limit(parseInt(req.query.limit)).exec(function (err, announcements) {
-        if (err) {
-          next(new ApplicationError('getAnnouncementsPublic', null, 1012, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
-        } else {
-          res.status(200).json(announcements)
-        }
-      })
+          if (err) {
+            next(new ApplicationError('getAnnouncementsPublic', null, 1012, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
+          } else {
+            res.status(200).json(announcements)
+          }
+        })
     }
   })
 }
