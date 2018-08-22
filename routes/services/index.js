@@ -3,8 +3,9 @@ const router = express.Router()
 const auth = require('../../configs/auth')
 const config = require('../../configs/config')
 const ldapFunctions = require('../ldapFunctions')
-const ApplicationErrorClass = require('./../applicationErrorClass')
+const ApplicationError = require('./../applicationErrorClass')
 const apiFunctions = require('./../apiFunctions')
+const getClientIp = require('./../apiFunctions').getClientIp
 const functions = require('./functions')
 
 let ldapMain = config.LDAP_CLIENT
@@ -27,14 +28,13 @@ function sshChangeStatusAetos (req, res, next) {
         return functions.enableSshFromVm(ldapBinded, user, 'aetos')
       }
     } else {
-      throw new ApplicationErrorClass('sshChangeStatusAetos', null, 4021, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', apiFunctions.getClientIp(req), 500)
+      throw new ApplicationError('sshChangeStatusAetos', null, 4021, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', getClientIp(req), 500)
     }
   }).then(() => {
     res.sendStatus(200)
-  }).catch(applicationError => {
-    applicationError.type = 'sshChangeStatusAetos'
-    applicationError.user = req.user.id
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(promiseErr => {
+    let applicationError = new ApplicationError('sshChangeStatusAetos', req.user.id, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατά την λήψη αρχείου.', getClientIp(req), promiseErr.httpCode)
     next(applicationError)
   })
 }
@@ -53,14 +53,13 @@ function sshChangeStatusUsers (req, res, next) {
         return functions.enableSshFromVm(ldapBinded, user, 'users')
       }
     } else {
-      throw new ApplicationErrorClass('sshChangeStatusUsers', null, 4013, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', apiFunctions.getClientIp(req), 500)
+      throw new ApplicationError('sshChangeStatusUsers', null, 4013, null, 'Ο χρήστης δεν βρέθηκε ή δεν είναι ενεργοποιημένος.', getClientIp(req), 500)
     }
   }).then(() => {
     res.sendStatus(200)
-  }).catch(applicationError => {
-    applicationError.type = 'sshChangeStatusUsers'
-    applicationError.user = req.user.id
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(promiseErr => {
+    let applicationError = new ApplicationError('sshChangeStatusUsers', req.user.id, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατά την λήψη αρχείου.', getClientIp(req), promiseErr.httpCode)
     next(applicationError)
   })
 }
@@ -81,7 +80,7 @@ function getServiceStatus (req, res, next) {
         functions.activateUser(user).then(changes => {
           ldapBinded.modify(req.user.dn, changes, function (err) {
             if (err) {
-              next(new ApplicationErrorClass('getServiceStatus', req.user.id, 4000, err, 'Συνέβη κάποιο σφάλμα λήψη στοιχείων', apiFunctions.getClientIp(req), 500))
+              next(new ApplicationError('getServiceStatus', req.user.id, 4000, err, 'Συνέβη κάποιο σφάλμα λήψη στοιχείων', getClientIp(req), 500, false))
             } else {
               res.json({
                 info: ['active']
@@ -91,12 +90,11 @@ function getServiceStatus (req, res, next) {
         })
       }
     } else {
-      next(new ApplicationErrorClass('getServiceStatus', req.user.id, 4001, null, 'Ο χρήστης δεν βρέθηκε', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationError('getServiceStatus', null, 4001, null, 'Ο χρήστης δεν βρέθηκε', getClientIp(req), 500, false))
     }
-  }).catch(applicationError => {
-    applicationError.type = 'getServiceStatus'
-    applicationError.user = req.user.id
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(promiseErr => {
+    let applicationError = new ApplicationError('getServiceStatus', req.user.id, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατά την λήψη στοιχείων.', getClientIp(req), promiseErr.httpCode, false)
     next(applicationError)
   })
 }
