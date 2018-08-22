@@ -16,7 +16,7 @@ const clientWordpress = wordpress.createClient(WORDPRESS_CREDENTIALS)
 const ApplicationError = require('../../applicationErrorClass')
 const Log = require('../../logClass')
 
-router.get('/', auth.checkAuth(['announcements'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncements)
+router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncements)
 router.get('/public', apiFunctions.formatQuery, getAnnouncementsPublic)
 router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.formatQuery, getAnnouncement)
 router.get('/feed/:type/:categoryIds?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
