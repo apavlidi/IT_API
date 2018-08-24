@@ -52,20 +52,22 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
+    "chai-http": "^4.0.0",
     "eslint": "^5.4.0",
     "eslint-config-standard": "^11.0.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-node": "^7.0.1",
     "eslint-plugin-promise": "^4.0.0",
     "eslint-plugin-standard": "^3.1.0",
-    "snazzy": "^7.1.1",
-    "standard": "11.0.0",
-    "chai-http": "^4.0.0",
     "mocha": "^5.2.0",
+    "mongodb": "^3.1.3",
+    "node-mongodb-fixtures": "^2.2.1",
     "nyc": "^12.0.2",
     "rewire": "^4.0.1",
     "sinon": "^6.1.5",
-    "sinon-mongoose": "^2.2.1"
+    "sinon-mongoose": "^2.2.1",
+    "snazzy": "^7.1.1",
+    "standard": "11.0.0"
   },
   "standard": {
     "ignore": [

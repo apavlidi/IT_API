@@ -1,5 +1,3 @@
-const functionsSetup = require('../setupDB')
-
 let rewire = require('rewire'),
   functionsPrivate = rewire('./../../../routes/bulletinBoard/announcements/functions')
 let functionsPublic = require('./../../../routes/bulletinBoard/announcements/functions')
@@ -7,12 +5,13 @@ let functionsPublic = require('./../../../routes/bulletinBoard/announcements/fun
 let functionsFileChecks = require('./../../../routes/bulletinBoard/announcements/fileChecks')
 
 describe('announcements', () => {
-  let announcementPublicIDExample
-  let announcementPrivateIDExample
-  let announcementIDToBeDeleted
-  let categoryIDPrivateExample
-  let categoryIDPublicExample
-  let fileIDExample
+  let announcementPublicIDExample = '5b7003ef8ff1ef0727fa5655'
+  let announcementWithAttatchement = '5b2cb996c339ab0df1354a54'
+  let announcementPrivateIDExample = '5b70016cef1d40243b6514f4'
+  let announcementIDToBeDeleted = '5b7089606b5e19356f4633d1'
+  let categoryIDPrivateExample = '59ab445c3eb44c2c608cb188'
+  let categoryIDPublicExample = '59ab445c3eb44c2c608cb18b'
+  let fileIDExample = '5b6f2037fa4dac41399ead97'
 
   let publisher = {
     publisherId: '5106',
@@ -20,40 +19,31 @@ describe('announcements', () => {
   }
 
   before(function (done) {
-    functionsSetup.removeAllCollections().then(() => {
-      return functionsSetup.createCategoryPublicExample()
-    }).then(categoryIDPublicExampleReturned => {
-      categoryIDPublicExample = categoryIDPublicExampleReturned
-      return functionsSetup.createCategoryPrivateExample()
-    }).then(categoryIDPrivateExampleReturned => {
-      categoryIDPrivateExample = categoryIDPrivateExampleReturned
-      return functionsSetup.createAnnouncementExample(categoryIDPublicExample)
-    }).then(announcementPublicIDExampleReturned => {
-      announcementPublicIDExample = announcementPublicIDExampleReturned
-      return functionsSetup.createAnnouncementExample(categoryIDPrivateExample)
-    }).then(categoryIDPrivateExampleReturned => {
-      announcementPrivateIDExample = categoryIDPrivateExampleReturned
-      return functionsSetup.createAnnouncementExampleToBeDeleted(categoryIDPublicExample)
-    }).then(announcementIDToBeDeletedReturned => {
-      announcementIDToBeDeleted = announcementIDToBeDeletedReturned
-      return functionsSetup.createFileExample()
-    }).then(fileID => {
-      fileIDExample = fileID
-      done()
-    }).catch(function (err) {
-      throw new Error(err)
+    this.timeout(10000)
+    fixtures
+      .connect('mongodb://admin:Password@192.168.6.94/myapptest')
+      .then(() => fixtures.unload())
+      .then(() => fixtures.load())
+      .then(function () {
+        done()
+      }).catch(e => function () {
+      done(new Error('Fixtures error'))
     })
   })
 
   after(function (done) {
-    functionsSetup.removeAllCollections().then(() => {
-      done()
-    }).catch(function (err) {
-      throw new Error(err)
+    this.timeout(10000)
+    fixtures
+      .connect('mongodb://admin:Password@192.168.6.94/myapptest')
+      .then(() => fixtures.disconnect())
+      .then(function () {
+        done()
+      }).catch(e => function () {
+      done(new Error('Fixtures error'))
     })
   })
 
-  context('routes', () => {
+  context.skip('routes', () => {
 
     context('getAnnouncements', () => {
 
@@ -313,7 +303,7 @@ describe('announcements', () => {
         })
 
         it('should return false when publisher is invalid', (done) => {
-          functionsPublic.validatePublisher(9999).then(result => {
+          functionsPublic.validatePublisher(99999).then(result => {
             result.should.equal(false)
             done()
           })
@@ -744,5 +734,6 @@ describe('announcements', () => {
 
     })
   })
+
 })
 

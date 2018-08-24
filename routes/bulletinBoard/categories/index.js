@@ -9,14 +9,14 @@ const auth = require('../../../configs/auth')
 let ApplicationErrorClass = require('../../applicationErrorClass')
 const config = require('../../../configs/config')
 
-router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncementsCategories)
+router.get('/', auth.checkAuth(['announcements'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncementsCategories)
 router.get('/public', apiFunctions.formatQuery, getAnnouncementsCategoriesPublic)
-router.put('/register', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.registerCategoriesSchema), updateRegistrationToCategories)
-router.get('/isRegistered', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getIsRegisteredToCategories)
+router.put('/register', auth.checkAuth(['announcements'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.registerCategoriesSchema), updateRegistrationToCategories)
+router.get('/isRegistered', auth.checkAuth(['announcements'], config.PERMISSIONS.student), apiFunctions.formatQuery, getIsRegisteredToCategories)
 
-router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.newCategorySchema), newCategory)
-router.put('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.editCategorySchemaBody), editCategory)
-router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), deleteCategory)
+router.post('/', auth.checkAuth(['announcements'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.newCategorySchema), newCategory)
+router.put('/:id', auth.checkAuth(['announcements'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.editCategorySchemaBody), editCategory)
+router.delete('/:id', auth.checkAuth(['announcements'], config.PERMISSIONS.professor), deleteCategory)
 
 function getAnnouncementsCategories (req, res, next) {
   if (!req.query.fields) {

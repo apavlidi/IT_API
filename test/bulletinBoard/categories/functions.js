@@ -1,32 +1,34 @@
-const functionsSetup = require('../setupDB')
-
 let rewire = require('rewire'),
   functionsPrivate = rewire('./../../../routes/bulletinBoard/categories/functions')
 let functionsPublic = require('./../../../routes/bulletinBoard/categories/functions')
 
 describe('categories', () => {
-  let categoryIDPrivateExample
-  let categoryIDPublicExample
+  let categoryIDPrivateExample = '59ab445c3eb44c2c608cb188'
+  let categoryIDPublicExample = '59ab445c3eb44c2c608cb18b'
 
   before(function (done) {
-    functionsSetup.removeAllCollections().then(() => {
-      return functionsSetup.createCategoryPublicExample()
-    }).then(categoryIDPublicExampleReturned => {
-      categoryIDPublicExample = categoryIDPublicExampleReturned
-      return functionsSetup.createCategoryPrivateExample()
-    }).then(categoryIDPrivateExampleReturned => {
-      categoryIDPrivateExample = categoryIDPrivateExampleReturned
-      done()
-    }).catch(function (err) {
-      throw new Error(err)
+    this.timeout(10000)
+    fixtures
+      .connect('mongodb://admin:Password@192.168.6.94/myapptest')
+      .then(() => fixtures.unload())
+      .then(() => fixtures.load())
+      .then(function () {
+        done()
+      }).catch(e => function () {
+      done(new Error('Fixtures error'))
     })
   })
 
   after(function (done) {
-    functionsSetup.removeAllCollections().then(() => {
-      done()
-    }).catch(function (err) {
-      throw new Error(err)
+    this.timeout(10000)
+    fixtures
+      .connect('mongodb://admin:Password@192.168.6.94/myapptest')
+      .then(() => fixtures.unload())
+      .then(() => fixtures.disconnect())
+      .then(function () {
+        done()
+      }).catch(e => function () {
+      done(new Error('Fixtures error'))
     })
   })
 
@@ -38,6 +40,7 @@ describe('categories', () => {
         chai.request(server)
           .get('/categories?' + access_token)
           .end((err, res) => {
+            console.log(res)
             res.should.have.status(200)
             done()
           })
@@ -203,5 +206,4 @@ describe('categories', () => {
     })
 
   })
-
 })
