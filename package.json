@@ -9,7 +9,8 @@
     "standard": "standard --verbose | snazzy",
     "standardFix": "standard --fix",
     "eslint": "eslint .",
-    "test": "mocha"
+    "test": "mocha",
+    "nyc": "nyc --reporter=text --reporter=html mocha --exit"
   },
   "dependencies": {
     "async": "^2.6.0",
@@ -75,6 +76,13 @@
       "test/",
       "routes/translate.js",
       "configs/ldap.js"
+    ]
+  },
+  "nyc": {
+    "exclude": [
+      "routes/translate.js",
+      "configs",
+      "fixtures"
     ]
   }
 }
