@@ -14,14 +14,17 @@ IT_API is an API that integrates with the Internet services of the department of
 
  * You have to clone the project first.  <br/>
                 `$ git clone https://github.com/apavlidi/IT_API.git`
-
+                
+ * Before installing the modules you have to specifically install <b>node-canvas</b>.  <br/>
+  Follow the instructions here to install it: https://github.com/Automattic/node-canvas/wiki/Installation%3A-Windows <br/>
+    > **Note:** In case you can't install it you can alternatively do the following:
+    You have to commend every line that contains the `text2png` module.
+    After you commended it just run: `$ npm run startDevWindows` <br/>
+    You can either search on the project for its usage but for now it is on `/routes/ldapFunctions.js`
+ 
  * Go to the projecet's folder and run the following command <br/>
           `$ npm install`
 
- * You have to commend every line that contains the `text2png` module.
-   After you commended it just run:  <br/>
-     `$ npm run startDevWindows`
-   > **Note:** You can either search on the project for its usage but for now it is on `/routes/ldapFunctions.js`
  
 
 #### Linux
