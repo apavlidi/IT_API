@@ -1,20 +1,20 @@
 const LDAP = {
   development: {
-    host: 'ldap://192.168.6.89:389',
-    user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: '8=PmDVw4',
+    host: 'ldap://LDAP-SERVER-IP:389',
+    user: 'USER',
+    password: 'PASSWORD',
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   test: {
-    host: 'ldap://192.168.6.89:389',
-    user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: '8=PmDVw4',
+    host: 'ldap://LDAP-SERVER-IP:389',
+    user: 'USER',
+    password: 'PASSWORD',
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   production: {
-    host: 'ldaps://ldap.it.teithe.gr:636',
-    user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: 'fakePassword',
+    host: 'ldap://LDAP-SERVER-IP:389',
+    user: 'USER',
+    password: 'PASSWORD',
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   }
 }
@@ -30,13 +30,13 @@ const LDAP_CLIENT = ldap.createClient({
 })
 
 const MONGO = {
-  development: 'mongodb://admin:Password@192.168.6.94/myappdev',
-  test: 'mongodb://192.168.6.85/myapptest',
-  production: 'mongodb://192.168.6.85/myapp'
+  development: 'mongodb://USER:PASSWORD@SERVER-IP/myappdev?authSource=admin',
+  test: 'mongodb://USER:PASSWORD@SERVER-IP/myapptest?authSource=admin',
+  production: 'mongodb://USER:PASSWORD@SERVER-IP/myapp?authSource=admin'
 }
 
 const WEB_BASE_URL = {
-  url: 'https://apps.it.teithe.gr'
+  url: 'https://api.it.teithe.gr'
 }
 
 const OWASP_CONFIG = {
