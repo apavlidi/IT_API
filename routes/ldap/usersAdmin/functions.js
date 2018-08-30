@@ -6,7 +6,7 @@ const Joi = require('joi')
 const ldap = require('ldapjs')
 
 const database = require('../../../configs/database')
-const ApplicationErrorClass = require('../../applicationErrorClass')
+const PromiseError = require('../../promiseErrorClass')
 const functionsUser = require('../../../routes/user/user/function')
 const config = require('../../../configs/config')
 const ldapFunctions = require('../../ldapFunctions')
@@ -28,7 +28,7 @@ function buildTokenAndMakeEntryForActivation (user) {
       })
       tmpUser.save(function (err, user) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 3411, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία token', null, 500))
+          reject(new PromiseError(3411, err))
         } else {
           resolve(user)
         }
@@ -56,14 +56,14 @@ function sendActivationMailToAllUsers (userIDs) {
           }).then(() => {
             callback(null)
           }).catch(function (error) {
-            reject(new ApplicationErrorClass('sendActivationMail', null, 3412, error, 'Συνέβη κάποιο σφάλμα κατά την αποστολή mail', null, 500))
+            reject(new PromiseError(3412, error))
           })
         })
       })
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('sendActivationMail', null, 3413, err, 'Συνέβη κάποιο σφάλμα κατά την αποστολή mail', null, 500))
+          reject(new PromiseError(3413, err))
         } else {
           resolve()
         }
@@ -85,7 +85,7 @@ function saveFileToPath (file) {
       let fileFullPath = path.join(uploadDir, fileName)
       file.mv(fileFullPath, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 3421, err, 'Συνέβη κάποιο σφάλμα κατα την αποθήκευση αρχείου', null, 500))
+          reject(new PromiseError(3421, err))
         } else {
           resolve(fileFullPath)
         }
@@ -112,13 +112,13 @@ function createUserByLines (fileFullPath, reqBody) {
             })
           }
         } else {
-          reject(new ApplicationErrorClass('importUpdateUsers', null, 3423, null, 'Σφάλμα κατα την ανάγνωση του αρχείου', null, 500))
+          reject(new PromiseError(3423, null))
         }
       })
 
       lineReader.on('close', function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('importUpdateUsers', null, 3424, null, 'Σφάλμα κατα την ανάγνωση του αρχείου', null, 500))
+          reject(new PromiseError(3424, null))
         } else {
           resolve(users)
         }
@@ -145,7 +145,7 @@ function importUsers (users) {
 
         async.parallel(calls, function (err) {
           if (err) {
-            reject(new ApplicationErrorClass('importUpdateUsers', null, 3421, null, 'Σφάλμα κατα την εισαγωγή χρηστών', null, 500))
+            reject(new PromiseError(3421, null))
           }
           resolve(results)
         })
@@ -227,7 +227,7 @@ function updateScope (ldapBinded, newUser, basedn) {
       })
       ldapBinded.modify(ldapBaseDN(newUser.uid, basedn), updateScope, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('addUser', null, 80, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
+          reject(new PromiseError(3425, err))
         } else {
           resolve()
         }
@@ -250,7 +250,7 @@ function updateStatus (ldapBinded, newUser, basedn) {
       })
       ldapBinded.modify(ldapBaseDN(newUser.uid, basedn), updateStatus, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('addUser', null, 81, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
+          reject(new PromiseError(3426, err))
         } else {
           resolve()
         }
@@ -269,7 +269,7 @@ function updatePassword (ldapBinded, newUser, basedn) {
       })
       ldapBinded.modify(ldapBaseDN(newUser.uid, basedn), updatePassword, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('addUser', null, 81, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
+          reject(new PromiseError(3427, err))
         } else {
           resolve()
         }
@@ -292,7 +292,7 @@ function updateUserSem (ldapBinded, newUser, basedn) {
       })
       ldapBinded.modify(functionLdapUser.ldapBaseDN(newUser.uid, basedn), updateSem, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('addUser', null, 82, err, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία χρήστη', null, 500))
+          reject(new PromiseError(3428, err))
         } else {
           resolve()
         }

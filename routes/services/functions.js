@@ -1,5 +1,5 @@
-const ApplicationErrorClass = require('./../applicationErrorClass')
 const ldap = require('ldapjs')
+const PromiseError = require('../promiseErrorClass')
 
 function activateUser (user) {
   return new Promise(
@@ -58,7 +58,7 @@ function disableSshFromVM (ldapBinded, user, vmName) {
       })
       ldapBinded.modify(user.dn, disableSsh, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('sshChangeStatusUsers', user.id, 4011, err, 'Συνέβη κάποιο σφάλμα απενεργοποίηση ssh', null, 500))
+          reject(new PromiseError(4011, err))
         } else {
           resolve()
         }
@@ -77,7 +77,7 @@ function enableSshFromVm (ldapBinded, user, vmName) {
       })
       ldapBinded.modify(user.dn, enableSsh, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('sshChangeStatusUsers', user.id, 4012, err, 'Συνέβη κάποιο σφάλμα ενεργοποίηση ssh', null, 500))
+          reject(new PromiseError(4012, err))
         } else {
           resolve()
         }
