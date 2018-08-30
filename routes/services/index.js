@@ -10,8 +10,8 @@ const functions = require('./functions')
 let ldapMain = config.LDAP_CLIENT
 
 router.get('/', auth.checkAuth(['services'], config.PERMISSIONS.student), getServiceStatus)
-router.patch('/ssh/users', auth.checkAuth(['services'], config.PERMISSIONS.student), sshChangeStatusUsers)
-router.patch('/ssh/aetos', auth.checkAuth(['services'], config.PERMISSIONS.student), sshChangeStatusAetos)
+router.patch('/ssh/users', auth.checkAuth(['edit_services'], config.PERMISSIONS.student), sshChangeStatusUsers)
+router.patch('/ssh/aetos', auth.checkAuth(['edit_services'], config.PERMISSIONS.student), sshChangeStatusAetos)
 
 function sshChangeStatusAetos (req, res, next) {
   let ldapBinded = null

@@ -8,7 +8,7 @@ const apiFunctions = require('../apiFunctions')
 const validSchemas = require('./joi')
 
 router.get('/:limit?', auth.checkAuth(['notifications'], config.PERMISSIONS.student), apiFunctions.formatQuery, apiFunctions.validateInput('params', validSchemas.getNotificationsUser), getNotificationsUser)
-router.post('/', auth.checkAuth(['notifications'], config.PERMISSIONS.student), readNotificationsUser)
+router.post('/', auth.checkAuth(['edit_notifications'], config.PERMISSIONS.student), readNotificationsUser)
 
 function getNotificationsUser (req, res, next) {
   let notsCounter = req.params.limit

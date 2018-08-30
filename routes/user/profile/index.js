@@ -12,9 +12,9 @@ let ldapMain = config.LDAP_CLIENT
 const filter = require('ldap-filters')
 const database = require('../../../configs/database')
 
-router.get('/', auth.checkAuth(['user'], config.PERMISSIONS.student), getUserProfile)
-router.patch('/', auth.checkAuth(['user'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.profileUpdate), updatePublicProfile)
-router.delete('/photo', auth.checkAuth(['user'], config.PERMISSIONS.student), deleteProfilePhoto)
+router.get('/', auth.checkAuth(['profile'], config.PERMISSIONS.student), getUserProfile)
+router.patch('/', auth.checkAuth(['edit_profile'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.profileUpdate), updatePublicProfile)
+router.delete('/photo', auth.checkAuth(['edit_profile'], config.PERMISSIONS.student), deleteProfilePhoto)
 
 function deleteProfilePhoto (req, res, next) {
   database.Profile.findOneAndUpdate({ldapId: req.user.id}, {
