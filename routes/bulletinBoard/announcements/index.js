@@ -16,13 +16,13 @@ const clientWordpress = wordpress.createClient(WORDPRESS_CREDENTIALS)
 const ApplicationError = require('../../applicationErrorClass')
 const Log = require('../../logClass')
 
-router.get('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncements)
+router.get('/', auth.checkAuth(['announcements'], config.PERMISSIONS.student), apiFunctions.formatQuery, getAnnouncements)
 router.get('/public', apiFunctions.formatQuery, getAnnouncementsPublic)
-router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.formatQuery, getAnnouncement)
-router.get('/feed/:type/:categoryIds?', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.student, true), apiFunctions.validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
-router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.newAnnouncementsQuerySchema), insertNewAnnouncement)
-router.patch('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.editAnnouncementsQuerySchema), editAnnouncement)
-router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professor), deleteAnnouncement)
+router.get('/:id', auth.checkAuth(['announcements'], config.PERMISSIONS.student, true), apiFunctions.formatQuery, getAnnouncement)
+router.get('/feed/:type/:categoryIds?', auth.checkAuth(['announcements'], config.PERMISSIONS.student, true), apiFunctions.validateInput('params', validSchemas.getAnnouncementFeedSchema), getAnnouncementsFeed)
+router.post('/', auth.checkAuth(['edit_announcements'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.newAnnouncementsQuerySchema), insertNewAnnouncement)
+router.patch('/:id', auth.checkAuth(['edit_announcements'], config.PERMISSIONS.professor), apiFunctions.validateInput('body', validSchemas.editAnnouncementsQuerySchema), editAnnouncement)
+router.delete('/:id', auth.checkAuth(['edit_announcements'], config.PERMISSIONS.professor), deleteAnnouncement)
 
 function getAnnouncements (req, res, next) {
   database.Announcements.find(req.query.filters).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, announcements) {
