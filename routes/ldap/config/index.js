@@ -8,7 +8,7 @@ const Log = require('../../logClass')
 const apiFunctions = require('./../../apiFunctions')
 const database = require('./../../../configs/database')
 
-router.patch('/:conf', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.updateConfig), updateConfig)
+router.patch('/:conf', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.updateConfig), updateConfig)
 
 function updateConfig (req, res, next) {
   let conf = req.params.conf
