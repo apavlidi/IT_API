@@ -1,6 +1,6 @@
 /* eslint-disable new-cap */
 
-const ApplicationErrorClass = require('../applicationErrorClass')
+const PromiseError = require('../promiseErrorClass')
 const database = require('../../configs/database')
 const crypt = require('crypt3/sync')
 const ldap = require('ldapjs')
@@ -12,7 +12,7 @@ function checkIfTokenExistsAndRetrieveUser (token, schema) {
     function (resolve, reject) {
       schema.findOne({token: token}).exec(function (err, userFromDatabase) {
         if (err || !userFromDatabase) {
-          reject(new ApplicationErrorClass(null, null, 2100, err, 'Το token είναι λάθος', null, 500))
+          reject(new PromiseError(2100, err))
         } else {
           resolve(userFromDatabase)
         }
@@ -27,8 +27,7 @@ function checkPassword (owasp, password) {
       if (result.strong || result.isPassphrase) {
         resolve()
       } else {
-        reject(new ApplicationErrorClass(null, null, 2141, result.errors[0], 'Υπήρχε σφάλμα στον κωδικό', null, 500)
-        )
+        reject(new PromiseError(2141, result.errors[0]))
       }
     })
 }
@@ -45,7 +44,7 @@ function changePasswordLdap (ldapBinded, userDN, password) {
       })
       ldapBinded.modify(userDN, changePassword, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2143, err, 'Υπήρχε σφάλμα κατα την αλλαγή κωδικού', null, 500))
+          reject(new PromiseError(2143, err))
         } else {
           resolve()
         }
@@ -64,7 +63,7 @@ function changeMailLdap (ldapBinded, userDn, newMail) {
       })
       ldapBinded.modify(userDn, changeMailOpts, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2131, err, 'Η αλλαγή email απέτυχε.Παρακαλώ δοκιμάστε αργότερα.', null, 500))
+          reject(new PromiseError(2131, err))
         } else {
           resolve()
         }
@@ -80,7 +79,7 @@ function appendDatabaseInfo (users, query) {
         calls.push(function (callback) {
           database.Profile.findOne({ldapId: user.id}).select('profilePhoto socialMedia notySub').exec(function (err, profile) {
             if (err) {
-              reject(new ApplicationErrorClass(null, null, 2001, err, 'Κάποιο σφάλμα συνέβη.', null, 500))
+              reject(new PromiseError(2001, err))
             } else {
               if (profile) {
                 buildDataForUserFromDB(user, profile, query)
@@ -93,7 +92,7 @@ function appendDatabaseInfo (users, query) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('updateMailReg', null, 2002, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+          reject(new PromiseError(2002, err))
         } else {
           resolve(users)
         }

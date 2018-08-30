@@ -1,6 +1,6 @@
 const database = require('../../../configs/database')
 const async = require('async')
-const ApplicationErrorClass = require('../../applicationErrorClass')
+const PromiseError = require('../../promiseErrorClass')
 
 function updateDatabaseRegistration (categories, userId, action) {
   return new Promise(
@@ -13,7 +13,7 @@ function updateDatabaseRegistration (categories, userId, action) {
           (action === '$addToSet') ? query = {'$addToSet': {'registered': userId}} : query = {'$pull': {'registered': userId}}
           database.AnnouncementsCategories.update({'_id': id}, query, function (err) {
             if (err) {
-              reject(new ApplicationErrorClass(null, null, 1221, err, null, null, 500))
+              reject(new PromiseError(1221, err))
             }
             callback(null)
           })
@@ -22,7 +22,7 @@ function updateDatabaseRegistration (categories, userId, action) {
 
       async.parallel(calls, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('updateRegistrationToCategories', null, 1222, err, 'Σφάλμα κατά την ανανέωση εγγραφής', null, 500))
+          reject(new PromiseError(1222, err))
         }
         resolve()
       })
@@ -36,7 +36,7 @@ function parseArraysInput (array) {
         let arrayParsed = JSON.parse(array)
         resolve(arrayParsed)
       } catch (err) {
-        reject(new ApplicationErrorClass('updateRegistrationToCategories', null, 1242, err, 'Συνέβη σφάλμα κατα την εισαγωγή δεδομένων', null, 500))
+        reject(new PromiseError(1242, err))
       }
     })
 }

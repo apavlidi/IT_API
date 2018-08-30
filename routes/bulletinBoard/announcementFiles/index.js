@@ -1,12 +1,13 @@
 const express = require('express')
 const router = express.Router()
 const database = require('../../../configs/database')
-const apiFunctions = require('../../apiFunctions')
+const getClientIp = require('../../apiFunctions').getClientIp
 const mongoose = require('mongoose')
 const fs = require('fs')
 const filesFunc = require('./functions')
 const fileType = require('file-type')
-const ApplicationErrorClass = require('../../applicationErrorClass')
+const ApplicationError = require('../../applicationErrorClass')
+const Log = require('../../logClass')
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
 
@@ -24,9 +25,9 @@ function downloadFile (req, res, next) {
       'Content-Disposition': 'attachment;filename*=UTF-8\'\'' + name
     })
     res.end(file.data) // the second parameter is cashed to the browser
-  }).catch(function (applicationError) {
-    applicationError.type = 'downloadFile'
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('downloadFile', null, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατά την λήψη αρχείου.', getClientIp(req), promiseErr.httpCode, false)
     next(applicationError)
   })
 }
@@ -52,18 +53,20 @@ function downloadFiles (req, res, next) {
                     })
                   })
               })
-          }).catch(function (err) {
-            next(new ApplicationErrorClass('downloadFiles', null, 1111, err, 'Σφάλμα κατα την συμπίεση αρχείων', apiFunctions.getClientIp(req), 500))
+          }).catch(function (promiseErr) {
+            let applicationError = new ApplicationError('downloadFiles', null, promiseErr.code,
+              promiseErr.error, 'Σφάλμα κατά την λήψη αρχείων.', getClientIp(req), promiseErr.httpCode, false)
+            next(applicationError)
           })
         } else {
-          next(new ApplicationErrorClass('downloadFiles', null, 1112, null, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', apiFunctions.getClientIp(req), 500))
+          next(new ApplicationError('downloadFiles', null, 1112, null, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', getClientIp(req), 500, false))
         }
       } else {
-        next(new ApplicationErrorClass('downloadFiles', null, 1116, null, 'Σφάλμα κατά την εύρεση αρχείου', apiFunctions.getClientIp(req), 500))
+        next(new ApplicationError('downloadFiles', null, 1116, err, 'Σφάλμα κατά την εύρεση αρχείου', getClientIp(req), 500, false))
       }
     })
   } else {
-    next(new ApplicationErrorClass('downloadFiles', null, 1113, null, 'Συνέβη κάποιο σφάλμα κατα την λήψη αρχείων', apiFunctions.getClientIp(req), 500))
+    next(new ApplicationError('downloadFiles', null, 1113, null, 'Συνέβη κάποιο σφάλμα κατα την λήψη αρχείων', getClientIp(req), 500, false))
   }
 }
 
@@ -79,11 +82,11 @@ function viewFile (req, res, next) {
         'Content-Type': file.contentType,
         'Content-Disposition': 'attachment;filename*=UTF-8\'\'' + name
       })
-      res.end(file.data) // the second parameter is cashed to the browser
+      res.end(file.data)
     }
-  }).catch(function (applicationError) {
-    applicationError.type = 'viewFile'
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('downloadFile', null, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατά την προβολή αρχείου.', getClientIp(req), promiseErr.httpCode, false)
     next(applicationError)
   })
 }
@@ -92,18 +95,20 @@ function deleteFile (req, res, next) {
   let fileId = req.params.id
   database.Announcements.findOne({'attachments': fileId}, function (err, announcement) {
     if (err || !announcement) {
-      next(new ApplicationErrorClass('deleteFile', req.user.id, 1121, null, 'Σφάλμα κατα την εύρεση αρχείου', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationError('deleteFile', req.user.id, 1121, null, 'Σφάλμα κατα την εύρεση αρχείου', getClientIp(req), 500))
     } else {
       if (announcement.publisher.id === req.user.id || req.user.scope === config.PERMISSIONS.admin) {
         announcement.attachments.pull(fileId)
         announcement.save(function (err) {
           if (err) {
-            next(new ApplicationErrorClass('deleteFile', req.user.id, 1122, err, 'Σφάλμα κατα την διαγραφή αρχείου', apiFunctions.getClientIp(req), 500))
+            next(new ApplicationError('deleteFile', req.user.id, 1122, err, 'Σφάλμα κατα την διαγραφή αρχείου', getClientIp(req), 500))
           } else {
             database.File.findOneAndRemove({_id: fileId}, function (err) {
               if (err) {
-                next(new ApplicationErrorClass('deleteFile', req.user.id, 1123, err, 'Σφάλμα κατα την διαγραφή αρχείου', apiFunctions.getClientIp(req), 500))
+                next(new ApplicationError('deleteFile', req.user.id, 1123, err, 'Σφάλμα κατα την διαγραφή αρχείου', getClientIp(req), 500))
               } else {
+                let log = new Log('deleteFile', req.user.id, 'Το αρχείο διαγράφηκε επιτυχώς', getClientIp(req), 200)
+                log.logAction('announcements')
                 res.status(200).json({
                   message: 'Το αρχείο διαγράφηκε επιτυχώς'
                 })
@@ -112,7 +117,7 @@ function deleteFile (req, res, next) {
           }
         })
       } else {
-        next(new ApplicationErrorClass('deleteFile', req.user.id, 1124, err, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', apiFunctions.getClientIp(req), 500))
+        next(new ApplicationError('deleteFile', req.user.id, 1124, err, 'Δεν έχετε δικαίωμα για αυτήν την ενέργεια', getClientIp(req), 500))
       }
     }
   })

@@ -1,6 +1,6 @@
-const ApplicationErrorClass = require('../../applicationErrorClass')
 const database = require('../../../configs/database')
 const ldapFunctions = require('../../ldapFunctions')
+const PromiseError = require('../../promiseErrorClass')
 
 function searchGroupsOnLDAP (ldap, options) {
   return new Promise(
@@ -8,14 +8,14 @@ function searchGroupsOnLDAP (ldap, options) {
       let groups = []
       ldap.search('ou=groups,dc=it,dc=teithe,dc=gr', options, function (err, results) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 3201, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+          reject(new PromiseError(3201, err))
         }
         results.on('searchEntry', function (entry) {
           delete entry.object.controls
           groups.push(entry.object)
         })
         results.on('error', function (err) {
-          reject(new ApplicationErrorClass(null, null, 3200, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+          reject(new PromiseError(3200, err))
         })
         results.on('end', function (result) {
           resolve(groups)
@@ -29,13 +29,13 @@ function getNextGidNumber () {
     function (resolve, reject) {
       database.LDAPConfigs.findOne({conf: 'gidNumber'}).exec(function (err, group) {
         if (err) {
-          reject(new ApplicationErrorClass('addGroup', err, 3212, null, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία ομάδας', null, 500))
+          reject(new PromiseError(3212, err))
         }
         database.LDAPConfigs.findOneAndUpdate({conf: 'gidNumber'}, {
           '$inc': {'value': +1}
         }).exec(function (err, post) {
           if (err) {
-            reject(new ApplicationErrorClass('addGroup', err, 3213, null, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία ομάδας', null, 500))
+            reject(new PromiseError(3213, err))
           }
           resolve(group.value)
         })
@@ -48,7 +48,7 @@ function addGroupToLdap (ldapBinded, group) {
     function (resolve, reject) {
       ldapBinded.add('cn=' + group.cn + ',ou=groups,dc=it,dc=teithe,dc=gr', group, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass('addGroup', err, 3214, null, 'Συνέβη κάποιο σφάλμα κατα την δημιουργία ομάδας', null, 500))
+          reject(new PromiseError(3214, err))
         }
         resolve()
       })
@@ -63,7 +63,7 @@ function checkIfGroupExists (ldapBinded, cn) {
         if (groups.length === 0) {
           resolve()
         } else {
-          reject(new ApplicationErrorClass('addGroup', null, 3211, null, 'Η ομάδα υπάρχει ήδη', null, 500))
+          reject(new PromiseError(3211, null))
         }
       })
     })
