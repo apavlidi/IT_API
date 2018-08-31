@@ -31,7 +31,9 @@ function disableNotySub (req, res, next) {
         })
       } else {
         functions.checkIfSubscribedAlready(req.user.id, req.body.browserFp).then(result => {
-          return functions.modifyNotySub(result.profile, req.body, false)
+          if (result.isSubscribed) {
+            return functions.modifyNotySub(result.profile, req.body, false)
+          }
         }).then(() => {
           let log = new Log('disableNotySub', req.user.id, 'Η εγγραφή ενημερώθηκε επιτυχώς', getClientIp(req), 200)
           log.logAction('user')
