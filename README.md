@@ -9,6 +9,11 @@ IT_API is an API that integrates with the Internet services of the department of
 * You should have nodejs installed.If you don`t just go [here](https://nodejs.org/en/) and install it.
 * You should have an internal IP of the IT departpment.Connect via vpn with the instructions [here](https://apps.it.teithe.gr/service/openvpn).
 
+### Config
+
+Replace on `configs/config.js` LDAP / MONGO consts and  set `LDAP-SERVER-IP`, `SERVER-IP`, `USER`, `PASSWORD` accordingly.
+
+You can use preconfigured server with LDAP and MongodDB as described [here](https://github.com/apavlidi/IT_API/wiki/OVA-Image)
 
 #### Windows
 
