@@ -134,7 +134,6 @@ function validatePublisher (publisherId) {
       query.q = JSON.stringify({'id': publisherId})
 
       functions.ldapSearchQueryFormat(query, true).then(function (options) {
-        console.log(options)
         return ldapFunctions.searchUsersOnLDAP(ldapMain, options)
       }).then(users => {
         if (users.length === 1) {
@@ -226,7 +225,7 @@ function pushAllFiles (filesUploaded) {
 }
 
 function checkFileInput (file) {
-  if (typeof file.data === 'string' || file.data instanceof String) {
+  if (file.data instanceof Object) {
     return (file && fileChecks.checkFileType(file.mimetype) && fileChecks.validateFileSize(Buffer.byteLength(file.data)))
   } else {
     return false
@@ -242,7 +241,6 @@ function postToTeithe (announcement, action) {
           announcement.textEn, announcement.attachments, announcement.date,
           announcement.publisher.name).then(function (wordpressContent) {
           if (action === 'create') {
-            console.log(category)
             clientWordpress.newPost({
               title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
                 announcement.titleEn + '<!--:-->',
@@ -259,8 +257,6 @@ function postToTeithe (announcement, action) {
               ).exec(function () {})
             })
           } else if (action === 'edit') {
-            console.log(category.wid)
-            console.log(announcement)
 
             clientWordpress.editPost(announcement.wordpressId, {
               title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +

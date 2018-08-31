@@ -90,7 +90,6 @@ function getAnnouncementsFeed (req, res, next) {
 
 function getAnnouncementsPublic (req, res, next) {
   database.AnnouncementsCategories.find({public: true}).select('_id').exec(function (err, publicCategories) {
-    console.log(publicCategories)
     if (err) {
       next(new ApplicationError('getAnnouncementsPublic', null, 1011, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
     } else {
@@ -98,12 +97,12 @@ function getAnnouncementsPublic (req, res, next) {
         .select(req.query.fields).sort(req.query.sort)
         .skip(parseInt(req.query.page) * parseInt(req.query.limit))
         .limit(parseInt(req.query.limit)).exec(function (err, announcements) {
-          if (err) {
-            next(new ApplicationError('getAnnouncementsPublic', null, 1012, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
-          } else {
-            res.status(200).json(announcements)
-          }
-        })
+        if (err) {
+          next(new ApplicationError('getAnnouncementsPublic', null, 1012, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
+        } else {
+          res.status(200).json(announcements)
+        }
+      })
     }
   })
 }
@@ -229,6 +228,9 @@ function editAnnouncement (req, res, next) {
     return announcementsFunc.checkIfEntryExists(about, database.AnnouncementsCategories)
   }).then(category => {
     (category) ? updatedAnnouncement._about = mongoose.Types.ObjectId(category._id) : updatedAnnouncement._about = announcementToBeEdited._about
+    if (category) {
+      updatedAnnouncement.wordpressId = category.wid
+    }
     database.Announcements.update({_id: req.params.id},
       updatedAnnouncement
     ).exec(function (err) {
