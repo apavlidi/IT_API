@@ -14,7 +14,7 @@ class ApplicationErrorClass extends LogClass {
 
   logError () {
     let errorMsg
-    (_.has(this.error, 'message')) ? errorMsg = this.error.message : errorMsg = 'No message submitted'
+    (_.has(this, 'text')) ? errorMsg = this.text : errorMsg = 'No message submitted'
     logError.error(this.type, this.user, this.code, errorMsg, this.text, this.ip)
   }
 }
