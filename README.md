@@ -49,6 +49,8 @@ IT_API is an API that integrates with the Internet services of the department of
  * Next run:  <br/>
 `$ npm run start`
 
+### Default admin user `admin` with ID: `3000`.
+
 ## Documentation
 
 You can find the IT_API documentation [here](https://github.com/apavlidi/IT_API/wiki/API-overview).  
