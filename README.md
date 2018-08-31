@@ -54,7 +54,7 @@ IT_API is an API that integrates with the Internet services of the department of
 
 ## Documentation
 
-You can find the IT_API documentation [here](https://github.com/apavlidi/IT_API/wiki/API-overview).  
+You can find the IT_API documentation [here](https://github.com/apavlidi/IT_API/wiki/API-Documentation).  
 
 ## Contributing
 
