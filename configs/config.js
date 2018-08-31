@@ -1,20 +1,20 @@
 const LDAP = {
   development: {
-    host: 'ldap://LDAP-SERVER-IP:389',
-    user: 'USER',
-    password: 'PASSWORD',
+    host: process.env.LDAP_HOST,
+    user: process.env.LDAP_USER,
+    password: process.env.LDAP_PASSWORD,
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   test: {
-    host: 'ldap://LDAP-SERVER-IP:389',
-    user: 'USER',
-    password: 'PASSWORD',
+    host: process.env.LDAP_HOST,
+    user: process.env.LDAP_USER,
+    password: process.env.LDAP_PASSWORD,
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   production: {
-    host: 'ldap://LDAP-SERVER-IP:389',
-    user: 'USER',
-    password: 'PASSWORD',
+    host: process.env.LDAP_HOST,
+    user: process.env.LDAP_USER,
+    password: process.env.LDAP_PASSWORD,
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   }
 }
@@ -30,10 +30,9 @@ const LDAP_CLIENT = ldap.createClient({
 })
 
 const MONGO = {
-
-  development: 'mongodb://USER:PASSWORD@SERVER-IP/myappdev?authSource=admin',
-  test: 'mongodb://USER:PASSWORD@SERVER-IP/myapptest?authSource=admin',
-  production: 'mongodb://USER:PASSWORD@SERVER-IP/myapp?authSource=admin'
+  development: process.env.MONGO_URL,
+  test: process.env.MONGO_URL,
+  production: process.env.MONGO_URL
 }
 
 const WEB_BASE_URL = {
