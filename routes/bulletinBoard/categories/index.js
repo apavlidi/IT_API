@@ -122,10 +122,20 @@ function newCategory (req, res, next) {
 
 function editCategory (req, res, next) {
   let categoryId = req.params.id
+  let translatedValue
+  try {
+    try {
+      translatedValue = translate(req.body.name.toLowerCase()).toUpperCase()
+    } catch (err) {
+      translatedValue = translate(req.body.name)
+    }
+  } catch (err) {
+    translatedValue = req.body.name
+  }
   let editedCategory = {
     name: req.body.name,
     public: req.body.publicCategory,
-    value: req.body.name.replace(/ /g, '')
+    value: translatedValue.toLowerCase().replace(/\s/g, '')
   }
   if (editedCategory.public === 'true') {
     if (editedCategory.wid !== 5 && editedCategory.wid !== 31) {
