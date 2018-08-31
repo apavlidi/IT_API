@@ -257,7 +257,6 @@ function postToTeithe (announcement, action) {
               ).exec(function () {})
             })
           } else if (action === 'edit') {
-
             clientWordpress.editPost(announcement.wordpressId, {
               title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
                 announcement.titleEn + '<!--:-->',
