@@ -9,8 +9,6 @@ IT_API is an API that integrates with the Internet services of the department of
 * You should have nodejs installed.If you don`t just go [here](https://nodejs.org/en/) and install it.
 * You should have an internal IP of the IT departpment.Connect via vpn with the instructions [here](https://apps.it.teithe.gr/service/openvpn).
 * You have to use preconfigured server with LDAP and MongodDB as described [here](https://github.com/apavlidi/IT_API/wiki/OVA-Image) 
-* You have to replace on `configs/config.js` LDAP / MONGO consts and  set `LDAP-SERVER-IP`, `SERVER-IP`, `USER`, `PASSWORD` accordingly.
-
 
 #### Windows
 
@@ -27,6 +25,9 @@ IT_API is an API that integrates with the Internet services of the department of
  * Go to the projecet's folder and run the following command <br/>
           `$ npm install`
 
+ * Next run:  <br/>
+ $ set NODE_ENV=development & LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 & LDAP_USER={USER} & LDAP_PASSWORD={PASSWORD} MONGO_URL=mongodb://{USER}:{PASSSWORD}@{SERVER-IP}/myappdev?authSource=admin
+
  
 
 #### Linux
@@ -38,7 +39,8 @@ IT_API is an API that integrates with the Internet services of the department of
           `$ npm install`
 
  * Next run:  <br/>
-`$ npm run start`
+$ NODE_ENV=development LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 LDAP_USER={USER} LDAP_PASSWORD={PASSWORD} MONGO_URL=mongodb://{USER}:{PASSWORD}@{SERVER-IP}/myappdev?authSource=admin
+
 
 #### Mac OS
 
@@ -49,8 +51,10 @@ IT_API is an API that integrates with the Internet services of the department of
           `$ npm install`
 
  * Next run:  <br/>
-`$ npm run start`
+$ NODE_ENV=development LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 LDAP_USER={USER} LDAP_PASSWORD={PASSWORD} MONGO_URL=mongodb://{USER}:{PASSWORD}@{SERVER-IP}/myappdev?authSource=admin
 
+
+> **Pro Tip!:** You can make a script and pass these variables and run the script instead of running the whole command in every run
 
 ## Documentation
 
