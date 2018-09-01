@@ -26,7 +26,7 @@ IT_API is an API that integrates with the Internet services of the department of
           `$ npm install`
 
  * Next run:  <br/>
- $ set NODE_ENV=development & LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 & LDAP_USER={USER} & LDAP_PASSWORD={PASSWORD} MONGO_URL=mongodb://{USER}:{PASSSWORD}@{SERVER-IP}/myappdev?authSource=admin
+`$ set NODE_ENV=development & LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 & LDAP_USER={USER} & LDAP_PASSWORD={PASSWORD} MONGO_URL=mongodb://{USER}:{PASSSWORD}@{SERVER-IP}/myappdev?authSource=admin`
 
  
 
@@ -39,7 +39,7 @@ IT_API is an API that integrates with the Internet services of the department of
           `$ npm install`
 
  * Next run:  <br/>
-$ NODE_ENV=development LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 LDAP_USER={USER} LDAP_PASSWORD={PASSWORD} MONGO_URL=mongodb://{USER}:{PASSWORD}@{SERVER-IP}/myappdev?authSource=admin
+`$ NODE_ENV=development LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 LDAP_USER={USER} LDAP_PASSWORD={PASSWORD} MONGO_URL=mongodb://{USER}:{PASSWORD}@{SERVER-IP}/myappdev?authSource=admin`
 
 
 #### Mac OS
@@ -51,7 +51,7 @@ $ NODE_ENV=development LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 LDAP_USER={USER} LD
           `$ npm install`
 
  * Next run:  <br/>
-$ NODE_ENV=development LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 LDAP_USER={USER} LDAP_PASSWORD={PASSWORD} MONGO_URL=mongodb://{USER}:{PASSWORD}@{SERVER-IP}/myappdev?authSource=admin
+`$ NODE_ENV=development LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 LDAP_USER={USER} LDAP_PASSWORD={PASSWORD} MONGO_URL=mongodb://{USER}:{PASSWORD}@{SERVER-IP}/myappdev?authSource=admin`
 
 
 > **Pro Tip!:** You can make a script and pass these variables and run the script instead of running the whole command in every run
