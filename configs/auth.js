@@ -3,11 +3,8 @@ const fs = require('fs')
 const Promise = require('promise')
 const ldap = require('ldapjs')
 const logAuth = require('./../configs/log').auth
-const audience = {
-  production: '59a99d5989ef64657780879c',
-  development: '59a99d5989ef64657780879c'
-}
-const cert = fs.readFileSync('./public.pem') // get public key
+
+const cert = fs.readFileSync('./public_'+process.env.NODE_ENV+'.pem') // get public key
 const config = require('./config')
 
 const ldapClient = ldap.createClient({
@@ -56,14 +53,15 @@ function checkToken (token, scopeRequired, userScopeRequired) {
     function (resolve, reject) {
       let errorCustom = new Error()
       errorCustom.httpCode = 400
-      jwt.verify(token, cert, {audience: audience[process.env.NODE_ENV]}, function (err, tokenInfo) {
+      jwt.verify(token, cert, {}, function (err, tokenInfo) {
         if (err) {
-          errorCustom.type = 'TokenExpiredError'
           if (err.name === 'TokenExpiredError') {
+            errorCustom.type = 'TokenExpiredError'
             errorCustom.code = 4001
             errorCustom.text = 'Access token has expired.'
             reject(errorCustom)
           } else {
+            errorCustom.type = 'TokenInvalidError'
             errorCustom.code = 4002
             errorCustom.text = 'An active access token required to complete this action.'
             reject(errorCustom)
