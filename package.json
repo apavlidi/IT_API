@@ -9,7 +9,9 @@
     "standard": "standard --verbose | snazzy",
     "standardFix": "standard --fix",
     "eslint": "eslint .",
-    "test": "mocha"
+    "test": "mocha",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "dependencies": {
     "async": "^2.6.0",
@@ -33,7 +35,7 @@
     "ldap-filters": "^2.2.2",
     "ldapjs": "^1.0.2",
     "lodash": "^4.17.10",
-    "log4js": "^2.0.0",
+    "log4js": "^1.1.1",
     "log4js-node-mongodb": "^2.2.1",
     "mongoose": "^5.0.0",
     "morgan": "^1.9.0",
@@ -48,7 +50,8 @@
     "vcards-js": "^2.8.0",
     "web-push": "3.3.2",
     "wordpress": "^1.4.1",
-    "xss": "^0.3.7"
+    "xss": "^0.3.7",
+    "snyk": "^1.94.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
@@ -74,5 +77,6 @@
       "routes/translate.js",
       "configs/ldap.js"
     ]
-  }
+  },
+  "snyk": true
 }
