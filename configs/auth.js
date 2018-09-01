@@ -4,7 +4,7 @@ const Promise = require('promise')
 const ldap = require('ldapjs')
 const logAuth = require('./../configs/log').auth
 
-const cert = fs.readFileSync('./public_'+process.env.NODE_ENV+'.pem') // get public key
+const cert = fs.readFileSync('./public_' + process.env.NODE_ENV + '.pem') // get public key
 const config = require('./config')
 
 const ldapClient = ldap.createClient({
