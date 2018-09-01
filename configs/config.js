@@ -1,20 +1,20 @@
 const LDAP = {
   development: {
-    host: 'ldap://192.168.6.89:389',
-    user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: '8=PmDVw4',
+    host: process.env.LDAP_HOST,
+    user: process.env.LDAP_USER,
+    password: process.env.LDAP_PASSWORD,
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   test: {
-    host: 'ldap://192.168.6.89:389',
-    user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: '8=PmDVw4',
+    host: process.env.LDAP_HOST,
+    user: process.env.LDAP_USER,
+    password: process.env.LDAP_PASSWORD,
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   },
   production: {
-    host: 'ldaps://ldap.it.teithe.gr:636',
-    user: 'cn=admin,dc=it,dc=teithe,dc=gr',
-    password: 'fakePassword',
+    host: process.env.LDAP_HOST,
+    user: process.env.LDAP_USER,
+    password: process.env.LDAP_PASSWORD,
     baseUserDN: 'ou=people,dc=it,dc=teithe,dc=gr'
   }
 }
@@ -30,13 +30,13 @@ const LDAP_CLIENT = ldap.createClient({
 })
 
 const MONGO = {
-  development: 'mongodb://admin:Password@192.168.6.94/myappdev',
-  test: 'mongodb://admin:Password@192.168.6.94/myapptest',
-  production: 'mongodb://192.168.6.85/myapp'
+  development: process.env.MONGO_URL,
+  test: process.env.MONGO_URL,
+  production: process.env.MONGO_URL
 }
 
 const WEB_BASE_URL = {
-  url: 'https://apps.it.teithe.gr'
+  url: 'https://api.it.teithe.gr'
 }
 
 const OWASP_CONFIG = {

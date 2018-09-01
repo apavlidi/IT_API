@@ -4,14 +4,16 @@ const router = express.Router()
 const database = require('../../../configs/database')
 const functions = require('./function')
 const apiFunctions = require('./../../apiFunctions')
+const getClientIp = require('./../../apiFunctions').getClientIp
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
-const ApplicationErrorClass = require('./../../applicationErrorClass')
+const ApplicationError = require('./../../applicationErrorClass')
+const Log = require('./../../logClass')
 const validSchemas = require('./joi')
 
-router.get('/', auth.checkAuth(['user'], config.PERMISSIONS.student), getNotySub)
-router.patch('/', auth.checkAuth(['user'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.enableNotySub), enableNotySub)
-router.delete('/', auth.checkAuth(['user'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.disableNotySub), disableNotySub)
+router.get('/', auth.checkAuth(['noty'], config.PERMISSIONS.student), getNotySub)
+router.patch('/', auth.checkAuth(['edit_noty'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.enableNotySub), enableNotySub)
+router.delete('/', auth.checkAuth(['edit_noty'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.disableNotySub), disableNotySub)
 
 // TODO REFACTOR
 function disableNotySub (req, res, next) {
@@ -19,25 +21,31 @@ function disableNotySub (req, res, next) {
     if (!err && profile) {
       if (req.body.all && req.body.all === 'true') {
         functions.disableAllNotiesSub(profile).then(() => {
+          let log = new Log('disableNotySub', req.user.id, 'Η εγγραφή ενημερώθηκε επιτυχώς', getClientIp(req), 200)
+          log.logAction('user')
           res.sendStatus(200)
-        }).catch(function (applicationError) {
-          applicationError.type = 'disableNotySub'
-          applicationError.ip = apiFunctions.getClientIp(req)
+        }).catch(function (promiseErr) {
+          let applicationError = new ApplicationError('disableNotySub', req.user.id, promiseErr.code,
+            promiseErr.error, 'Σφάλμα κατα την ενημέρωση εγγραφής.', getClientIp(req), promiseErr.httpCode)
           next(applicationError)
         })
       } else {
         functions.checkIfSubscribedAlready(req.user.id, req.body.browserFp).then(result => {
-          return functions.modifyNotySub(result.profile, req.body, false)
+          if (result.isSubscribed) {
+            return functions.modifyNotySub(result.profile, req.body, false)
+          }
         }).then(() => {
+          let log = new Log('disableNotySub', req.user.id, 'Η εγγραφή ενημερώθηκε επιτυχώς', getClientIp(req), 200)
+          log.logAction('user')
           res.sendStatus(200)
-        }).catch(function (applicationError) {
-          applicationError.type = 'disableNotySub'
-          applicationError.ip = apiFunctions.getClientIp(req)
+        }).catch(function (promiseErr) {
+          let applicationError = new ApplicationError('disableNotySub', req.user.id, promiseErr.code,
+            promiseErr.error, 'Σφάλμα κατα την ενημέρωση εγγραφής.', getClientIp(req), promiseErr.httpCode)
           next(applicationError)
         })
       }
     } else {
-      next(new ApplicationErrorClass('updateNotySub', req.user, 2062, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationError('updateNotySub', req.user.id, 2062, err, 'Το προφιλ χρήστη δεν υπάρχει', getClientIp(req), 500))
     }
   })
 }
@@ -52,14 +60,16 @@ function enableNotySub (req, res, next) {
           return functions.createNewNotySubscription(profile, req.body)
         }
       }).then(() => {
+        let log = new Log('enableNotySub', req.user.id, 'Η εγγραφή ενημερώθηκε επιτυχώς', getClientIp(req), 200)
+        log.logAction('user')
         res.sendStatus(200)
-      }).catch(function (applicationError) {
-        applicationError.type = 'enableNotySub'
-        applicationError.ip = apiFunctions.getClientIp(req)
+      }).catch(function (promiseErr) {
+        let applicationError = new ApplicationError('enableNotySub', req.user.id, promiseErr.code,
+          promiseErr.error, 'Σφάλμα κατα την ενημέρωση εγγραφής.', getClientIp(req), promiseErr.httpCode)
         next(applicationError)
       })
     } else {
-      next(new ApplicationErrorClass('updateNotySub', req.user, 2053, null, 'Το προφιλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationError('updateNotySub', req.user.id, 2053, err, 'Το προφιλ χρήστη δεν υπάρχει', getClientIp(req), 500))
     }
   })
 }

@@ -1,4 +1,4 @@
-const ApplicationErrorClass = require('../../applicationErrorClass')
+const PromiseError = require('../../promiseErrorClass')
 const config = require('../../../configs/config')
 const database = require('../../../configs/database')
 const ldap = require('ldapjs')
@@ -9,13 +9,13 @@ function validateUserAndPassOnPithia (ldapBind, user, password) {
       if (user.dn) {
         ldapBind.bind(user.dn, password, function (err) {
           if (err) {
-            reject(new ApplicationErrorClass('pauth', null, 2113, null, 'Λάθος όνομα χρήστη η κωδικός.(Παρακαλώ δοκιμάστε και με τα στοιχεία του moodle)', null, 500))
+            reject(new PromiseError(2113, err))
           } else {
             resolve()
           }
         })
       } else {
-        reject(new ApplicationErrorClass('pauth', null, 2114, null, 'Λάθος όνομα χρήστη η κωδικός.(Παρακαλώ δοκιμάστε και με τα στοιχεία του moodle)', null, 500))
+        reject(new PromiseError(2114, null))
       }
     })
 }
@@ -33,7 +33,7 @@ function changeScopeLdap (ldapMainBinded, userDN, userScope) {
       })
       ldapMainBinded.modify(userDN, changeScope, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2142, err, 'Υπήρχε σφάλμα κατα την ενεργοποίηση λογαριασμού', null, 500))
+          reject(new PromiseError(2142, err))
         } else {
           resolve()
         }
@@ -46,7 +46,7 @@ function deleteRegToken (token) {
     function (resolve, reject) {
       database.UserReg.findOneAndRemove({token: token}).exec(function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2144, err, 'Υπήρχε σφάλμα κατα την εύρεση token.', null, 500))
+          reject(new PromiseError(2144, err))
         } else {
           resolve()
         }

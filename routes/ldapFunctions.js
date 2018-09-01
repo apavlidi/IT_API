@@ -1,4 +1,4 @@
-const ApplicationErrorClass = require('./applicationErrorClass')
+const PromiseError = require('./promiseErrorClass')
 const config = require('../configs/config')
 const text2png = require('text2png')
 
@@ -7,7 +7,7 @@ function bindLdap (ldapMain) {
     function (resolve, reject) {
       ldapMain.bind(config.LDAP[process.env.NODE_ENV].user, config.LDAP[process.env.NODE_ENV].password, function (err) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2017, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+          reject(new PromiseError(2017, err))
         } else {
           resolve(ldapMain)
         }
@@ -29,13 +29,13 @@ function searchUserOnLDAP (ldap, options) {
       let user = null
       ldap.search(config.LDAP[process.env.NODE_ENV].baseUserDN, options, function (err, results) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 2003, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+          reject(new PromiseError(2003, err))
         }
         results.on('searchEntry', function (entry) {
           user = entry.object
         })
         results.on('error', function (err) {
-          reject(new ApplicationErrorClass(null, null, 2000, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+          reject(new PromiseError(2000, err))
         })
         results.on('end', function (result) {
           resolve(user)
@@ -49,7 +49,7 @@ function searchUsersOnLDAP (ldapMain, opts) {
     function (resolve, reject) {
       ldapMain.search(config.LDAP[process.env.NODE_ENV].baseUserDN, opts, function (err, results) {
         if (err) {
-          reject(new ApplicationErrorClass(null, null, 3400, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+          reject(new PromiseError(3400, err))
         } else {
           let usersArray = []
           let userCounter = 0
@@ -59,7 +59,7 @@ function searchUsersOnLDAP (ldapMain, opts) {
 
           results.on('error', function (err) {
             (err.code === 4) ? resolve(usersArray)
-              : reject(new ApplicationErrorClass(null, null, 3400, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+              : reject(new PromiseError(3401, err))
           })
           results.on('end', function (result) {
             resolve(usersArray)

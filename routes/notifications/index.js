@@ -3,12 +3,13 @@ const router = express.Router()
 const database = require('../../configs/database')
 const auth = require('../../configs/auth')
 const config = require('../../configs/config')
-const ApplicationErrorClass = require('./../applicationErrorClass')
+const ApplicationError = require('./../applicationErrorClass')
 const apiFunctions = require('../apiFunctions')
+const getClientIp = require('../apiFunctions').getClientIp
 const validSchemas = require('./joi')
 
 router.get('/:limit?', auth.checkAuth(['notifications'], config.PERMISSIONS.student), apiFunctions.formatQuery, apiFunctions.validateInput('params', validSchemas.getNotificationsUser), getNotificationsUser)
-router.post('/', auth.checkAuth(['notifications'], config.PERMISSIONS.student), readNotificationsUser)
+router.post('/', auth.checkAuth(['edit_notifications'], config.PERMISSIONS.student), readNotificationsUser)
 
 function getNotificationsUser (req, res, next) {
   let notsCounter = req.params.limit
@@ -28,7 +29,7 @@ function getNotificationsUser (req, res, next) {
         select: '_about title titleEn'
       }, function (err, doc) {
         if (err) {
-          next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 5002, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
+          next(new ApplicationError('getNotificationsUser', req.user.id, 5002, err, 'To προφίλ χρήστη δεν υπάρχει', getClientIp(req), 500, false))
         } else {
           let notificationsPopulated = profile.notifications
           database.AnnouncementsCategories.populate(notificationsPopulated, {
@@ -38,13 +39,13 @@ function getNotificationsUser (req, res, next) {
             if (profilePopulated && !err) {
               res.status(200).json(profile)
             } else {
-              next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 5000, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
+              next(new ApplicationError('getNotificationsUser', req.user.id, 5000, null, 'To προφίλ χρήστη δεν υπάρχει', getClientIp(req), 500, false))
             }
           })
         }
       })
     } else {
-      next(new ApplicationErrorClass('getNotificationsUser', req.user.id, 5001, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
+      next(new ApplicationError('getNotificationsUser', req.user.id, 5001, null, 'To προφίλ χρήστη δεν υπάρχει', getClientIp(req), 500, false))
     }
   })
 }
@@ -59,7 +60,7 @@ function readNotificationsUser (req, res, next) {
       profile.save()
       res.status(200).send()
     } else {
-      next(new ApplicationErrorClass('readNotificationsUser', req.user.id, 5011, null, 'To προφίλ χρήστη δεν υπάρχει', apiFunctions.getClientIp(req), 500, true))
+      next(new ApplicationError('readNotificationsUser', req.user.id, 5011, null, 'To προφίλ χρήστη δεν υπάρχει', getClientIp(req), 500))
     }
   })
 }

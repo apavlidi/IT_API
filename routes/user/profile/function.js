@@ -2,7 +2,7 @@
 
 const database = require('../../../configs/database')
 const ldap = require('ldapjs')
-const ApplicationErrorClass = require('./../../applicationErrorClass')
+const PromiseError = require('../../promiseErrorClass')
 const config = require('../../../configs/config')
 const ldapFunction = require('./../../../configs/ldap')
 const ldapConfig = require('../../../configs/ldap')
@@ -20,12 +20,12 @@ function updatePhotoProfileIfNecessary (user, files) {
             'profilePhoto.data': new Buffer.from(profilePhoto.data).toString('base64')
           }, function (err, result) {
             if (err) {
-              reject(new ApplicationErrorClass('updatePublicProfile', null, 2011, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
+              reject(new PromiseError(2011, err))
             }
             resolve()
           })
         } else {
-          reject(new ApplicationErrorClass('updatePublicProfile', null, 2012, null, 'Ο τύπος αρχειου δν υποστηρίζεται', null, 500))
+          reject(new PromiseError(2012, null))
         }
       } else {
         resolve()
@@ -44,8 +44,8 @@ function updateSocialMediaIfNecessary (userId, reqBody) {
         updateExtraSocialMediaIfNecessary(userId, reqBody.socialMediaExtra).then(() => {
           resolve()
         })
-      }).catch(function (applicationError) {
-        reject(applicationError)
+      }).catch(function (promiseError) {
+        reject(promiseError)
       })
     })
 }
@@ -55,7 +55,7 @@ function updateCoreSocialMediaIfNecessary (ldapId, reqBody) {
     function (resolve, reject) {
       database.Profile.findOne({ldapId: ldapId}, function (err, profile) {
         if (err) {
-          reject(new ApplicationErrorClass('updatePublicProfile', null, 2017, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
+          reject(new PromiseError(2017, err))
         }
         if (_.has(reqBody, 'facebook')) {
           profile.socialMedia.facebook = reqBody['facebook']
@@ -74,7 +74,7 @@ function updateCoreSocialMediaIfNecessary (ldapId, reqBody) {
         }
         profile.save(function (err) {
           if (err) {
-            reject(new ApplicationErrorClass('updatePublicProfile', null, 2013, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
+            reject(new PromiseError(2013, err))
           } else {
             resolve()
           }
@@ -90,11 +90,11 @@ function updateExtraSocialMediaIfNecessary (ldapId, socialMediaExtras) {
       try {
         socialMediaExtra = JSON.parse(socialMediaExtras)
       } catch (err) {
-        reject(new ApplicationErrorClass('updatePublicProfile', null, 2014, err, 'Λάθος εισαγωγή δεδομένων', null, 500))
+        reject(new PromiseError(2014, err))
       }
       database.Profile.findOne({ldapId: ldapId}, function (err, profile) {
         if (err || !profile) {
-          reject(new ApplicationErrorClass('updatePublicProfile', null, 2015, err, 'Το προφιλ δεν υπάρχει', null, 500))
+          reject(new PromiseError(2015, err))
         }
 
         socialMediaExtra.forEach(function (value) {
@@ -108,7 +108,7 @@ function updateExtraSocialMediaIfNecessary (ldapId, socialMediaExtras) {
         })
         profile.save(function (err) {
           if (err) {
-            reject(new ApplicationErrorClass('updatePublicProfile', null, 2016, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση δεδομένων', null, 500))
+            reject(new PromiseError(2016, err))
           } else {
             resolve()
           }
@@ -147,7 +147,7 @@ function modifyAttributesOnLDAPbyProfile (ldapMain, dataProfile, userDN) {
           let change = new ldap.Change(tmpMod)
           ldapMain.modify(userDN, change, function (err) {
             if (err) {
-              reject(new ApplicationErrorClass('updatePublicProfile', null, 2018, err, 'Κάποιο σφάλμα δημιουργήθηκε κατα την αποθήκευση πεδίων.', null, 500))
+              reject(new PromiseError(2018, err))
             }
           })
         }

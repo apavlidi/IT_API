@@ -6,17 +6,19 @@ const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
 const functions = require('./functions')
 const apiFunctions = require('../../apiFunctions')
-const ApplicationErrorClass = require('../../applicationErrorClass')
+const getClientIp = require('./../../apiFunctions').getClientIp
+const ApplicationError = require('../../applicationErrorClass')
+const Log = require('../../logClass')
 const ldapFunctions = require('../../ldapFunctions')
 const validSchemas = require('./joi')
 const ldapConfig = require('../../../configs/ldap')
 
 let ldapMain = config.LDAP_CLIENT
 
-router.get('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), getUser)
-router.post('/', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.addUser), addUser)
-router.delete('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), deleteUser)
-router.patch('/:id', auth.checkAuth(['cn', 'id'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.updateUser), updateUser)
+router.get('/:id', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), getUser)
+router.post('/', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.addUser), addUser)
+router.delete('/:id', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), deleteUser)
+router.patch('/:id', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.updateUser), updateUser)
 
 function updateUser (req, res, next) {
   let attr = req.body.attr
@@ -34,14 +36,15 @@ function updateUser (req, res, next) {
     if (user) {
       return functions.modifyAttributeOnLdapbyAdmin(ldapMainBinded, attr, newValue, user)
     } else {
-      throw new ApplicationErrorClass('updateUser', req.user.id, 3343, null, 'Συνέβη κάποιο σφάλμα κατα την ενημέρωση χρήστη', apiFunctions.getClientIp(req), 500)
+      throw new ApplicationError('updateUser', req.user.id, 3343, null, 'Συνέβη κάποιο σφάλμα κατα την ενημέρωση χρήστη', getClientIp(req), 500)
     }
   }).then(() => {
+    let log = new Log('updateUser', req.user.id, 'Ο χρήστης ενημερώθηκε επιτυχώς', getClientIp(req), 200)
+    log.logAction('ldap')
     res.sendStatus(200)
-  }).catch(function (applicationError) {
-    applicationError.type = 'updateUser'
-    applicationError.user = req.user.id
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('updateUser', req.user.id, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατα την ενημέρωση χρήστη.', getClientIp(req), promiseErr.httpCode)
     next(applicationError)
   })
 }
@@ -61,12 +64,11 @@ function getUser (req, res, next) {
       }
       res.send(user)
     } else {
-      next(new ApplicationErrorClass('getUser', null, 3300, null, 'Συνεβη καποιο λάθος κατα την λήψη χρήστη', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationError('getUser', null, 3300, null, 'Συνεβη καποιο λάθος κατα την λήψη χρήστη', getClientIp(req), 500, false))
     }
-  }).catch(function (applicationError) {
-    applicationError.type = 'getUser'
-    applicationError.user = req.user.id
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('getUser', req.user.id, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατα την λήψη χρήστη.', getClientIp(req), promiseErr.httpCode, false)
     next(applicationError)
   })
 }
@@ -80,11 +82,12 @@ function addUser (req, res, next) {
   }).then(ldapBinded => {
     return functions.createUser(ldapBinded, newUser)
   }).then(() => {
+    let log = new Log('addUser', req.user.id, 'Ο χρήστης δημιουργήθηκε επιτυχώς', getClientIp(req), 200)
+    log.logAction('ldap')
     res.sendStatus(200)
-  }).catch(function (applicationError) {
-    applicationError.type = 'getUser'
-    applicationError.user = req.user.id
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('addUser', req.user.id, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατα την προσθήκη χρήστη.', getClientIp(req), promiseErr.httpCode)
     next(applicationError)
   })
 }
@@ -100,16 +103,17 @@ function deleteUser (req, res, next) {
     if (user) {
       return functions.removeUserFromLdap(ldapMainBinded, user.dn)
     } else {
-      throw new ApplicationErrorClass('deleteUser', null, 3331, null, 'Ο χρήστης δεν υπάρχει', null, 500)
+      throw new ApplicationError('deleteUser', req.user.id, 3331, null, 'Ο χρήστης δεν υπάρχει', getClientIp(req), 500)
     }
   }).then(() => {
     return functions.removeProfileUser(userID)
   }).then(() => {
+    let log = new Log('deleteUser', req.user.id, 'Ο χρήστης διαγράφτηκε επιτυχώς', getClientIp(req), 200)
+    log.logAction('ldap')
     res.sendStatus(200)
-  }).catch(function (applicationError) {
-    applicationError.type = 'deleteUser'
-    applicationError.user = req.user.id
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('deleteUser', req.user.id, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατα την διαγραφή χρήστη.', getClientIp(req), promiseErr.httpCode)
     next(applicationError)
   })
 }

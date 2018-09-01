@@ -3,8 +3,10 @@ const router = express.Router()
 const ldap = require('ldapjs')
 const crypto = require('crypto')
 
-const ApplicationErrorClass = require('./../../applicationErrorClass')
+const ApplicationError = require('./../../applicationErrorClass')
+const Log = require('./../../logClass')
 const apiFunctions = require('./../../apiFunctions')
+const getClientIp = require('./../../apiFunctions').getClientIp
 const config = require('../../../configs/config')
 const validSchemas = require('./joi')
 const functions = require('./functions')
@@ -40,27 +42,34 @@ function updatePassReg (req, res, next) {
   }).then(() => {
     return functions.deleteRegToken(token)
   }).then(() => {
+    let log = new Log('updatePassReg', null, 'O κωδικκός ενημερώθηκε επιτυχώς', getClientIp(req), 200)
+    log.logAction('user')
     res.sendStatus(200)
-  }).catch(function (applicationError) {
-    applicationError.type = 'updatePassReg'
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('updatePassReg', null, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατα την ενημέρωση κωδικού.', getClientIp(req), promiseErr.httpCode)
     next(applicationError)
   })
 }
 
+// TODO REFACTOR
 function updateMailReg (req, res, next) {
   let newEmail = req.body.newMail
   functionsUser.checkIfTokenExistsAndRetrieveUser(req.params.token, database.UserReg).then(userFromDatabase => {
     ldapFunctions.bindLdap(ldapMain).then(ldapMainBinded => {
       return functionsUser.changeMailLdap(ldapMainBinded, userFromDatabase.dn, newEmail)
     }).then(() => {
+      let log = new Log('updateMailReg', null, 'Το mail ενημερώθηκε επιτυχώς', getClientIp(req), 200)
+      log.logAction('user')
       res.sendStatus(200)
-    }).catch(function (err) {
-      next(new ApplicationErrorClass('updateMailReg', null, 2132, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
+    }).catch(function (promiseErr) {
+      let applicationError = new ApplicationError('updateMailReg', null, promiseErr.code,
+        promiseErr.error, 'Σφάλμα κατα την ενημέρωση email.', getClientIp(req), promiseErr.httpCode)
+      next(applicationError)
     })
-  }).catch(function (applicationError) {
-    applicationError.type = 'updateMailReg'
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('updateMailReg', null, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατα την ενημέρωση email.', getClientIp(req), promiseErr.httpCode)
     next(applicationError)
   })
 }
@@ -73,9 +82,9 @@ function getInfoFromLdap (req, res, next) {
     return ldapFunctions.searchUserOnLDAP(ldapMain, opts)
   }).then(userFromLdap => {
     res.status(200).send(userFromLdap)
-  }).catch(function (applicationError) {
-    applicationError.type = 'getInfoFromLdap'
-    applicationError.ip = apiFunctions.getClientIp(req)
+  }).catch(function (promiseErr) {
+    let applicationError = new ApplicationError('getInfoFromLdap', null, promiseErr.code,
+      promiseErr.error, 'Σφάλμα κατα την λήψη στοιχείων.', getClientIp(req), promiseErr.httpCode, false)
     next(applicationError)
   })
 }
@@ -91,14 +100,14 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
 
   ldapTei.search(config.LDAP_TEI.baseUserDN, opts, function (err, results) {
     if (err) {
-      next(new ApplicationErrorClass('pauth', null, 2111, err, 'Παρακαλώ δοκιμάστε αργότερα', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationError('checkPithiaUserAndCreateEntryDB', null, 2111, err, 'Παρακαλώ δοκιμάστε αργότερα', getClientIp(req), 500, false))
     } else {
       let user = {}
       results.on('searchEntry', function (entry) {
         user = entry.object
       })
       results.on('error', function (err) {
-        next(new ApplicationErrorClass(null, null, 2112, err, 'Παρακαλώ δοκιμάστε αργότερα', null, 500))
+        next(new ApplicationError('checkPithiaUserAndCreateEntryDB', null, 2112, err, 'Παρακαλώ δοκιμάστε αργότερα', getClientIp(req), 500, false))
       })
       results.on('end', function () {
         functions.validateUserAndPassOnPithia(ldapTei, user, password).then(() => {
@@ -113,11 +122,13 @@ function checkPithiaUserAndCreateEntryDB (req, res, next) {
             scope: userFromLdap.eduPersonScopedAffiliation
           })
           newUser.save(function () {
+            let log = new Log('checkPithiaUserAndCreateEntryDB', null, 'Τα στοιχεία ηταν επιτυχή.', getClientIp(req), 200)
+            log.logAction('user')
             res.status(200).send({token: hash})
           })
-        }).catch(function (applicationError) {
-          applicationError.type = 'checkPithiaUserAndCreateEntryDB'
-          applicationError.ip = apiFunctions.getClientIp(req)
+        }).catch(function (promiseErr) {
+          let applicationError = new ApplicationError('checkPithiaUserAndCreateEntryDB', null, promiseErr.code,
+            promiseErr.error, 'Σφάλμα κατα την λήψη δεδομένων.', getClientIp(req), promiseErr.httpCode)
           next(applicationError)
         })
       })
@@ -134,11 +145,13 @@ function checkTokenUser (req, res, next) {
   let token = req.body.token
   database.UserRegMailToken.findOne({token: token, mail: mail}).exec(function (err, user) {
     if (err || !user) {
-      next(new ApplicationErrorClass('checkTokenUser', null, 2121, err, 'Λάθος Mail ή Token.', apiFunctions.getClientIp(req), 500))
+      next(new ApplicationError('checkTokenUser', null, 2121, err, 'Λάθος Mail ή Token.', getClientIp(req), 500, false))
     } else {
       let hash = crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
       let newUser = new database.UserReg({uid: user.uid, dn: user.dn, token: hash})
       newUser.save(function () {
+        let log = new Log('checkTokenUser', null, 'Το token είναι σωστό.', getClientIp(req), 200)
+        log.logAction('user')
         res.status(200).json({auth: true, uid: user.uid})
       })
     }

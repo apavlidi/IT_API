@@ -2,11 +2,11 @@ const jwt = require('jsonwebtoken')
 const fs = require('fs')
 const Promise = require('promise')
 const ldap = require('ldapjs')
+const logAuth = require('./../configs/log').auth
 const audience = {
   production: '59a99d5989ef64657780879c',
   development: '59a99d5989ef64657780879c'
 }
-
 const cert = fs.readFileSync('./public.pem') // get public key
 const config = require('./config')
 
@@ -25,13 +25,13 @@ function getUser (userID) {
 
       ldapClient.search(config.LDAP[process.env.NODE_ENV].baseUserDN, opts, function (err, results) {
         let user = {}
+        let errorCustom = new Error()
+        errorCustom.httpCode = 500
+        errorCustom.type = 'SearchUserError'
         if (err) {
-          reject(new Error({
-            type: 'SearchUserError',
-            code: 4004,
-            httpCode: 500,
-            text: 'Unexpected user search error, please try again later.'
-          }))
+          errorCustom.code = 4004
+          errorCustom.text = 'Access token has expired.'
+          reject(errorCustom)
         } else {
           results.on('searchEntry', function (entry) {
             let tmp = entry.object
@@ -39,12 +39,9 @@ function getUser (userID) {
             user = tmp
           })
           results.on('error', function () {
-            reject(new Error({
-              type: 'SearchUserError',
-              code: 4005,
-              httpCode: 500,
-              text: 'Unexpected user search error, please try again later.'
-            }))
+            errorCustom.code = 4005
+            errorCustom.text = 'Unexpected user search error, please try again later.'
+            reject(errorCustom)
           })
           results.on('end', function (result) {
             if (!err) { resolve(user) }
@@ -72,7 +69,6 @@ function checkToken (token, scopeRequired, userScopeRequired) {
             reject(errorCustom)
           }
         } else {
-          // doulevei den exw idea ti kanei to every
           if (scopeRequired.every(val => tokenInfo.scope.includes(val))) {
             getUser(tokenInfo.userId)
               .then(function (user) {
@@ -84,14 +80,13 @@ function checkToken (token, scopeRequired, userScopeRequired) {
                   errorCustom.text = 'Permission denied. User cannot access this resource.'
                   reject(errorCustom)
                 }
-              }, function (err) {
+              }).catch(err => {
                 reject(err)
               })
           } else {
             errorCustom.type = 'TokenError'
             errorCustom.code = 4003
             errorCustom.text = 'Access token doesn\'t have the required scope to complete this action. Scope required : ' + scopeRequired
-            reject(errorCustom)
             reject(errorCustom)
           }
         }
@@ -115,8 +110,9 @@ function checkAuth (scopeRequired, userScopeRequired, ignoreToken) {
       .then(function (user) {
         req.user = user
         next()
-      }, function (err) {
+      }).catch(err => {
         if (ignoreToken) { next() } else {
+          logAuth.error(err.type + ' ' + err.code + ' ' + err.text)
           next(err)
         }
       })
