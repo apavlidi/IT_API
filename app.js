@@ -32,8 +32,7 @@ app.use(helmet()) // Default
 app.use(helmet.referrerPolicy({ policy: 'no-referrer-when-downgrade' }))
 app.use(helmet.contentSecurityPolicy({
   directives: {
-    defaultSrc: ["'none'"],
-    scriptSrc: ["'self'", '*.it.teithe.gr']
+    defaultSrc: ["'none'"]
   }
 }))
 app.use(logger('dev'))
