@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const compression = require('compression')
 const path = require('path')
 const fileUpload = require('express-fileupload')
+const helmet = require('helmet')
 const app = express()
 
 const announcements = require('./routes/bulletinBoard/announcements/index').router
@@ -26,6 +27,15 @@ const services = require('./routes/services/index').router
 const config = require('./configs/config')
 const apiFunctions = require('./routes/apiFunctions')
 
+// Μπαίνει ψηλά το helmet ώστε να γίνεται η προστασία απο την αρχή
+app.use(helmet()) // Default
+app.use(helmet.referrerPolicy({ policy: 'no-referrer-when-downgrade' }))
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'none'"],
+    scriptSrc: ["'self'", '*.it.teithe.gr']
+  }
+}))
 app.use(logger('dev'))
 app.use(bodyParser.json())
 app.use(compression()) // Κανει compress ολα τα responses.Διαβασα οτι παντα πρεπει να γινεται compress στο response
