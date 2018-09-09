@@ -27,6 +27,7 @@
     "feed": "^1.1.1",
     "file-type": "^7.6.0",
     "formidable": "^1.1.1",
+    "helmet": "^3.13.0",
     "is-utf8": "^0.2.1",
     "joi": "^13.6.0",
     "jsonwebtoken": "^8.2.0",
@@ -46,7 +47,7 @@
     "request": "^2.88.0",
     "socket.io": "^2.0.4",
     "text2png": "^1.1.1",
-    "vcards-js": "^2.8.0",
+    "vcards-js": "^2.9.0",
     "web-push": "3.3.2",
     "wordpress": "^1.4.1",
     "xss": "^0.3.7"
