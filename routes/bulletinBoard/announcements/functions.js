@@ -186,10 +186,6 @@ function createFileEntries (files, announcementId) {
 function checkIfEntryExists (entryId, collection) {
   return new Promise(
     function (resolve, reject) {
-      database.Announcements.find({}, function (err, doc) {
-        console.log(doc)
-      })
-
       collection.findOne({_id: entryId}, function (err, doc) {
         if (err || !doc) {
           reject(new PromiseError(1023, err))
