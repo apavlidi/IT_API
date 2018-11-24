@@ -73,3 +73,10 @@ Read our [contributing guide](https://github.com/apavlidi/IT_API/wiki/How-to-con
 
 To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/apavlidi/IT_API/issues) that contain bugs or enhancement with relatively  limited scope. This is a great place to get started.
 
+
+### Feedback
+
+Suggestions/improvements welcome!
+
+
+
