@@ -101,7 +101,7 @@ app.use(function (err, req, res, next) {
       error: {
         message: err.text,
         type: err.type,
-        code: err.httpCode
+        code: err.code
       }
     })
   } else if (err.code === '9000') {
