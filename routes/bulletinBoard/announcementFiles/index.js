@@ -19,13 +19,7 @@ router.delete('/:id', auth.checkAuth(['edit_announcements'], config.PERMISSIONS.
 
 function getFile (req, res, next) {
     filesFunc.getFile(req.params.id, req.user).then(file => {
-        let name = encodeURIComponent(file.name)
-        res.writeHead(200, {
-        'Content-Length': Buffer.byteLength(file.data),
-        'Content-Type': file.contentType,
-        'Content-Disposition': 'attachment;filename*=UTF-8\'\'' + name
-    })
-    res.end(file.data) // the second parameter is cashed to the browser
+        res.status(200).json(file)
 }).catch(function (promiseErr) {
         let applicationError = new ApplicationError('getFile', null, promiseErr.code,
             promiseErr.error, 'Σφάλμα κατά την εμφάνιση αρχείου.', getClientIp(req), promiseErr.httpCode, false)
@@ -35,7 +29,13 @@ function getFile (req, res, next) {
 
 function downloadFile (req, res, next) {
   filesFunc.getFile(req.params.id, req.user).then(file => {
-      res.status(200).json(file)
+      let name = encodeURIComponent(file.name)
+      res.writeHead(200, {
+      'Content-Length': Buffer.byteLength(file.data),
+      'Content-Type': file.contentType,
+      'Content-Disposition': 'attachment;filename*=UTF-8\'\'' + name
+  })
+    res.end(file.data) // the second parameter is cashed to the browser
 }).catch(function (promiseErr) {
     let applicationError = new ApplicationError('downloadFile', null, promiseErr.code,
       promiseErr.error, 'Σφάλμα κατά την λήψη αρχείου.', getClientIp(req), promiseErr.httpCode, false)
