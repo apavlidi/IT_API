@@ -8,7 +8,7 @@ const PERMITTED_FIELDS_TO_MODIFY_IN_ADMIN = ['cn', 'cn;lang-el', 'gidNumber', 'h
   'telephoneNumber', 'title', 'title;lang-el', 'displayName;lang-el',
   'displayName', 'telephoneNumber', 'description', 'description;lang-el', 'eduPersonEntitlement']
 
-const DEFAULT_PASSWORD = '{CRYPT}TSMywqBza/y3A)'
+const DEFAULT_PASSWORD = '-'
 
 // elot translate
 function translate (text) {
