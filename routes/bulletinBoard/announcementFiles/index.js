@@ -11,21 +11,32 @@ const Log = require('../../logClass')
 const auth = require('../../../configs/auth')
 const config = require('../../../configs/config')
 
-router.get('/:id', auth.checkAuth(['announcements'], config.PERMISSIONS.student, true), downloadFile)
+router.get('/:id', auth.checkAuth(['announcements'], config.PERMISSIONS.student, true), getFile)
+router.get('/download/:id', auth.checkAuth(['announcements'], config.PERMISSIONS.student, true), downloadFile)
 router.get('/:announcementId/downloadAll', auth.checkAuth(['announcements'], config.PERMISSIONS.student, true), downloadFiles)
 router.get('/:id/view', auth.checkAuth(['announcements'], config.PERMISSIONS.student, true), viewFile)
 router.delete('/:id', auth.checkAuth(['edit_announcements'], config.PERMISSIONS.professor), deleteFile)
 
-function downloadFile (req, res, next) {
-  filesFunc.getFile(req.params.id, req.user).then(file => {
-    let name = encodeURIComponent(file.name)
-    res.writeHead(200, {
-      'Content-Length': Buffer.byteLength(file.data),
-      'Content-Type': file.contentType,
-      'Content-Disposition': 'attachment;filename*=UTF-8\'\'' + name
+function getFile (req, res, next) {
+    filesFunc.getFile(req.params.id, req.user).then(file => {
+        let name = encodeURIComponent(file.name)
+        res.writeHead(200, {
+        'Content-Length': Buffer.byteLength(file.data),
+        'Content-Type': file.contentType,
+        'Content-Disposition': 'attachment;filename*=UTF-8\'\'' + name
     })
     res.end(file.data) // the second parameter is cashed to the browser
-  }).catch(function (promiseErr) {
+}).catch(function (promiseErr) {
+        let applicationError = new ApplicationError('getFile', null, promiseErr.code,
+            promiseErr.error, 'Σφάλμα κατά την εμφάνιση αρχείου.', getClientIp(req), promiseErr.httpCode, false)
+        next(applicationError)
+    })
+}
+
+function downloadFile (req, res, next) {
+  filesFunc.getFile(req.params.id, req.user).then(file => {
+      res.status(200).json(file)
+}).catch(function (promiseErr) {
     let applicationError = new ApplicationError('downloadFile', null, promiseErr.code,
       promiseErr.error, 'Σφάλμα κατά την λήψη αρχείου.', getClientIp(req), promiseErr.httpCode, false)
     next(applicationError)
