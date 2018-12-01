@@ -52,7 +52,8 @@ function checkToken (token, scopeRequired, userScopeRequired) {
   return new Promise(
     function (resolve, reject) {
       let errorCustom = new Error()
-      errorCustom.httpCode = 400
+      // Send HTTP status code '401 Unauthorized' in case the token has expired
+      errorCustom.httpCode = 401
       jwt.verify(token, cert, {}, function (err, tokenInfo) {
         if (err) {
           if (err.name === 'TokenExpiredError') {
@@ -63,7 +64,7 @@ function checkToken (token, scopeRequired, userScopeRequired) {
           } else {
             errorCustom.type = 'TokenInvalidError'
             errorCustom.code = 4002
-            errorCustom.text = 'An active access token required to complete this action.'
+            errorCustom.text = 'An active access token is required to complete this action.'
             reject(errorCustom)
           }
         } else {
