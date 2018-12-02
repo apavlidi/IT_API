@@ -35,7 +35,7 @@ IT_API is an API that integrates with the Internet services of the department of
  * You have to clone the project first.  <br/>
                 `$ git clone https://github.com/apavlidi/IT_API.git`
 
- * Go to the projecet's folder and run the following command <br/>
+ * Go to the project's folder and run the following command <br/>
           `$ npm install`
 
  * Next run:  <br/>
