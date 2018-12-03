@@ -26,7 +26,7 @@ IT_API is an API that integrates with the Internet services of the department of
           `$ npm install`
 
  * Then run:  <br/>
-`$ set NODE_ENV=development & LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 & LDAP_USER={USER} & LDAP_PASSWORD={PASSWORD} MONGO_URL=mongodb://{USER}:{PASSSWORD}@{SERVER-IP}/myappdev?authSource=admin`
+`$ set NODE_ENV=development & set LDAP_HOST=ldap://{LDAP-SERVER-IP}:389 & set LDAP_USER={USER} & set LDAP_PASSWORD={PASSWORD} & set MONGO_URL=mongodb://{USER}:{PASSSWORD}@{SERVER-IP}/myappdev?authSource=admin`
 
  
 
