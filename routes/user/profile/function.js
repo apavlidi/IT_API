@@ -83,37 +83,45 @@ function updateCoreSocialMediaIfNecessary (ldapId, reqBody) {
     })
 }
 
-function updateExtraSocialMediaIfNecessary (ldapId, socialMediaExtras) {
+function updateExtraSocialMediaIfNecessary(ldapId, socialMediaExtras) {
   return new Promise(
     function (resolve, reject) {
       let socialMediaExtra
       try {
         socialMediaExtra = JSON.parse(socialMediaExtras)
+        
+        // Check if socialMediaExtra has been initialized to a value (other than null)
+        if (socialMediaExtra) {
+          // Find user from the database
+          database.Profile.findOne({ ldapId: ldapId }, function (err, profile) {
+            if (err || !profile) {
+              reject(new PromiseError(2015, err))
+            }
+
+            // Iterate over the social media extras
+            socialMediaExtra.forEach(function (value) {
+              if (value.name && value.url) {
+                if (extraSocialMediaExistsInProfile(profile, value)) {
+                  findSocialMediaPosAndUpdate(profile, value)
+                } else {
+                  profile.socialMedia.socialMediaExtra.push(value)
+                }
+              }
+            })
+
+            // Save the user profile object, in other words update the profile in the database
+            profile.save(function (err) {
+              if (err) {
+                reject(new PromiseError(2016, err))
+              } else {
+                resolve()
+              }
+            })
+          })
+        }
       } catch (err) {
         reject(new PromiseError(2014, err))
       }
-      database.Profile.findOne({ldapId: ldapId}, function (err, profile) {
-        if (err || !profile) {
-          reject(new PromiseError(2015, err))
-        }
-
-        socialMediaExtra.forEach(function (value) {
-          if (value.name && value.url) {
-            if (extraSocialMediaExistsInProfile(profile, value)) {
-              findSocialMediaPosAndUpdate(profile, value)
-            } else {
-              profile.socialMedia.socialMediaExtra.push(value)
-            }
-          }
-        })
-        profile.save(function (err) {
-          if (err) {
-            reject(new PromiseError(2016, err))
-          } else {
-            resolve()
-          }
-        })
-      })
     })
 }
 
