@@ -14,7 +14,6 @@ function updatePhotoProfileIfNecessary (user, files) {
       if (files && user.eduPersonScopedAffiliation >= config.PERMISSIONS.professor) {
         let profilePhoto = files['profilePhoto']
         if (photoTypeIsValid(profilePhoto)) {
-          console.log('hello')
           database.Profile.findOneAndUpdate({ldapId: user.id}, {
             'profilePhoto.contentType': profilePhoto.mimetype,
             'profilePhoto.data': new Buffer.from(profilePhoto.data).toString('base64')
@@ -43,6 +42,8 @@ function updateSocialMediaIfNecessary (userId, reqBody) {
       updateCoreSocialMediaIfNecessary(userId, reqBody).then(() => {
         updateExtraSocialMediaIfNecessary(userId, reqBody.socialMediaExtra).then(() => {
           resolve()
+        }).catch(function (promiseError) {
+          reject(promiseError)
         })
       }).catch(function (promiseError) {
         reject(promiseError)
@@ -55,7 +56,7 @@ function updateCoreSocialMediaIfNecessary (ldapId, reqBody) {
     function (resolve, reject) {
       database.Profile.findOne({ldapId: ldapId}, function (err, profile) {
         if (err) {
-          reject(new PromiseError(2017, err))
+          return reject(new PromiseError(2017, err))
         }
         if (_.has(reqBody, 'facebook')) {
           profile.socialMedia.facebook = reqBody['facebook']
@@ -90,13 +91,12 @@ function updateExtraSocialMediaIfNecessary (ldapId, socialMediaExtras) {
       try {
         socialMediaExtra = JSON.parse(socialMediaExtras)
       } catch (err) {
-        reject(new PromiseError(2014, err))
+        return reject(new PromiseError(2014, err))
       }
       database.Profile.findOne({ldapId: ldapId}, function (err, profile) {
         if (err || !profile) {
           reject(new PromiseError(2015, err))
         }
-
         socialMediaExtra.forEach(function (value) {
           if (value.name && value.url) {
             if (extraSocialMediaExistsInProfile(profile, value)) {
