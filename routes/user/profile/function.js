@@ -40,11 +40,13 @@ function updateSocialMediaIfNecessary (userId, reqBody) {
   return new Promise(
     function (resolve, reject) {
       updateCoreSocialMediaIfNecessary(userId, reqBody).then(() => {
-        updateExtraSocialMediaIfNecessary(userId, reqBody.socialMediaExtra).then(() => {
+        if (reqBody.socialMediaExtra) {
+          return updateExtraSocialMediaIfNecessary(userId, reqBody.socialMediaExtra)
+        } else {
           resolve()
-        }).catch(function (promiseError) {
-          reject(promiseError)
-        })
+        }
+      }).then(() => {
+        resolve()
       }).catch(function (promiseError) {
         reject(promiseError)
       })
