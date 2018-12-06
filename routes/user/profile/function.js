@@ -40,11 +40,13 @@ function updateSocialMediaIfNecessary (userId, reqBody) {
   return new Promise(
     function (resolve, reject) {
       updateCoreSocialMediaIfNecessary(userId, reqBody).then(() => {
-        updateExtraSocialMediaIfNecessary(userId, reqBody.socialMediaExtra).then(() => {
+        if (reqBody.socialMediaExtra) {
+          return updateExtraSocialMediaIfNecessary(userId, reqBody.socialMediaExtra)
+        } else {
           resolve()
-        }).catch(function (promiseError) {
-          reject(promiseError)
-        })
+        }
+      }).then(() => {
+        resolve()
       }).catch(function (promiseError) {
         reject(promiseError)
       })
@@ -90,30 +92,34 @@ function updateExtraSocialMediaIfNecessary (ldapId, socialMediaExtras) {
       let socialMediaExtra
       try {
         socialMediaExtra = JSON.parse(socialMediaExtras)
+        if (socialMediaExtra) {
+          database.Profile.findOne({ldapId: ldapId}, function (err, profile) {
+            if (err || !profile) {
+              reject(new PromiseError(2015, err))
+            }
+            socialMediaExtra.forEach(function (value) {
+              if (value.name && value.url) {
+                if (extraSocialMediaExistsInProfile(profile, value)) {
+                  findSocialMediaPosAndUpdate(profile, value)
+                } else {
+                  profile.socialMedia.socialMediaExtra.push(value)
+                }
+              }
+            })
+            profile.save(function (err) {
+              if (err) {
+                reject(new PromiseError(2016, err))
+              } else {
+                resolve()
+              }
+            })
+          })
+        } else {
+          resolve()
+        }
       } catch (err) {
         return reject(new PromiseError(2014, err))
       }
-      database.Profile.findOne({ldapId: ldapId}, function (err, profile) {
-        if (err || !profile) {
-          reject(new PromiseError(2015, err))
-        }
-        socialMediaExtra.forEach(function (value) {
-          if (value.name && value.url) {
-            if (extraSocialMediaExistsInProfile(profile, value)) {
-              findSocialMediaPosAndUpdate(profile, value)
-            } else {
-              profile.socialMedia.socialMediaExtra.push(value)
-            }
-          }
-        })
-        profile.save(function (err) {
-          if (err) {
-            reject(new PromiseError(2016, err))
-          } else {
-            resolve()
-          }
-        })
-      })
     })
 }
 
