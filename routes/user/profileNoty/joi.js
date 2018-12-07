@@ -7,6 +7,10 @@ const enableNotySub = Joi.object().keys({
   endpoint: Joi.string().required()
 })
 
+const addNotyAndroidSub = Joi.object().keys({
+  deviceToken: Joi.string().required()
+})
+
 const disableNotySub = Joi.object().keys({
   browserFp: Joi.string().allow(),
   all: Joi.string().valid('true').allow()
@@ -14,5 +18,6 @@ const disableNotySub = Joi.object().keys({
 
 module.exports = {
   enableNotySub,
-  disableNotySub
+  disableNotySub,
+  addNotyAndroidSub
 }

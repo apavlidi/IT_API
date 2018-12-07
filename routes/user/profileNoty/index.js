@@ -12,8 +12,12 @@ const Log = require('./../../logClass')
 const validSchemas = require('./joi')
 
 router.get('/', auth.checkAuth(['noty'], config.PERMISSIONS.student), getNotySub)
-router.patch('/', auth.checkAuth(['edit_noty'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.enableNotySub), enableNotySub)
-router.delete('/', auth.checkAuth(['edit_noty'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.disableNotySub), disableNotySub)
+router.patch('/', auth.checkAuth(['noty'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.enableNotySub), enableNotySub)
+router.delete('/', auth.checkAuth(['noty'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.disableNotySub), disableNotySub)
+
+//returns all users device token
+router.get('/android', auth.checkAuth(['noty'], config.PERMISSIONS.student), getNotyAndroidSub)
+router.patch('/android', auth.checkAuth(['noty'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.addNotyAndroidSub), addNotyAndroidSub)
 
 // TODO REFACTOR
 function disableNotySub (req, res, next) {
@@ -74,6 +78,28 @@ function enableNotySub (req, res, next) {
   })
 }
 
+function addNotyAndroidSub (req, res, next) {
+  database.Profile.findOne({ldapId: req.user.id}).exec(function (err, profile) {
+    if (!err && profile) {
+      functions.checkIfSubscribedAlreadyAndroid(req.user.id, req.body.deviceToken).then(result => {
+        if (!result.isSubscribed) {
+          return functions.createNewNotyAndroidSubscription(profile, req.body) ///herererr
+        }
+      }).then(() => {
+        let log = new Log('enableNotySub', req.user.id, 'Η εγγραφή ενημερώθηκε επιτυχώς', getClientIp(req), 200)
+        log.logAction('user')
+        res.sendStatus(200)
+      }).catch(function (promiseErr) {
+        let applicationError = new ApplicationError('enableAndroidNotySub', req.user.id, promiseErr.code,
+          promiseErr.error, 'Σφάλμα κατα την ενημέρωση εγγραφής.', getClientIp(req), promiseErr.httpCode)
+        next(applicationError)
+      })
+    } else {
+      next(new ApplicationError('updateAndroidNotySub', req.user.id, 2053, err, 'Το προφιλ χρήστη δεν υπάρχει', getClientIp(req), 500))
+    }
+  })
+}
+
 function getNotySub (req, res) {
   let fp = req.query.fp
   database.Profile.findOne({
@@ -85,6 +111,18 @@ function getNotySub (req, res) {
       res.status(200).json({notySub: profile.notySub[notySubPos]})
     } else {
       res.status(200).json({notySub: null})
+    }
+  })
+}
+
+function getNotyAndroidSub (req, res) {
+  database.Profile.findOne({
+    ldapId: req.user.id
+  }).select('notyAndroidSub -_id').exec(function (err, profile) {
+    if (profile && !err) {
+      res.status(200).json({notyAndroidSub: profile.notyAndroidSub})
+    } else {
+      res.status(200).json({notyAndroidSub: null})
     }
   })
 }

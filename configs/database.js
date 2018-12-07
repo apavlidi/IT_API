@@ -56,6 +56,10 @@ const profileSchema = new Schema({
       auth: {type: String},
       p256dh: {type: String},
       enabled: {type: Boolean}
+    }],
+  notyAndroidSub:
+    [{
+      deviceToken: {type: String}
     }]
 })
 

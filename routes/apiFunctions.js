@@ -85,6 +85,7 @@ function validateInput (objectToBeValidateStr, schema) {
       if (!err) {
         next()
       } else {
+        console.log(err)
         next(new ApplicationErrorClass(null, null, 199, err, 'Σφάλμα κατα την εισαγωγή δεδομένων.', null, 500))
       }
     })
