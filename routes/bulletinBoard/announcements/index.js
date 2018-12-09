@@ -149,7 +149,7 @@ function insertNewAnnouncement (req, res, next) {
   }).then(newNotification => {
     return notificationsFunc.sendNotifications(announcementEntry, newNotification.id, publisher.id)
   }).then(newNotification => {
-    // announcementsFunc.postToTeithe(announcementEntry, 'create')
+    announcementsFunc.postToTeithe(announcementEntry, 'create')
     announcementsFunc.sendEmails(announcementEntry)
     req.app.io.emit('new announcement', newNotification)
     let log = new Log('insertNewAnnouncement', req.user.id, 'Η ανακοίνωση ανέβηκε επιτυχώς', getClientIp(req), 201)
