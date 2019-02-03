@@ -20,7 +20,7 @@ let ldapMain = config.LDAP_CLIENT
 
 router.get('/', auth.checkAuth(['ldap'], config.PERMISSIONS.professor), getAllUsers)
 router.post('/sendmail', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), sendActivationMail)
-router.post('/import', auth.checkAuth(['ldap'], config.PERMISSIONS.student), apiFunctions.validateInput('body', validSchemas.importUpdateUsers), importUpdateUsers)
+router.post('/import', auth.checkAuth(['ldap'], config.PERMISSIONS.professorWithMaxAccess), apiFunctions.validateInput('body', validSchemas.importUpdateUsers), importUpdateUsers)
 
 function getAllUsers (req, res, next) {
   functionsUser.ldapSearchQueryFormat(req.query, false)
