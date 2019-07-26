@@ -71,7 +71,7 @@ function changeMailLdap (ldapBinded, userDn, newMail) {
     })
 }
 
-function appendDatabaseInfo (users, query) {
+function appendDatabaseInfo (users, query, req) {
   return new Promise(
     function (resolve, reject) {
       let calls = []
@@ -82,7 +82,7 @@ function appendDatabaseInfo (users, query) {
               reject(new PromiseError(2001, err))
             } else {
               if (profile) {
-                buildDataForUserFromDB(user, profile, query)
+                buildDataForUserFromDB(user, profile, query, req)
               }
               callback(null)
             }
@@ -100,14 +100,15 @@ function appendDatabaseInfo (users, query) {
     })
 }
 
-function buildDataForUserFromDB (user, profile, query) {
+function buildDataForUserFromDB (user, profile, query, req) {
   if (query.fields) {
     if (_.includes(query.fields, 'socialMedia')) {
       user['socialMedia'] = profile.socialMedia
     }
     if (_.includes(query.fields, 'profilePhoto')) {
       if (profile.profilePhoto && profile.profilePhoto.data) {
-        user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer.from(profile.profilePhoto.data, 'base64').toString('binary')
+        // user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer.from(profile.profilePhoto.data, 'base64').toString('binary')
+        user['profilePhoto'] = 'https://' + req.hostname + '/user/image/' + user.id
       } else {
         user['profilePhoto'] = ''
       }

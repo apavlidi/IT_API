@@ -24,7 +24,36 @@ router.post('/reset', apiFunctions.validateInput('body', validSchemas.resetPassw
 router.post('/reset/token', apiFunctions.validateInput('body', validSchemas.resetPasswordToken), resetPasswordToken)
 
 router.get('/vcard/:uid', getUserVCard)
+router.get('/image/:uid', getUserImage)
 router.get('/', getUsers)
+
+function getUserImage (req, res, next) {
+  let userUid = req.params.uid
+  database.Profile.findOne({ldapId: userUid}).select('profilePhoto').exec(function (err, profile) {
+    if (err) {
+      next(new ApplicationError('getUserImage', null, 2261, null, 'Κάτι πήγε στραβά.', getClientIp(req), 500, false))
+    } else {
+      if (profile) {
+        let base64 = profile.profilePhoto.data.toString()
+        let img = Buffer.alloc(base64.length, base64, 'base64')
+        console.log(img.length)
+        res.writeHead(200, {
+          'Content-Type': 'image/png',
+          'Content-Length': img.length
+        })
+        res.end(img)
+      } else {
+        next(new ApplicationError('getUserImage', null, 2262, null, 'Κάτι πήγε στραβά.', getClientIp(req), 500, false))
+      }
+    }
+  })
+  // res.set('Content-Type', 'text/vcard; name="user.vcf"')
+  // res.set('Content-Disposition', 'inline; filename="user.vcf"')
+  // res.send(vCard.getFormattedString())
+  // next(new ApplicationError('getUserVCard', null, 2241, null, 'Κάτι πήγε στραβά.', getClientIp(req), 500, false))
+  // let applicationError = new ApplicationError('getUserVCard', null, promiseErr.code, promiseErr.error, 'Σφάλμα κατα την λήψη vCard.', getClientIp(req), promiseErr.httpCode, false)
+  // next(applicationError)
+}
 
 function getUserVCard (req, res, next) {
   let userUid = req.params.uid
@@ -62,7 +91,7 @@ function getUsers (req, res, next) {
     .then(function (options) {
       return ldapFunctions.searchUsersOnLDAP(ldapMain, options)
     }).then(users => {
-      return functionsUser.appendDatabaseInfo(users, req.query)
+      return functionsUser.appendDatabaseInfo(users, req.query, req)
     }).then(users => {
       let usersSorted = functions.checkForSorting(users, req.query)
       res.status(200).json(usersSorted)
