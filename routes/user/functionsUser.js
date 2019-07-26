@@ -116,7 +116,8 @@ function buildDataForUserFromDB (user, profile, query, req) {
   } else {
     user['socialMedia'] = profile.socialMedia
     if (profile.profilePhoto && profile.profilePhoto.data) {
-      user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer.from(profile.profilePhoto.data, 'base64').toString('binary')
+      // user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer.from(profile.profilePhoto.data, 'base64').toString('binary')
+      user['profilePhoto'] = 'https://' + req.hostname + '/user/image/' + user.id
     } else {
       user['profilePhoto'] = ''
     }
