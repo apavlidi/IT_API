@@ -108,7 +108,7 @@ function buildDataForUserFromDB (user, profile, query, req) {
     if (_.includes(query.fields, 'profilePhoto')) {
       if (profile.profilePhoto && profile.profilePhoto.data) {
         // user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer.from(profile.profilePhoto.data, 'base64').toString('binary')
-        user['profilePhoto'] = 'https://' + req.hostname + '/user/image/' + user.id
+        user['profilePhoto'] = 'https://' + req.header('x-forwarded-server') + '/user/image/' + user.id
       } else {
         user['profilePhoto'] = ''
       }
@@ -117,7 +117,7 @@ function buildDataForUserFromDB (user, profile, query, req) {
     user['socialMedia'] = profile.socialMedia
     if (profile.profilePhoto && profile.profilePhoto.data) {
       // user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer.from(profile.profilePhoto.data, 'base64').toString('binary')
-      user['profilePhoto'] = 'https://' + req.hostname + '/user/image/' + user.id
+      user['profilePhoto'] = 'https://' + req.header('x-forwarded-server') + '/user/image/' + user.id
     } else {
       user['profilePhoto'] = ''
     }
