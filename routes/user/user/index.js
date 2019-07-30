@@ -94,6 +94,7 @@ function getUsers (req, res, next) {
       return functionsUser.appendDatabaseInfo(users, req.query, req)
     }).then(users => {
       let usersSorted = functions.checkForSorting(users, req.query)
+      res.header('X-Total-Count', usersSorted.length)
       res.status(200).json(usersSorted)
     }).catch(function (promiseErr) {
       let applicationError = new ApplicationError('getUsers', null, promiseErr.code,
