@@ -45,7 +45,7 @@ app.use(fileUpload())
 app.all('/*', apiFunctions.sanitizeInput, function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*')
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,PATCH,DELETE,OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token')
+  res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token,X-Total-Count')
   if (req.method === 'OPTIONS') {
     res.status(200).end()
   } else {
