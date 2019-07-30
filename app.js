@@ -47,6 +47,7 @@ app.all('/*', apiFunctions.sanitizeInput, function (req, res, next) {
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,PATCH,DELETE,OPTIONS')
   res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token,X-Total-Count')
   res.header('Access-Control-Expose-Headers', 'Accept,X-Access-Token,X-Total-Count')
+  res.header('X-Total-Count', '20')
   if (req.method === 'OPTIONS') {
     res.status(200).end()
   } else {
