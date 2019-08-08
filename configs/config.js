@@ -36,7 +36,7 @@ const MONGO = {
 }
 
 const WEB_BASE_URL = {
-  url: 'https://api.it.teithe.gr'
+  url: 'https://api.iee.ihu.gr'
 }
 
 const OWASP_CONFIG = {

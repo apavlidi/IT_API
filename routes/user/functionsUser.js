@@ -2,6 +2,7 @@
 
 const PromiseError = require('../promiseErrorClass')
 const database = require('../../configs/database')
+const config = require('../../configs/config')
 const crypt = require('crypt3/sync')
 const ldap = require('ldapjs')
 const async = require('async')
@@ -108,7 +109,7 @@ function buildDataForUserFromDB (user, profile, query, req) {
     if (_.includes(query.fields, 'profilePhoto')) {
       if (profile.profilePhoto && profile.profilePhoto.data) {
         // user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer.from(profile.profilePhoto.data, 'base64').toString('binary')
-        user['profilePhoto'] = 'https://api.iee.ihu.gr/user/image/' + user.id
+        user['profilePhoto'] = config.WEB_BASE_URL.url+'/user/image/' + user.id
       } else {
         user['profilePhoto'] = ''
       }
@@ -117,7 +118,7 @@ function buildDataForUserFromDB (user, profile, query, req) {
     user['socialMedia'] = profile.socialMedia
     if (profile.profilePhoto && profile.profilePhoto.data) {
       // user['profilePhoto'] = 'data:' + profile.profilePhoto.contentType + ';base64,' + new Buffer.from(profile.profilePhoto.data, 'base64').toString('binary')
-      user['profilePhoto'] = 'https://api.iee.ihu.gr/user/image/' + user.id
+      user['profilePhoto'] = config.WEB_BASE_URL.url+'/user/image/' + user.id
     } else {
       user['profilePhoto'] = ''
     }
