@@ -143,7 +143,7 @@ function ldapSearchQueryFormat (query, isPublic) {
       let formatedLimit
       let attributesPermitted
       let searchAttr
-      isPublic ? attributesPermitted = ['id', 'displayName', 'displayName;lang-el', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI', 'eduPersonEntitlement', 'street', 'knowledgeInformation'] : attributesPermitted = []
+      isPublic ? attributesPermitted = ['id', 'displayName', 'displayName;lang-el', 'description', 'secondarymail', 'eduPersonAffiliation', 'title', 'telephoneNumber', 'labeledURI', 'eduPersonEntitlement', 'street', 'knowledgeInformation', 'personalTitle'] : attributesPermitted = []
       isPublic ? searchAttr = [filter.attribute('eduPersonAffiliation').contains('staff')] : searchAttr = []
 
       attributesPermitted = functionsUser.buildFieldsQueryLdap(attributesPermitted, query)
