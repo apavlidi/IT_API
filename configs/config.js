@@ -48,7 +48,7 @@ const OWASP_CONFIG = {
 }
 
 const WORDPRESS_CREDENTIALS = {
-  url: 'https://www.it.teithe.gr',
+  url: 'https://www.iee.ihu.gr',
   username: 'fakeusername',
   password: 'fakepassword',
   rejectUnauthorized: false
