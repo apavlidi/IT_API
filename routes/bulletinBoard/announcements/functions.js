@@ -242,9 +242,8 @@ function postToTeithe (announcement, action) {
           announcement.publisher.name).then(function (wordpressContent) {
           if (action === 'create') {
             clientWordpress.newPost({
-            //  title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
-             //   announcement.titleEn + '<!--:-->',
-              title: announcement.title,
+              title: (WORDPRESS_CREDENTIALS.is_multilingual)?('<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
+                announcement.titleEn + '<!--:-->'):announcement.title,
               content: wordpressContent,
               status: 'publish',
               terms: {
@@ -259,9 +258,8 @@ function postToTeithe (announcement, action) {
             })
           } else if (action === 'edit') {
             clientWordpress.editPost(announcement.wordpressId, {
-            //  title: '<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
-             //    announcement.titleEn + '<!--:-->',
-              title: announcement.title, 
+               title: (WORDPRESS_CREDENTIALS.is_multilingual)?('<!--:el-->' + announcement.title + '<!--:--><!--:en-->' +
+                announcement.titleEn + '<!--:-->'):announcement.title,
               content: wordpressContent,
               terms: {
                 'category': [category.wid]
@@ -436,12 +434,12 @@ function generateWordpressContent (
       let isoDate = new Date(date)
       let dateModified = formatDate(isoDate, true)
 
-      let htmlContentEl = '<!--:el-->' + text + '<br/>' + attachmentsHtml +
+      let htmlContentEl = '<!--:el-->' + text + '<br/><br/>' + attachmentsHtml +
         dateModified + ' - από ' + publisher + '<!--:-->'
-     // let htmlContentEn = '<!--:en-->' + textEn + '<br/>' + attachmentsHtml +
-      //  dateModified + ' - από ' + publisher + '<!--:-->'
-      let htmlContentEn = ''
-      resolve(htmlContentEl + htmlContentEn)
+      let htmlContentEn = '<!--:en-->' + textEn + '<br/><br/>' + attachmentsHtml +
+        dateModified + ' - από ' + publisher + '<!--:-->'
+      
+      resolve(WORDPRESS_CREDENTIALS.is_multilingual?(htmlContentEl + htmlContentEn):htmlContentEl)
     })
   })
 }
