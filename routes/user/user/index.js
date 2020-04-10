@@ -33,7 +33,7 @@ function getUserImage (req, res, next) {
     if (err) {
       next(new ApplicationError('getUserImage', null, 2261, null, 'Κάτι πήγε στραβά.', getClientIp(req), 500, false))
     } else {
-      if (profile) {
+      if (profile && profile.profilePhoto && profile.profilePhoto.data) {
         let base64 = profile.profilePhoto.data.toString()
         let img = Buffer.alloc(base64.length, base64, 'base64')
         console.log(img.length)
