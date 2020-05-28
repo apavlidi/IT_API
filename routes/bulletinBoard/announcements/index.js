@@ -37,20 +37,26 @@ function getAnnouncements (req, res, next) {
 function getAnnouncement (req, res, next) {
   let announcementsId = req.params.id
   database.Announcements.findOne({_id: announcementsId}).populate('_about', 'public').select(req.query.fields).exec(function (err, announcement) {
-    if (err || !announcement) {
+    if (err) {
       next(new ApplicationError('getAnnouncement', null, 1021, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων.', getClientIp(req), 500, false))
     } else {
-      announcementsFunc.checkIfEntryExists(announcement._about, database.AnnouncementsCategories).then(() => {
-        if (req.user || announcement._about.public) {
-          announcement._about.public = undefined // remove the public property
-          if (req.query.fields && req.query.fields.indexOf('_about') === -1) {
-            announcement._about = undefined // remove the _about property if its not on query
+      if (announcement){
+        announcementsFunc.checkIfEntryExists(announcement._about, database.AnnouncementsCategories).then(() => {
+          if (req.user || announcement._about.public) {
+            announcement._about.public = undefined // remove the public property
+            if (req.query.fields && req.query.fields.indexOf('_about') === -1) {
+              announcement._about = undefined // remove the _about property if its not on query
+            }
+            res.status(200).json(announcement)
+          } else {
+            next(new ApplicationError('getAnnouncement', null, 1022, err, 'Δεν έχεις δικάιωμα για αυτήν την ενέργεια!', getClientIp(req), 401, false))
           }
-          res.status(200).json(announcement)
-        } else {
-          next(new ApplicationError('getAnnouncement', null, 1022, err, 'Δεν έχεις δικάιωμα για αυτήν την ενέργεια!', getClientIp(req), 401, false))
-        }
-      }).catch(next)
+        }).catch(next)
+      }
+      else {
+        next(new ApplicationError('getAnnouncement', null, 1023, {}, 'Η ανακοίνωση δεν βρέθηκε.', getClientIp(req), 404, false))
+      }
+  
     }
   })
 }
