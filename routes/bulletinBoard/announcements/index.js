@@ -106,7 +106,29 @@ function getAnnouncementsPublic (req, res, next) {
           if (err) {
             next(new ApplicationError('getAnnouncementsPublic', null, 1012, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
           } else {
-            res.status(200).json(announcements)
+            database.Announcements.count({ $and: [{ _about: { $in: publicCategories } }, req.query.filters] })
+              .select(req.query.fields).sort(req.query.sort)
+              .exec(function (err, totalResultCount) {
+                if (err) {
+                  next(new ApplicationError('getAnnouncementsPublic', null, 1013, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
+                } else {
+                  let resultCount = totalResultCount
+                  if (parseInt(req.query.limit)) {
+                    resultCount = parseInt(req.query.limit)
+                  }
+                  let totalPages = 1
+                  if (parseInt(req.query.limit)) {
+                    totalPages = Math.ceil(totalResultCount / parseInt(req.query.limit))
+                  }
+                  res.status(200).json({
+                    'results': announcements,
+                    'resultCount': resultCount,
+                    'page': parseInt(req.query.page),
+                    'totalResultCount': totalResultCount,
+                    'totalPages': totalPages
+                  })
+                }
+              })
           }
         })
     }
