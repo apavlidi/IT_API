@@ -29,7 +29,7 @@ function getAnnouncements (req, res, next) {
     if (err || !announcements) {
       next(new ApplicationError('getAnnouncements', null, 1000, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων.', getClientIp(req), 500, false))
     } else {
-      database.Announcements.count(req.query.filters).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, totalResultCount) {
+      database.Announcements.count(req.query.filters).select(req.query.fields).sort(req.query.sort).exec(function (err, totalResultCount) {
         if (err) {
           next(new ApplicationError('getAnnouncements', null, 1001, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
         } else {
