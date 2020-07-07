@@ -29,7 +29,27 @@ function getAnnouncements (req, res, next) {
     if (err || !announcements) {
       next(new ApplicationError('getAnnouncements', null, 1000, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων.', getClientIp(req), 500, false))
     } else {
-      res.status(200).json(announcements)
+      database.Announcements.count(req.query.filters).select(req.query.fields).sort(req.query.sort).skip(parseInt(req.query.page) * parseInt(req.query.limit)).limit(parseInt(req.query.limit)).exec(function (err, totalResultCount) {
+        if (err) {
+          next(new ApplicationError('getAnnouncements', null, 1001, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
+        } else {
+          let resultCount = totalResultCount
+          if (parseInt(req.query.limit)) {
+            resultCount = parseInt(req.query.limit)
+          }
+          let totalPages = 1
+          if (parseInt(req.query.limit)) {
+            totalPages = Math.ceil(totalResultCount / parseInt(req.query.limit))
+          }
+          res.status(200).json({
+            'results': announcements,
+            'resultCount': resultCount,
+            'page': parseInt(req.query.page),
+            'totalResultCount': totalResultCount,
+            'totalPages': totalPages
+          })
+        }
+      })
     }
   })
 }
@@ -40,7 +60,7 @@ function getAnnouncement (req, res, next) {
     if (err) {
       next(new ApplicationError('getAnnouncement', null, 1021, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων.', getClientIp(req), 500, false))
     } else {
-      if (announcement){
+      if (announcement) {
         announcementsFunc.checkIfEntryExists(announcement._about, database.AnnouncementsCategories).then(() => {
           if (req.user || announcement._about.public) {
             announcement._about.public = undefined // remove the public property
@@ -52,11 +72,9 @@ function getAnnouncement (req, res, next) {
             next(new ApplicationError('getAnnouncement', null, 1022, err, 'Δεν έχεις δικάιωμα για αυτήν την ενέργεια!', getClientIp(req), 401, false))
           }
         }).catch(next)
-      }
-      else {
+      } else {
         next(new ApplicationError('getAnnouncement', null, 1023, {}, 'Η ανακοίνωση δεν βρέθηκε.', getClientIp(req), 404, false))
       }
-  
     }
   })
 }
