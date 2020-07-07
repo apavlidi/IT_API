@@ -33,11 +33,7 @@ function getAnnouncements (req, res, next) {
         if (err) {
           next(new ApplicationError('getAnnouncements', null, 1001, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
         } else {
-          const limit = parseInt(req.query.limit)
-          let resultCount = totalResultCount
-          if (limit && limit <= totalResultCount) {
-            resultCount = parseInt(req.query.limit)
-          }
+          let resultCount = announcements.length
           let totalPages = 1
           if (parseInt(req.query.limit)) {
             totalPages = Math.ceil(totalResultCount / parseInt(req.query.limit))
@@ -131,11 +127,7 @@ function getAnnouncementsPublic (req, res, next) {
                 if (err) {
                   next(new ApplicationError('getAnnouncementsPublic', null, 1013, err, 'Συνεβη καποιο λάθος κατα την λήψη ανακοινώσεων', getClientIp(req), 500, false))
                 } else {
-                  const limit = parseInt(req.query.limit)
-                  let resultCount = totalResultCount
-                  if (limit && limit <= totalResultCount) {
-                    resultCount = parseInt(req.query.limit)
-                  }
+                  let resultCount = announcements.length
                   let totalPages = 1
                   if (parseInt(req.query.limit)) {
                     totalPages = Math.ceil(totalResultCount / parseInt(req.query.limit))
