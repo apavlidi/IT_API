@@ -66,7 +66,8 @@ function appendPostsToFeed (feed, posts) {
     function (resolve, reject) {
       let calls = []
 
-      posts.forEach(function (announcement) {
+      // Δεν τσεκαρα αν δουλευει σωστά το reverse # asidirop //
+      posts.slice().reverse().forEach(function (announcement) {
         calls.push(function (callback) {
           feed.addItem({
             title: announcement.title,
