@@ -24,8 +24,8 @@ function sendNotification (notiesSub, announcementEntry, category) {
       webpush.sendNotification(pushSubscription, JSON.stringify({
         title: 'Νέα ανακοίνωση',
         body: 'Ο χρήστης ' + announcementEntry.publisher.name + ' πρόσθεσε μια νέα ανακοίνωση στην κατηγορία ' + category.name,
-        icon: 'https://login.it.teithe.gr/img/logoonly.png',
-        url: 'https://apps.it.teithe.gr/announcements/announcement/' + announcementEntry._id
+        icon: 'https://login.iee.ihu.gr/img/logoonly.png',
+        url: 'https://apps.iee.ihu.gr/announcements/announcement/' + announcementEntry._id
       }))
     }
   })
