@@ -45,15 +45,15 @@ function getDescriptionRSSDependOnLogged (isAuthenticated) {
 
 function createFeedObj (description) {
   return new Feed({
-    title: 'Τμήμα Πληροφορικής - Ανακοινώσεις',
-    id: 'https://apps.it.teithe.gr/',
+    title: 'Τμήμα Μηχανικών Πληροφορικής και Ηλεκτρονικών Συστημάτων - Ανακοινώσεις',
+    id: 'https://apps.iee.ihu.gr/',
     description: description,
     generator: 'Feed for Apps',
-    link: 'https://apps.it.teithe.gr/announcements',
+    link: 'https://apps.iee.ihu.gr/announcements',
     copyright: 'All rights reserved 2017, Alexis Pavlidis',
     feedLinks: {
-      atom: '/api/announcements/feed/atom',
-      rss: 'https://apps.it.teithe.gr/api/announcements/feed/rss'
+      atom: 'https://api.iee.ihu.gr/announcements/feed/atom',
+      rss: 'https://api.iee.ihu.gr/announcements/feed/rss'
     },
     author: {
       name: 'Alexis Pavlidis'
@@ -71,8 +71,8 @@ function appendPostsToFeed (feed, posts) {
           feed.addItem({
             title: announcement.title,
             description: announcement._about.name,
-            link: 'https://apps.it.teithe.gr/announcements/' + announcement._id,
-            id: 'https://apps.it.teithe.gr/announcements/' + announcement._id,
+            link: 'https://apps.iee.ihu.gr/announcements/announcement/' + announcement._id,
+            id: 'https://apps.iee.ihu.gr/announcements/announcement/' + announcement._id,
             content: announcement.text,
             author: [
               {
