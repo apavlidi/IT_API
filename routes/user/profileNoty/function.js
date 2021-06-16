@@ -86,9 +86,13 @@ function getPositionOfNotySub (notySubs, fp) {
   let found = notySubs.find(function (ele) {
     return ele.browserFp === fp
   })
-  return notySubs.map(function (x) {
-    return x._id
-  }).indexOf(found._id)
+  if (found) {
+    return notySubs.map(function (x) {
+      return x._id
+    }).indexOf(found._id)
+  } else {
+    return -1
+  }
 }
 
 module.exports = {

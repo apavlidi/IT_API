@@ -1,60 +1,40 @@
-const functionsSetup = require('../setupDB')
-
 let rewire = require('rewire'),
   functionsPrivate = rewire('./../../../routes/bulletinBoard/announcementFiles/functions')
 let functionsPublic = require('./../../../routes/bulletinBoard/announcementFiles/functions')
 
 describe('announcementsFiles', () => {
-  let announcementPublicIDExample
-  let announcementPrivateIDExample
-  let announcementIDToBeDeleted
-  let categoryIDPrivateExample
-  let categoryIDPublicExample
-  let filePublicIDExample
-  let filePrivateIDExample
-  let fileIDToBeDeleted
-  let announcementWithFileExample
+  let announcementPublicIDExample = '5b7003ef8ff1ef0727fa5655'
+  let announcementWithAttatchement = '5b2cb996c339ab0df1354a54'
+  let announcementPrivateIDExample = '5b70016cef1d40243b6514f4'
+  let announcementIDToBeDeleted = '5b7089606b5e19356f4633d1'
+  let categoryIDPrivateExample = '59ab445c3eb44c2c608cb188'
+  let categoryIDPublicExample = '59ab445c3eb44c2c608cb18b'
+  let filePrivateIDExample = '5b6f2037fa4dac41399ead97'
+  let filePublicIDExample = '5b6f2037fa4dac41399ead92'
+  let fileIDToBeDeleted = '5b6f2037fa4dac41399ead93'
 
   before(function (done) {
-    functionsSetup.removeAllCollections().then(() => {
-      return functionsSetup.createCategoryPublicExample()
-    }).then(categoryIDPublicExampleReturned => {
-      categoryIDPublicExample = categoryIDPublicExampleReturned
-      return functionsSetup.createCategoryPrivateExample()
-    }).then(categoryIDPrivateExampleReturned => {
-      categoryIDPrivateExample = categoryIDPrivateExampleReturned
-      return functionsSetup.createAnnouncementExample(categoryIDPublicExample)
-    }).then(announcementPublicIDExampleReturned => {
-      announcementPublicIDExample = announcementPublicIDExampleReturned
-      return functionsSetup.createAnnouncementExample(categoryIDPrivateExample)
-    }).then(categoryIDPrivateExampleReturned => {
-      announcementPrivateIDExample = categoryIDPrivateExampleReturned
-      return functionsSetup.createAnnouncementExampleToBeDeleted(categoryIDPublicExample)
-    }).then(announcementIDToBeDeletedReturned => {
-      announcementIDToBeDeleted = announcementIDToBeDeletedReturned
-      return functionsSetup.createFileExample(announcementPublicIDExample)
-    }).then(filePublicID => {
-      filePublicIDExample = filePublicID
-      return functionsSetup.createFileExample(announcementPrivateIDExample)
-    }).then(filePrivateID => {
-      filePrivateIDExample = filePrivateID
-      return functionsSetup.createFileExample(announcementPublicIDExample)
-    }).then(fileIDToBeDeletedExample => {
-      fileIDToBeDeleted = fileIDToBeDeletedExample
-      return functionsSetup.createAnnouncementWithFileExample(categoryIDPublicExample, fileIDToBeDeletedExample)
-    }).then(announcementWithFileIDExample => {
-      announcementWithFileExample = announcementWithFileIDExample
-      done()
-    }).catch(function (err) {
-      throw new Error(err)
+    this.timeout(10000)
+    fixtures
+      .connect('mongodb://admin:Password@192.168.6.94/myapptest')
+      .then(() => fixtures.unload())
+      .then(() => fixtures.load())
+      .then(function () {
+        done()
+      }).catch(e => function () {
+      done(new Error('Fixtures error'))
     })
   })
 
   after(function (done) {
-    functionsSetup.removeAllCollections().then(() => {
-      done()
-    }).catch(function (err) {
-      throw new Error(err)
+    this.timeout(10000)
+    fixtures
+      .connect('mongodb://admin:Password@192.168.6.94/myapptest')
+      .then(() => fixtures.disconnect())
+      .then(function () {
+        done()
+      }).catch(e => function () {
+      done(new Error('Fixtures error'))
     })
   })
 
@@ -66,6 +46,7 @@ describe('announcementsFiles', () => {
         chai.request(server)
           .get('/files/' + filePublicIDExample + '?' + access_token)
           .end((err, res) => {
+            console.log(res.body)
             res.should.have.a.property('header')
             res.should.have.a.property('body')
             let header = res.header
@@ -115,7 +96,6 @@ describe('announcementsFiles', () => {
         chai.request(server)
           .get('/files/' + randomID + '?' + access_token)
           .end((err, res) => {
-            console.log(res)
             res.should.have.status(500)
             done()
           })
@@ -178,7 +158,7 @@ describe('announcementsFiles', () => {
           })
       })
 
-      it.skip('it should return 500 code to invalid announcementID', (done) => {
+      it('it should return 500 code to invalid announcementID', (done) => {
         let randomID = mongoose.Types.ObjectId()
         chai.request(server)
           .get('/files/' + randomID + '/downloadAll')
@@ -261,7 +241,6 @@ describe('announcementsFiles', () => {
     context('deleteFile', () => {
 
       it('it should delete a public file when authenticated', (done) => {
-        console.log(fileIDToBeDeleted)
         chai.request(server)
           .delete('/files/' + fileIDToBeDeleted + '?' + access_token)
           .end((err, res) => {
@@ -384,7 +363,7 @@ describe('announcementsFiles', () => {
         })
       })
 
-      it.skip('it should return an error on invalid fileID', (done) => {
+      it('it should return an error on invalid fileID', (done) => {
         let invalidFileID = mongoose.Types.ObjectId()
         let filesIDs = [filePublicIDExample, invalidFileID]
         functionsPublic.addToZip(filesIDs).then(zip => {

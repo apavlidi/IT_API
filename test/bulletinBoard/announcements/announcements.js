@@ -1,5 +1,3 @@
-const functionsSetup = require('../setupDB')
-
 let rewire = require('rewire'),
   functionsPrivate = rewire('./../../../routes/bulletinBoard/announcements/functions')
 let functionsPublic = require('./../../../routes/bulletinBoard/announcements/functions')
@@ -7,12 +5,13 @@ let functionsPublic = require('./../../../routes/bulletinBoard/announcements/fun
 let functionsFileChecks = require('./../../../routes/bulletinBoard/announcements/fileChecks')
 
 describe('announcements', () => {
-  let announcementPublicIDExample
-  let announcementPrivateIDExample
-  let announcementIDToBeDeleted
-  let categoryIDPrivateExample
-  let categoryIDPublicExample
-  let fileIDExample
+  let announcementPublicIDExample = '5b7003ef8ff1ef0727fa5655'
+  let announcementWithAttatchement = '5b2cb996c339ab0df1354a54'
+  let announcementPrivateIDExample = '5b70016cef1d40243b6514f4'
+  let announcementIDToBeDeleted = '5b7089606b5e19356f4633d1'
+  let categoryIDPrivateExample = '59ab445c3eb44c2c608cb188'
+  let categoryIDPublicExample = '59ab445c3eb44c2c608cb18b'
+  let fileIDExample = '5b6f2037fa4dac41399ead97'
 
   let publisher = {
     publisherId: '5106',
@@ -20,36 +19,27 @@ describe('announcements', () => {
   }
 
   before(function (done) {
-    functionsSetup.removeAllCollections().then(() => {
-      return functionsSetup.createCategoryPublicExample()
-    }).then(categoryIDPublicExampleReturned => {
-      categoryIDPublicExample = categoryIDPublicExampleReturned
-      return functionsSetup.createCategoryPrivateExample()
-    }).then(categoryIDPrivateExampleReturned => {
-      categoryIDPrivateExample = categoryIDPrivateExampleReturned
-      return functionsSetup.createAnnouncementExample(categoryIDPublicExample)
-    }).then(announcementPublicIDExampleReturned => {
-      announcementPublicIDExample = announcementPublicIDExampleReturned
-      return functionsSetup.createAnnouncementExample(categoryIDPrivateExample)
-    }).then(categoryIDPrivateExampleReturned => {
-      announcementPrivateIDExample = categoryIDPrivateExampleReturned
-      return functionsSetup.createAnnouncementExampleToBeDeleted(categoryIDPublicExample)
-    }).then(announcementIDToBeDeletedReturned => {
-      announcementIDToBeDeleted = announcementIDToBeDeletedReturned
-      return functionsSetup.createFileExample()
-    }).then(fileID => {
-      fileIDExample = fileID
-      done()
-    }).catch(function (err) {
-      throw new Error(err)
+    this.timeout(10000)
+    fixtures
+      .connect('mongodb://admin:Password@192.168.6.94/myapptest')
+      .then(() => fixtures.unload())
+      .then(() => fixtures.load())
+      .then(function () {
+        done()
+      }).catch(e => function () {
+      done(new Error('Fixtures error'))
     })
   })
 
   after(function (done) {
-    functionsSetup.removeAllCollections().then(() => {
-      done()
-    }).catch(function (err) {
-      throw new Error(err)
+    this.timeout(10000)
+    fixtures
+      .connect('mongodb://admin:Password@192.168.6.94/myapptest')
+      .then(() => fixtures.disconnect())
+      .then(function () {
+        done()
+      }).catch(e => function () {
+      done(new Error('Fixtures error'))
     })
   })
 
@@ -313,7 +303,7 @@ describe('announcements', () => {
         })
 
         it('should return false when publisher is invalid', (done) => {
-          functionsPublic.validatePublisher(9999).then(result => {
+          functionsPublic.validatePublisher(99999).then(result => {
             result.should.equal(false)
             done()
           })
@@ -461,7 +451,7 @@ describe('announcements', () => {
           let private_func = functionsPrivate.__get__('checkFileInput')
           let file = {
             mimetype: 'application/mspowerpoint',
-            data: 'Sample data'
+            data: new ArrayBuffer('Sample data')
           }
           let result = private_func(file)
           result.should.equal(true)
@@ -472,14 +462,14 @@ describe('announcements', () => {
           let private_func = functionsPrivate.__get__('checkFileInput')
           let file = {
             mimetype: 'Invalid Data',
-            data: 'Sample data'
+            data: new ArrayBuffer('Sample data')
           }
           let result = private_func(file)
           result.should.equal(false)
           done()
         })
 
-        it('should return false when data is not a string', (done) => {
+        it('should return false when data is not proper type', (done) => {
           let private_func = functionsPrivate.__get__('checkFileInput')
           let file = {
             mimetype: 'application/mspowerpoint',
@@ -506,33 +496,39 @@ describe('announcements', () => {
       context('gatherFilesInput', () => {
 
         it('should gather 3 valid files', (done) => {
-          let files = [{data: 'Sample data 1', mimetype: 'text/plain'},
-            {data: 'Sample data 2', mimetype: 'text/plain'},
-            {data: 'Sample data 3', mimetype: 'text/plain'}]
+          let files = [{data: new ArrayBuffer('Sample data 1'), mimetype: 'text/plain'},
+            {data: new ArrayBuffer('Sample data 2'), mimetype: 'text/plain'},
+            {data: new ArrayBuffer('Sample data 3'), mimetype: 'text/plain'}]
           functionsPublic.gatherFilesInput(files).then(result => {
             result.should.be.an('array')
             result.should.have.lengthOf(3)
             done()
+          }).catch(err => {
+            done(new Error(err))
           })
         })
 
         it('should gather 2 valid files', (done) => {
-          let files = [{data: 'Sample data 1', mimetype: 'text/plain'},
-            {data: 'Sample data 2', mimetype: 'Not valid'},
-            {data: 'Sample data 2', mimetype: 'text/plain'}]
+          let files = [{data: new ArrayBuffer('Sample data 2'), mimetype: 'text/plain'},
+            {data: new ArrayBuffer('Sample data 2'), mimetype: 'Not valid'},
+            {data: new ArrayBuffer('Sample data 2'), mimetype: 'text/plain'}]
           functionsPublic.gatherFilesInput(files).then(result => {
             result.should.be.an('array')
             result.should.have.lengthOf(2)
             done()
+          }).catch(err => {
+            done(new Error(err))
           })
         })
 
         it('should gather 1 valid file', (done) => {
-          let file = {data: 'Sample data 1', mimetype: 'text/plain'}
+          let file = {data: new ArrayBuffer('Sample data 1'), mimetype: 'text/plain'}
           functionsPublic.gatherFilesInput(file).then(result => {
             result.should.be.an('array')
             result.should.have.lengthOf(1)
             done()
+          }).catch(err => {
+            done(new Error(err))
           })
         })
 
@@ -541,9 +537,9 @@ describe('announcements', () => {
       context('pushAllFiles', () => {
 
         it('should push 2 valid files', (done) => {
-          let files = [{data: 'Sample data 1', mimetype: 'text/plain'},
-            {data: 'Sample data 2', mimetype: 'Not valid'},
-            {data: 'Sample data 2', mimetype: 'text/plain'}]
+          let files = [{data: new ArrayBuffer('Sample data 1'), mimetype: 'text/plain'},
+            {data:  new ArrayBuffer('Sample data 2'), mimetype: 'Not valid'},
+            {data: new ArrayBuffer('Sample data 3'), mimetype: 'text/plain'}]
           let private_func = functionsPrivate.__get__('pushAllFiles')
           let result = private_func(files)
           result.should.be.an('array')
@@ -602,6 +598,7 @@ describe('announcements', () => {
         })
 
       })
+
 
       context('checkIfEntryExists', () => {
 
@@ -699,5 +696,6 @@ describe('announcements', () => {
 
     })
   })
+
 })
 

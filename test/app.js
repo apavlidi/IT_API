@@ -18,7 +18,7 @@ describe('announcements', () => {
         .end((err, res) => {
           res.should.have.status(404)
           res.body.should.be.an('object')
-          let errorObj = res.body
+          let errorObj = res.bodyεσ
           errorObj.should.have.property('message')
           errorObj.should.have.property('type')
           errorObj.should.have.property('code')

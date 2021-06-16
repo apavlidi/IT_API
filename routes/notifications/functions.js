@@ -30,31 +30,31 @@ function sendNotifications (announcementEntry, notificationId, publisherId) {
     database.AnnouncementsCategories.findOne({_id: announcementEntry._about}).exec(function (err, category) {
       if (err || !category) {
         reject(new PromiseError(1061, err))
-      }
+      } else {
+        category.registered.forEach(function (id) {
+          calls.push(function (callback) {
+            database.Profile.findOne({
+              'ldapId': {$eq: id, $ne: publisherId}
+            }).exec(function (err, profile) {
+              if (!err && profile) {
+                // TODO THIS NEEDS TO BE CHECKED WHEN USER IS IMPLEMENTED
+                // sendPush.sendNotification(profile.notySub, announcementEntry, category)
+              }
+            })
 
-      category.registered.forEach(function (id) {
-        calls.push(function (callback) {
-          database.Profile.findOne({
-            'ldapId': {$eq: id, $ne: publisherId}
-          }).exec(function (err, profile) {
-            if (!err && profile) {
-              // TODO THIS NEEDS TO BE CHECKED WHEN USER IS IMPLEMENTED
-              // sendPush.sendNotification(profile.notySub, announcementEntry, category)
-            }
-          })
-
-          database.Profile.update({'ldapId': {$eq: id, $ne: publisherId}}, {
-            '$addToSet': {
-              'notifications': {_notification: notificationId, seen: false}
-            }
-          }, function (err, updated) {
-            if (err) {
-              reject(new PromiseError(1059, err))
-            }
-            callback(null)
+            database.Profile.update({'ldapId': {$eq: id, $ne: publisherId}}, {
+              '$addToSet': {
+                'notifications': {_notification: notificationId, seen: false}
+              }
+            }, function (err, updated) {
+              if (err) {
+                reject(new PromiseError(1059, err))
+              }
+              callback(null)
+            })
           })
         })
-      })
+      }
 
       async.parallel(calls, function (err) {
         if (err) {
