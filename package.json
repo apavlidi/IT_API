@@ -30,7 +30,7 @@
     "is-utf8": "^0.2.1",
     "joi": "^13.6.0",
     "jsonwebtoken": "^8.2.0",
-    "jszip": "^3.1.5",
+    "jszip": "^3.8.0",
     "ldap-filters": "^2.2.2",
     "ldapjs": "^1.0.2",
     "lodash": "^4.17.10",
