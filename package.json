@@ -62,8 +62,8 @@
     "snazzy": "^7.1.1",
     "standard": "11.0.0",
     "chai-http": "^4.0.0",
-    "mocha": "^5.2.0",
-    "nyc": "^12.0.2",
+    "mocha": "^10.2.0",
+    "nyc": "^15.1.0",
     "rewire": "^4.0.1",
     "sinon": "^6.1.5",
     "sinon-mongoose": "^2.2.1"
