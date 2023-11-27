@@ -21,7 +21,7 @@
     "debug": "^3.1.0",
     "ejs": "^2.5.7",
     "express": "^4.16.2",
-    "express-fileupload": "^0.3.0",
+    "express-fileupload": "^1.4.0",
     "express-session": "^1.15.6",
     "feed": "^1.1.1",
     "file-type": "^7.6.0",
